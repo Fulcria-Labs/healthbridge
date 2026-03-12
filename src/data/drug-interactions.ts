@@ -794,6 +794,14 @@ export const drugInteractions: DrugInteraction[] = [
     clinicalEffect: 'Lithium toxicity',
     management: 'Monitor lithium levels closely when starting/stopping ARB. May need dose reduction.'
   },
+  // Fluoxetine + lithium (serotonin syndrome risk)
+  {
+    drug1: 'fluoxetine', drug2: 'lithium', severity: 'major',
+    description: 'Increased risk of serotonin syndrome and lithium toxicity',
+    mechanism: 'SSRIs increase serotonergic activity; combined with lithium can produce additive serotonin effects',
+    clinicalEffect: 'Serotonin syndrome (tremor, hyperreflexia, myoclonus, agitation), increased lithium levels',
+    management: 'Monitor for serotonin syndrome symptoms. Check lithium levels when starting/adjusting SSRI. Use lowest effective doses.'
+  },
   // Enalapril + ibuprofen
   {
     drug1: 'enalapril', drug2: 'ibuprofen', severity: 'moderate',
