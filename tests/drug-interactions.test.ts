@@ -243,3 +243,94 @@ describe('New Drug Interactions (Expanded Database)', () => {
     expect(results.length).toBeGreaterThanOrEqual(3);
   });
 });
+
+describe('New Drug Interactions (Extended Database)', () => {
+  it('detects PPI-clopidogrel interaction (CYP2C19)', () => {
+    const interaction = findInteraction('omeprazole', 'clopidogrel');
+    expect(interaction).not.toBeNull();
+    expect(interaction!.severity).toBe('major');
+    expect(interaction!.mechanism).toContain('CYP2C19');
+  });
+
+  it('detects DOAC-ketoconazole interactions', () => {
+    const apixaban = findInteraction('apixaban', 'ketoconazole');
+    expect(apixaban).not.toBeNull();
+    expect(apixaban!.severity).toBe('major');
+
+    const rivaroxaban = findInteraction('rivaroxaban', 'ketoconazole');
+    expect(rivaroxaban).not.toBeNull();
+    expect(rivaroxaban!.severity).toBe('contraindicated');
+  });
+
+  it('detects DOAC-rifampin interactions', () => {
+    const apixaban = findInteraction('apixaban', 'rifampin');
+    expect(apixaban).not.toBeNull();
+    expect(apixaban!.severity).toBe('contraindicated');
+  });
+
+  it('detects gabapentinoid-opioid respiratory depression risk', () => {
+    const gabOxy = findInteraction('gabapentin', 'oxycodone');
+    expect(gabOxy).not.toBeNull();
+    expect(gabOxy!.severity).toBe('major');
+    expect(gabOxy!.clinicalEffect).toContain('respiratory');
+
+    const pregOxy = findInteraction('pregabalin', 'oxycodone');
+    expect(pregOxy).not.toBeNull();
+    expect(pregOxy!.severity).toBe('major');
+  });
+
+  it('detects amiodarone-digoxin interaction', () => {
+    const interaction = findInteraction('amiodarone', 'digoxin');
+    expect(interaction).not.toBeNull();
+    expect(interaction!.severity).toBe('major');
+    expect(interaction!.management).toContain('50%');
+  });
+
+  it('detects amiodarone-simvastatin rhabdomyolysis risk', () => {
+    const interaction = findInteraction('amiodarone', 'simvastatin');
+    expect(interaction).not.toBeNull();
+    expect(interaction!.clinicalEffect).toContain('Rhabdomyolysis');
+  });
+
+  it('detects cyclosporine-simvastatin as contraindicated', () => {
+    const interaction = findInteraction('cyclosporine', 'simvastatin');
+    expect(interaction).not.toBeNull();
+    expect(interaction!.severity).toBe('contraindicated');
+  });
+
+  it('detects duloxetine-tramadol serotonin syndrome risk', () => {
+    const interaction = findInteraction('duloxetine', 'tramadol');
+    expect(interaction).not.toBeNull();
+    expect(interaction!.severity).toBe('major');
+    expect(interaction!.clinicalEffect).toContain('serotonin');
+  });
+
+  it('detects prednisone-NSAID GI bleeding risk', () => {
+    const interaction = findInteraction('prednisone', 'ibuprofen');
+    expect(interaction).not.toBeNull();
+    expect(interaction!.severity).toBe('moderate');
+    expect(interaction!.clinicalEffect).toContain('peptic ulcer');
+  });
+
+  it('detects prednisone-warfarin interaction', () => {
+    const interaction = findInteraction('prednisone', 'warfarin');
+    expect(interaction).not.toBeNull();
+    expect(interaction!.severity).toBe('moderate');
+    expect(interaction!.clinicalEffect).toContain('INR');
+  });
+
+  it('resolves brand names for new drugs', () => {
+    expect(resolveToGeneric('eliquis')).toBe('apixaban');
+    expect(resolveToGeneric('xarelto')).toBe('rivaroxaban');
+    expect(resolveToGeneric('cymbalta')).toBe('duloxetine');
+    expect(resolveToGeneric('lyrica')).toBe('pregabalin');
+    expect(resolveToGeneric('plavix')).toBe('clopidogrel');
+    expect(resolveToGeneric('prilosec')).toBe('omeprazole');
+  });
+
+  it('finds interactions via brand names for new drugs', () => {
+    const interaction = findInteraction('Plavix', 'Prilosec');
+    expect(interaction).not.toBeNull();
+    expect(interaction!.severity).toBe('major');
+  });
+});

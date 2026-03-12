@@ -568,6 +568,120 @@ export const drugInteractions: DrugInteraction[] = [
     clinicalEffect: 'Lithium toxicity (tremor, confusion, seizures, renal failure)',
     management: 'Monitor lithium levels when starting/adjusting diuretic. Consider dose reduction. Maintain adequate hydration.'
   },
+  // PPI + clopidogrel (critical missing interaction)
+  {
+    drug1: 'omeprazole', drug2: 'clopidogrel', severity: 'major',
+    description: 'Reduced antiplatelet effect of clopidogrel',
+    mechanism: 'Omeprazole inhibits CYP2C19, which is required to convert clopidogrel prodrug to active metabolite',
+    clinicalEffect: 'Reduced platelet inhibition, increased risk of cardiovascular events including stent thrombosis',
+    management: 'Use pantoprazole (minimal CYP2C19 inhibition) instead of omeprazole. Avoid omeprazole/esomeprazole with clopidogrel. FDA black box warning.'
+  },
+  // DOAC interactions
+  {
+    drug1: 'apixaban', drug2: 'ketoconazole', severity: 'major',
+    description: 'Increased apixaban levels and bleeding risk',
+    mechanism: 'Ketoconazole is a strong dual CYP3A4/P-gp inhibitor, markedly increasing apixaban exposure',
+    clinicalEffect: 'Significantly increased bleeding risk due to elevated apixaban plasma concentrations',
+    management: 'Reduce apixaban dose by 50% when combined with strong dual CYP3A4/P-gp inhibitors. Monitor for bleeding.'
+  },
+  {
+    drug1: 'rivaroxaban', drug2: 'ketoconazole', severity: 'contraindicated',
+    description: 'Dangerous increase in rivaroxaban levels',
+    mechanism: 'Strong dual CYP3A4/P-gp inhibition dramatically increases rivaroxaban exposure',
+    clinicalEffect: 'Markedly elevated bleeding risk. Contraindicated per prescribing information.',
+    management: 'Do NOT use concomitantly. Choose alternative antifungal or alternative anticoagulant.'
+  },
+  {
+    drug1: 'rivaroxaban', drug2: 'rifampin', severity: 'major',
+    description: 'Reduced rivaroxaban efficacy',
+    mechanism: 'Rifampin induces CYP3A4/P-gp, significantly reducing rivaroxaban levels',
+    clinicalEffect: 'Subtherapeutic anticoagulation, increased thromboembolic risk',
+    management: 'Avoid combination. Switch to warfarin with INR monitoring if rifampin required.'
+  },
+  // Gabapentinoid + opioid (respiratory depression)
+  {
+    drug1: 'gabapentin', drug2: 'oxycodone', severity: 'major',
+    description: 'Increased risk of respiratory depression and sedation',
+    mechanism: 'Additive CNS depression; gabapentinoids potentiate opioid-induced respiratory depression',
+    clinicalEffect: 'Serious respiratory depression, sedation, and death. FDA boxed warning.',
+    management: 'If combination necessary, use lowest effective doses. Monitor respiratory status closely. Consider opioid dose reduction.'
+  },
+  {
+    drug1: 'pregabalin', drug2: 'oxycodone', severity: 'major',
+    description: 'Increased risk of respiratory depression and sedation',
+    mechanism: 'Additive CNS depression; pregabalin potentiates opioid respiratory depression',
+    clinicalEffect: 'Serious respiratory depression, profound sedation, coma, and death',
+    management: 'Use lowest effective doses. Monitor respiratory rate. FDA boxed warning on gabapentinoid-opioid combination.'
+  },
+  {
+    drug1: 'gabapentin', drug2: 'hydrocodone', severity: 'major',
+    description: 'Increased risk of respiratory depression',
+    mechanism: 'Additive CNS depressant effects between gabapentinoid and opioid',
+    clinicalEffect: 'Respiratory depression, excessive sedation, potentially fatal',
+    management: 'Limit dosages and duration. Monitor closely. FDA boxed warning.'
+  },
+  // Metformin + contrast dye (renal concern)
+  {
+    drug1: 'metformin', drug2: 'ciprofloxacin', severity: 'moderate',
+    description: 'Risk of hypoglycemia and potential lactic acidosis',
+    mechanism: 'Fluoroquinolones can cause dysglycemia and may increase metformin exposure via renal transporter inhibition',
+    clinicalEffect: 'Hypoglycemia or hyperglycemia episodes; rarely lactic acidosis in renal impairment',
+    management: 'Monitor blood glucose closely during fluoroquinolone therapy. Assess renal function.'
+  },
+  // Duloxetine interactions
+  {
+    drug1: 'duloxetine', drug2: 'tramadol', severity: 'major',
+    description: 'Risk of serotonin syndrome and seizures',
+    mechanism: 'Both increase serotonin levels; tramadol also lowers seizure threshold',
+    clinicalEffect: 'Serotonin syndrome (agitation, tremor, hyperthermia, clonus). Increased seizure risk.',
+    management: 'Avoid combination if possible. If used, monitor for serotonin syndrome. Consider alternative analgesic.'
+  },
+  {
+    drug1: 'duloxetine', drug2: 'warfarin', severity: 'major',
+    description: 'Increased bleeding risk',
+    mechanism: 'SNRIs impair platelet serotonin uptake, adding to warfarin anticoagulation',
+    clinicalEffect: 'Increased risk of GI and other bleeding events',
+    management: 'Monitor INR closely when starting/stopping duloxetine. Watch for signs of bleeding.'
+  },
+  // Amiodarone + digoxin
+  {
+    drug1: 'amiodarone', drug2: 'digoxin', severity: 'major',
+    description: 'Increased digoxin levels and toxicity risk',
+    mechanism: 'Amiodarone inhibits P-glycoprotein and renal clearance of digoxin',
+    clinicalEffect: 'Digoxin toxicity (nausea, visual changes, arrhythmias) - digoxin levels increase 70-100%',
+    management: 'Reduce digoxin dose by 50% when initiating amiodarone. Monitor digoxin levels and ECG closely.'
+  },
+  // Amiodarone + simvastatin
+  {
+    drug1: 'amiodarone', drug2: 'simvastatin', severity: 'major',
+    description: 'Increased risk of rhabdomyolysis',
+    mechanism: 'Amiodarone inhibits CYP3A4, increasing simvastatin levels',
+    clinicalEffect: 'Rhabdomyolysis, myopathy, acute kidney injury',
+    management: 'Do not exceed simvastatin 20mg/day with amiodarone. Consider switching to pravastatin or rosuvastatin (not CYP3A4 dependent).'
+  },
+  // Prednisone + warfarin
+  {
+    drug1: 'prednisone', drug2: 'warfarin', severity: 'moderate',
+    description: 'Altered anticoagulation response',
+    mechanism: 'Corticosteroids may enhance or reduce warfarin effect; also increase GI bleeding risk',
+    clinicalEffect: 'Unpredictable INR changes. Increased bleeding risk.',
+    management: 'Monitor INR closely when starting, adjusting, or stopping corticosteroids. Adjust warfarin dose as needed.'
+  },
+  // Cyclosporine + simvastatin
+  {
+    drug1: 'cyclosporine', drug2: 'simvastatin', severity: 'contraindicated',
+    description: 'Contraindicated - severe rhabdomyolysis risk',
+    mechanism: 'Cyclosporine is a potent CYP3A4 and P-gp inhibitor, dramatically increasing statin levels',
+    clinicalEffect: 'Rhabdomyolysis, acute renal failure, potentially fatal',
+    management: 'CONTRAINDICATED. Use pravastatin or fluvastatin (lower interaction potential) at reduced doses with monitoring.'
+  },
+  {
+    drug1: 'cyclosporine', drug2: 'atorvastatin', severity: 'major',
+    description: 'High risk of rhabdomyolysis',
+    mechanism: 'Cyclosporine inhibits CYP3A4 and OATP1B1, greatly increasing atorvastatin exposure',
+    clinicalEffect: 'Rhabdomyolysis, myopathy, acute kidney injury',
+    management: 'Avoid if possible. If needed, limit atorvastatin to 10mg/day. Monitor CK levels and renal function.'
+  },
 ];
 
 /**
