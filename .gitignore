@@ -3,3 +3,17 @@ dist/
 *.js.map
 .DS_Store
 coverage/
+
+# Security - prevent accidental PHI/credential commits
+.env
+.env.*
+.env.local
+.env.production
+*.pem
+*.key
+*.cert
+*.p12
+credentials.json
+secrets/
+*.log
+

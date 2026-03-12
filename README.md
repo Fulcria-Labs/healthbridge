@@ -113,11 +113,19 @@ src/
     └── fhir.ts               # FHIR R4 utilities
 ```
 
-## Healthcare Data Safety
+## Healthcare Data Safety & HIPAA Considerations
 
-- All demonstration data uses **synthetic patients only** (no real PHI)
-- Designed for SHARP on MCP healthcare context propagation
-- FHIR R4 compliant data handling
+HealthBridge is designed with healthcare data security as a first-class concern:
+
+- **No PHI in codebase**: All demonstration data uses synthetic patients only. No real Protected Health Information (PHI) is stored, transmitted, or logged.
+- **Stateless processing**: Each tool invocation is stateless -- patient data is processed in-memory and never persisted to disk, databases, or external services.
+- **No data exfiltration surface**: The server operates exclusively via MCP stdio transport. There are no HTTP endpoints, no network calls, no external API dependencies, and no telemetry.
+- **Input validation**: All tool inputs are validated via Zod schemas. Injection attempts (XSS, SQL) are handled safely through string matching against known drug/lab databases.
+- **Deterministic output**: Identical inputs always produce identical outputs, enabling audit trails and reproducibility.
+- **FHIR R4 compliant**: Patient data handling follows HL7 FHIR R4 resource specifications.
+- **Security test suite**: Dedicated `security-hipaa.test.ts` validates PHI isolation between calls, injection resistance, input boundary handling, and cross-tool data consistency (46 tests).
+- **Minimum necessary principle**: Tools return only clinically relevant information. Patient identifiers from FHIR bundles are limited to name, age, and gender for clinical context.
+- **SHARP on MCP**: Designed for healthcare context propagation through the MCP protocol, enabling secure agent-to-agent clinical data sharing.
 
 ## License
 
