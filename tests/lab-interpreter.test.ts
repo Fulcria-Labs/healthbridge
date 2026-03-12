@@ -247,3 +247,155 @@ describe('Lab Interpreter Tool', () => {
     expect(tests[0]).toHaveProperty('normalRange');
   });
 });
+
+describe('Lipid Panel Tests', () => {
+  it('interprets desirable total cholesterol', () => {
+    const result = interpretLabResult('TCHOL', 180);
+    expect(result).not.toBeNull();
+    expect(result!.urgency).toBe('normal');
+  });
+
+  it('interprets high total cholesterol', () => {
+    const result = interpretLabResult('TCHOL', 260);
+    expect(result).not.toBeNull();
+    expect(result!.urgency).toBe('abnormal');
+  });
+
+  it('interprets optimal LDL', () => {
+    const result = interpretLabResult('LDL', 65);
+    expect(result).not.toBeNull();
+    expect(result!.urgency).toBe('normal');
+  });
+
+  it('interprets very high LDL', () => {
+    const result = interpretLabResult('LDL', 200);
+    expect(result).not.toBeNull();
+    expect(result!.urgency).toBe('abnormal');
+  });
+
+  it('interprets low HDL', () => {
+    const result = interpretLabResult('HDL', 35);
+    expect(result).not.toBeNull();
+    expect(result!.urgency).toBe('abnormal');
+  });
+
+  it('interprets protective HDL', () => {
+    const result = interpretLabResult('HDL', 65);
+    expect(result).not.toBeNull();
+    expect(result!.urgency).toBe('normal');
+  });
+
+  it('interprets normal triglycerides', () => {
+    const result = interpretLabResult('TG', 120);
+    expect(result).not.toBeNull();
+    expect(result!.urgency).toBe('normal');
+  });
+
+  it('interprets critical triglycerides (pancreatitis risk)', () => {
+    const result = interpretLabResult('TG', 600);
+    expect(result).not.toBeNull();
+    expect(result!.urgency).toBe('critical');
+  });
+
+  it('resolves lipid panel aliases', () => {
+    expect(resolveLabTest('cholesterol')).not.toBeNull();
+    expect(resolveLabTest('ldl')).not.toBeNull();
+    expect(resolveLabTest('hdl')).not.toBeNull();
+    expect(resolveLabTest('triglycerides')).not.toBeNull();
+  });
+});
+
+describe('Calcium and Magnesium Tests', () => {
+  it('interprets normal calcium', () => {
+    const result = interpretLabResult('CA', 9.5);
+    expect(result).not.toBeNull();
+    expect(result!.urgency).toBe('normal');
+  });
+
+  it('interprets critical high calcium', () => {
+    const result = interpretLabResult('CA', 14.0);
+    expect(result).not.toBeNull();
+    expect(result!.urgency).toBe('critical');
+  });
+
+  it('interprets low calcium', () => {
+    const result = interpretLabResult('CA', 7.5);
+    expect(result).not.toBeNull();
+    expect(result!.urgency).toBe('abnormal');
+  });
+
+  it('interprets normal magnesium', () => {
+    const result = interpretLabResult('MG', 2.0);
+    expect(result).not.toBeNull();
+    expect(result!.urgency).toBe('normal');
+  });
+
+  it('interprets critical low magnesium', () => {
+    const result = interpretLabResult('MG', 0.8);
+    expect(result).not.toBeNull();
+    expect(result!.urgency).toBe('critical');
+  });
+
+  it('resolves calcium and magnesium aliases', () => {
+    expect(resolveLabTest('calcium')).not.toBeNull();
+    expect(resolveLabTest('magnesium')).not.toBeNull();
+  });
+});
+
+describe('ALP, D-dimer, and Procalcitonin Tests', () => {
+  it('interprets normal ALP', () => {
+    const result = interpretLabResult('ALP', 100);
+    expect(result).not.toBeNull();
+    expect(result!.urgency).toBe('normal');
+  });
+
+  it('interprets elevated ALP', () => {
+    const result = interpretLabResult('ALP', 250);
+    expect(result).not.toBeNull();
+    expect(result!.urgency).toBe('abnormal');
+  });
+
+  it('interprets normal D-dimer', () => {
+    const result = interpretLabResult('DDIMER', 300);
+    expect(result).not.toBeNull();
+    expect(result!.urgency).toBe('normal');
+  });
+
+  it('interprets elevated D-dimer', () => {
+    const result = interpretLabResult('DDIMER', 1500);
+    expect(result).not.toBeNull();
+    expect(result!.urgency).toBe('abnormal');
+  });
+
+  it('interprets normal procalcitonin', () => {
+    const result = interpretLabResult('PCT', 0.05);
+    expect(result).not.toBeNull();
+    expect(result!.urgency).toBe('normal');
+  });
+
+  it('interprets elevated procalcitonin (sepsis range)', () => {
+    const result = interpretLabResult('PCT', 5.0);
+    expect(result).not.toBeNull();
+    expect(result!.urgency).toBe('abnormal');
+  });
+
+  it('resolves new test aliases', () => {
+    expect(resolveLabTest('alk phos')).not.toBeNull();
+    expect(resolveLabTest('d-dimer')).not.toBeNull();
+    expect(resolveLabTest('procalcitonin')).not.toBeNull();
+  });
+
+  it('interprets full expanded panel', () => {
+    const results = interpretLabPanel([
+      { test: 'TCHOL', value: 200 },
+      { test: 'LDL', value: 100 },
+      { test: 'HDL', value: 55 },
+      { test: 'TG', value: 150 },
+      { test: 'CA', value: 9.5 },
+      { test: 'MG', value: 2.0 },
+      { test: 'ALP', value: 80 },
+    ]);
+    expect(results.length).toBe(7);
+    expect(results.every(r => r.urgency === 'normal')).toBe(true);
+  });
+});

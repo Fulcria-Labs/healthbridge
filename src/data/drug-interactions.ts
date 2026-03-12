@@ -72,6 +72,19 @@ export const drugDirectory: Record<string, DrugInfo> = {
   azathioprine: { genericName: 'azathioprine', brandNames: ['imuran'], drugClass: 'immunosuppressant' },
   cyclosporine: { genericName: 'cyclosporine', brandNames: ['neoral', 'sandimmune'], drugClass: 'immunosuppressant' },
   methotrexate: { genericName: 'methotrexate', brandNames: ['trexall'], drugClass: 'antimetabolite' },
+  amiodarone: { genericName: 'amiodarone', brandNames: ['cordarone', 'pacerone'], drugClass: 'antiarrhythmic' },
+  sumatriptan: { genericName: 'sumatriptan', brandNames: ['imitrex'], drugClass: 'triptan' },
+  metronidazole: { genericName: 'metronidazole', brandNames: ['flagyl'], drugClass: 'nitroimidazole' },
+  prednisone: { genericName: 'prednisone', brandNames: ['deltasone', 'rayos'], drugClass: 'corticosteroid' },
+  dextromethorphan: { genericName: 'dextromethorphan', brandNames: ['delsym', 'robitussin'], drugClass: 'antitussive' },
+  tadalafil: { genericName: 'tadalafil', brandNames: ['cialis', 'adcirca'], drugClass: 'pde5-inhibitor' },
+  duloxetine: { genericName: 'duloxetine', brandNames: ['cymbalta'], drugClass: 'snri' },
+  gabapentin: { genericName: 'gabapentin', brandNames: ['neurontin', 'gralise'], drugClass: 'gabapentinoid' },
+  pregabalin: { genericName: 'pregabalin', brandNames: ['lyrica'], drugClass: 'gabapentinoid' },
+  rosuvastatin: { genericName: 'rosuvastatin', brandNames: ['crestor'], drugClass: 'statin' },
+  pravastatin: { genericName: 'pravastatin', brandNames: ['pravachol'], drugClass: 'statin' },
+  apixaban: { genericName: 'apixaban', brandNames: ['eliquis'], drugClass: 'doac' },
+  rivaroxaban: { genericName: 'rivaroxaban', brandNames: ['xarelto'], drugClass: 'doac' },
 };
 
 // Drug interaction database
@@ -348,6 +361,212 @@ export const drugInteractions: DrugInteraction[] = [
     mechanism: 'Both are CYP3A4 inducers and substrates; mutual enzyme induction',
     clinicalEffect: 'Unpredictable changes in levels of both drugs, potential loss of seizure control or toxicity',
     management: 'Monitor levels of both drugs frequently. Adjust doses based on clinical response and drug levels.'
+  },
+  // ACE inhibitor + NSAID (renal)
+  {
+    drug1: 'lisinopril', drug2: 'ibuprofen', severity: 'moderate',
+    description: 'Reduced antihypertensive effect and risk of acute kidney injury',
+    mechanism: 'NSAIDs inhibit renal prostaglandins, reducing renal blood flow and opposing ACE inhibitor hemodynamic effects',
+    clinicalEffect: 'Decreased blood pressure control, increased risk of acute kidney injury, hyperkalemia',
+    management: 'Monitor blood pressure and renal function. Use lowest NSAID dose for shortest duration. Consider acetaminophen.'
+  },
+  {
+    drug1: 'lisinopril', drug2: 'naproxen', severity: 'moderate',
+    description: 'Reduced antihypertensive effect and renal risk',
+    mechanism: 'NSAIDs reduce renal prostaglandin synthesis',
+    clinicalEffect: 'Attenuated blood pressure control and risk of renal impairment',
+    management: 'Monitor BP and renal function. Prefer acetaminophen for pain relief.'
+  },
+  // ACE + ARB (dual RAAS blockade)
+  {
+    drug1: 'lisinopril', drug2: 'losartan', severity: 'major',
+    description: 'Dual RAAS blockade increases adverse events',
+    mechanism: 'Both block the renin-angiotensin system at different points',
+    clinicalEffect: 'Increased risk of hyperkalemia, hypotension, and renal failure without mortality benefit',
+    management: 'Avoid dual RAAS blockade. ONTARGET trial showed no benefit with increased adverse events.'
+  },
+  // Warfarin + metronidazole
+  {
+    drug1: 'warfarin', drug2: 'metronidazole', severity: 'major',
+    description: 'Significantly increased anticoagulant effect',
+    mechanism: 'Metronidazole inhibits CYP2C9 metabolism of S-warfarin',
+    clinicalEffect: 'Markedly elevated INR with high bleeding risk',
+    management: 'Monitor INR within 2-3 days of starting metronidazole. Reduce warfarin dose by 25-50% empirically.'
+  },
+  // Warfarin + azithromycin
+  {
+    drug1: 'warfarin', drug2: 'azithromycin', severity: 'moderate',
+    description: 'Potentially increased anticoagulant effect',
+    mechanism: 'Azithromycin may alter gut flora affecting vitamin K production and modestly inhibit warfarin metabolism',
+    clinicalEffect: 'Modestly elevated INR',
+    management: 'Monitor INR during and after azithromycin course. Usually less significant than other macrolides.'
+  },
+  // Atorvastatin + clarithromycin
+  {
+    drug1: 'atorvastatin', drug2: 'clarithromycin', severity: 'major',
+    description: 'Increased risk of myopathy and rhabdomyolysis',
+    mechanism: 'Clarithromycin inhibits CYP3A4, increasing atorvastatin levels',
+    clinicalEffect: 'Elevated statin levels with risk of myopathy and rhabdomyolysis',
+    management: 'Suspend atorvastatin during clarithromycin course or use azithromycin as alternative. If statin needed, use pravastatin or rosuvastatin.'
+  },
+  // Digoxin + furosemide
+  {
+    drug1: 'digoxin', drug2: 'furosemide', severity: 'major',
+    description: 'Increased digoxin toxicity risk due to hypokalemia',
+    mechanism: 'Loop diuretics cause potassium and magnesium wasting, increasing myocardial sensitivity to digoxin',
+    clinicalEffect: 'Digoxin toxicity (arrhythmias, nausea, visual changes) at therapeutic digoxin levels',
+    management: 'Monitor potassium and magnesium. Supplement as needed. Consider potassium-sparing diuretic. Check digoxin levels.'
+  },
+  // SSRI + triptan (serotonin syndrome)
+  {
+    drug1: 'fluoxetine', drug2: 'sumatriptan', severity: 'moderate',
+    description: 'Potential risk of serotonin syndrome',
+    mechanism: 'Triptans are 5-HT1B/1D agonists; combined with SSRI serotonergic effect may cause serotonin excess',
+    clinicalEffect: 'Risk of serotonin syndrome (FDA warning 2006, though clinical significance debated)',
+    management: 'Use with caution. Educate patient on serotonin syndrome symptoms. Consider alternative migraine therapy.'
+  },
+  {
+    drug1: 'sertraline', drug2: 'sumatriptan', severity: 'moderate',
+    description: 'Potential risk of serotonin syndrome',
+    mechanism: 'Additive serotonergic effects from SSRI and triptan',
+    clinicalEffect: 'Potential serotonin syndrome risk',
+    management: 'Use with caution. Monitor for serotonin syndrome symptoms. Lowest effective triptan dose.'
+  },
+  // SSRI + NSAID (bleeding risk)
+  {
+    drug1: 'fluoxetine', drug2: 'ibuprofen', severity: 'moderate',
+    description: 'Increased risk of GI bleeding',
+    mechanism: 'SSRIs deplete platelet serotonin, impairing aggregation; NSAIDs cause GI erosion and inhibit platelet COX-1',
+    clinicalEffect: 'Significantly increased GI bleeding risk (3-15x depending on study)',
+    management: 'Add PPI if combination needed. Use lowest NSAID dose. Monitor for GI bleeding symptoms.'
+  },
+  {
+    drug1: 'sertraline', drug2: 'ibuprofen', severity: 'moderate',
+    description: 'Increased risk of GI bleeding',
+    mechanism: 'Additive antiplatelet effects and GI mucosal injury',
+    clinicalEffect: 'Elevated GI bleeding risk',
+    management: 'Consider PPI prophylaxis. Use acetaminophen when possible.'
+  },
+  // Dextromethorphan + SSRI
+  {
+    drug1: 'dextromethorphan', drug2: 'fluoxetine', severity: 'major',
+    description: 'Risk of serotonin syndrome and increased dextromethorphan levels',
+    mechanism: 'Fluoxetine inhibits CYP2D6 (dextromethorphan metabolism) and both agents increase serotonin',
+    clinicalEffect: 'Serotonin syndrome and CNS toxicity from dextromethorphan accumulation',
+    management: 'Avoid combination. Use alternative antitussive (benzonatate, guaifenesin).'
+  },
+  {
+    drug1: 'dextromethorphan', drug2: 'phenelzine', severity: 'contraindicated',
+    description: 'Life-threatening serotonin syndrome',
+    mechanism: 'Dextromethorphan inhibits serotonin reuptake; MAOI prevents serotonin breakdown',
+    clinicalEffect: 'Severe serotonin syndrome, hyperthermia, death reported',
+    management: 'NEVER combine. Avoid dextromethorphan-containing products (many OTC cough medicines) with MAOIs.'
+  },
+  // Nitrate + tadalafil
+  {
+    drug1: 'tadalafil', drug2: 'nitroglycerin', severity: 'contraindicated',
+    description: 'Severe hypotension',
+    mechanism: 'Both agents cause vasodilation via nitric oxide/cGMP pathway',
+    clinicalEffect: 'Potentially fatal hypotension, cardiovascular collapse',
+    management: 'NEVER combine. Allow at least 48 hours after tadalafil (longer half-life than sildenafil) before nitrate use.'
+  },
+  {
+    drug1: 'tadalafil', drug2: 'isosorbide', severity: 'contraindicated',
+    description: 'Severe hypotension',
+    mechanism: 'Synergistic vasodilation via nitric oxide pathway',
+    clinicalEffect: 'Potentially fatal hypotension',
+    management: 'NEVER combine. 48-hour washout required for tadalafil.'
+  },
+  // DOAC interactions
+  {
+    drug1: 'apixaban', drug2: 'ketoconazole', severity: 'major',
+    description: 'Significantly increased apixaban levels',
+    mechanism: 'Ketoconazole strongly inhibits CYP3A4 and P-glycoprotein, both involved in apixaban metabolism',
+    clinicalEffect: 'Doubled apixaban exposure with markedly increased bleeding risk',
+    management: 'Reduce apixaban dose by 50% or avoid combination. Use alternative antifungal.'
+  },
+  {
+    drug1: 'rivaroxaban', drug2: 'ketoconazole', severity: 'contraindicated',
+    description: 'Dramatically increased rivaroxaban levels',
+    mechanism: 'Ketoconazole inhibits CYP3A4 and P-glycoprotein, both critical for rivaroxaban clearance',
+    clinicalEffect: 'Increased rivaroxaban exposure by 150%+ with high bleeding risk',
+    management: 'Avoid combination. Use alternative antifungal or alternative anticoagulant.'
+  },
+  {
+    drug1: 'apixaban', drug2: 'rifampin', severity: 'contraindicated',
+    description: 'Dramatically reduced apixaban levels',
+    mechanism: 'Rifampin strongly induces CYP3A4 and P-glycoprotein, accelerating apixaban metabolism',
+    clinicalEffect: 'Reduced apixaban levels by ~54%, loss of anticoagulant protection',
+    management: 'Avoid combination. Use alternative antimycobacterial or switch to warfarin with dose adjustment.'
+  },
+  // Corticosteroid + NSAID
+  {
+    drug1: 'prednisone', drug2: 'ibuprofen', severity: 'moderate',
+    description: 'Increased risk of GI bleeding and ulceration',
+    mechanism: 'Both agents independently increase GI mucosal injury risk; corticosteroids impair mucosal healing',
+    clinicalEffect: 'Significantly increased risk of peptic ulcer and GI hemorrhage',
+    management: 'Add PPI prophylaxis if combination necessary. Monitor for GI symptoms. Use lowest doses for shortest duration.'
+  },
+  {
+    drug1: 'prednisone', drug2: 'naproxen', severity: 'moderate',
+    description: 'Increased risk of GI bleeding',
+    mechanism: 'Additive GI mucosal injury',
+    clinicalEffect: 'Elevated peptic ulcer and GI hemorrhage risk',
+    management: 'PPI prophylaxis recommended. Monitor for GI bleeding.'
+  },
+  // SNRI interactions
+  {
+    drug1: 'duloxetine', drug2: 'phenelzine', severity: 'contraindicated',
+    description: 'Risk of serotonin syndrome',
+    mechanism: 'Combined serotonergic activity from SNRI and MAOI',
+    clinicalEffect: 'Life-threatening serotonin syndrome',
+    management: 'NEVER combine. Allow 5-day washout after duloxetine; 2-week washout after MAOI.'
+  },
+  {
+    drug1: 'duloxetine', drug2: 'tramadol', severity: 'major',
+    description: 'Increased risk of serotonin syndrome and seizures',
+    mechanism: 'Both agents increase serotonin; duloxetine inhibits CYP2D6 metabolism of tramadol',
+    clinicalEffect: 'Risk of serotonin syndrome and lowered seizure threshold',
+    management: 'Use alternative analgesic. If combination necessary, use lowest doses with close monitoring.'
+  },
+  // Gabapentinoid + opioid
+  {
+    drug1: 'gabapentin', drug2: 'oxycodone', severity: 'major',
+    description: 'Increased risk of CNS depression and respiratory failure',
+    mechanism: 'Additive CNS depressant effects',
+    clinicalEffect: 'Excessive sedation, respiratory depression, death (FDA boxed warning consideration)',
+    management: 'If combination necessary, use lowest effective doses. Monitor respiratory status. Educate about sedation.'
+  },
+  {
+    drug1: 'pregabalin', drug2: 'oxycodone', severity: 'major',
+    description: 'Increased risk of CNS depression and respiratory failure',
+    mechanism: 'Additive CNS depressant effects',
+    clinicalEffect: 'Respiratory depression, excessive sedation',
+    management: 'Use lowest effective doses. Monitor for respiratory depression. Consider non-opioid alternatives.'
+  },
+  // Cyclosporine + ketoconazole
+  {
+    drug1: 'cyclosporine', drug2: 'ketoconazole', severity: 'major',
+    description: 'Significantly increased cyclosporine levels',
+    mechanism: 'Ketoconazole inhibits CYP3A4 and P-glycoprotein, dramatically reducing cyclosporine clearance',
+    clinicalEffect: 'Cyclosporine toxicity: nephrotoxicity, hypertension, neurotoxicity',
+    management: 'Reduce cyclosporine dose by 50-80%. Monitor cyclosporine trough levels closely.'
+  },
+  // Warfarin + phenytoin
+  {
+    drug1: 'warfarin', drug2: 'phenytoin', severity: 'major',
+    description: 'Complex bidirectional interaction affecting both drug levels',
+    mechanism: 'Phenytoin induces warfarin metabolism (CYP2C9/3A4); warfarin may initially displace phenytoin from protein binding',
+    clinicalEffect: 'Unpredictable changes in anticoagulation and seizure control',
+    management: 'Monitor INR and phenytoin levels frequently when starting/stopping either drug. Adjust doses based on levels.'
+  },
+  // Lithium + furosemide
+  {
+    drug1: 'lithium', drug2: 'furosemide', severity: 'major',
+    description: 'Increased lithium levels',
+    mechanism: 'Loop diuretics cause sodium and water loss, leading to compensatory proximal tubule reabsorption of lithium',
+    clinicalEffect: 'Lithium toxicity (tremor, confusion, seizures, renal failure)',
+    management: 'Monitor lithium levels when starting/adjusting diuretic. Consider dose reduction. Maintain adequate hydration.'
   },
 ];
 

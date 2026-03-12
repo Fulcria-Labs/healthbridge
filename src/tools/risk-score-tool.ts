@@ -5,11 +5,13 @@ import {
   calculateMELD,
   calculateCURB65,
   calculateGCS,
+  calculateEGFR,
+  calculateQSOFA,
   availableScores,
   type RiskScoreResult,
 } from '../data/risk-scores.js';
 
-export type ScoreName = 'CHA2DS2-VASc' | 'HEART' | 'Wells-PE' | 'MELD' | 'CURB-65' | 'GCS';
+export type ScoreName = 'CHA2DS2-VASc' | 'HEART' | 'Wells-PE' | 'MELD' | 'CURB-65' | 'GCS' | 'eGFR' | 'qSOFA';
 
 export function listAvailableScores() {
   return availableScores.map(s => ({
@@ -75,6 +77,20 @@ export function calculateRiskScore(scoreName: ScoreName, parameters: Record<stri
         eye_opening: Number(parameters.eye_opening) as 1 | 2 | 3 | 4,
         verbal_response: Number(parameters.verbal_response) as 1 | 2 | 3 | 4 | 5,
         motor_response: Number(parameters.motor_response) as 1 | 2 | 3 | 4 | 5 | 6,
+      });
+
+    case 'eGFR':
+      return calculateEGFR({
+        creatinine: Number(parameters.creatinine),
+        age: Number(parameters.age),
+        sex: parameters.sex as 'male' | 'female',
+      });
+
+    case 'qSOFA':
+      return calculateQSOFA({
+        respiratory_rate_22_or_more: Boolean(parameters.respiratory_rate_22_or_more),
+        altered_mental_status: Boolean(parameters.altered_mental_status),
+        systolic_bp_100_or_less: Boolean(parameters.systolic_bp_100_or_less),
       });
 
     default:

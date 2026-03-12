@@ -6,6 +6,8 @@ import {
   calculateMELD,
   calculateCURB65,
   calculateGCS,
+  calculateEGFR,
+  calculateQSOFA,
 } from '../src/data/risk-scores';
 import { calculateRiskScore, listAvailableScores } from '../src/tools/risk-score-tool';
 
@@ -255,12 +257,106 @@ describe('Glasgow Coma Scale', () => {
   });
 });
 
+describe('eGFR (CKD-EPI 2021)', () => {
+  it('calculates normal eGFR for healthy young person', () => {
+    const result = calculateEGFR({ creatinine: 0.9, age: 30, sex: 'male' });
+    expect(result.score).toBeGreaterThan(90);
+    expect(result.riskLevel).toBe('Normal');
+  });
+
+  it('calculates reduced eGFR for elevated creatinine', () => {
+    const result = calculateEGFR({ creatinine: 2.5, age: 65, sex: 'male' });
+    expect(result.score).toBeLessThan(30);
+    expect(['Moderate-Severe', 'Severe', 'Kidney Failure']).toContain(result.riskLevel);
+  });
+
+  it('calculates higher eGFR for females (sex coefficient)', () => {
+    const male = calculateEGFR({ creatinine: 1.0, age: 50, sex: 'male' });
+    const female = calculateEGFR({ creatinine: 1.0, age: 50, sex: 'female' });
+    // Females have higher eGFR at same creatinine due to lower muscle mass adjustment
+    expect(female.score).not.toBe(male.score);
+  });
+
+  it('decreases eGFR with age', () => {
+    const young = calculateEGFR({ creatinine: 1.0, age: 30, sex: 'male' });
+    const old = calculateEGFR({ creatinine: 1.0, age: 80, sex: 'male' });
+    expect(young.score).toBeGreaterThan(old.score);
+  });
+
+  it('identifies CKD stages correctly', () => {
+    // Stage G5 (kidney failure)
+    const g5 = calculateEGFR({ creatinine: 8.0, age: 60, sex: 'male' });
+    expect(g5.riskLevel).toBe('Kidney Failure');
+    expect(g5.recommendation).toContain('Dialysis');
+  });
+
+  it('includes CKD-EPI reference', () => {
+    const result = calculateEGFR({ creatinine: 1.0, age: 50, sex: 'male' });
+    expect(result.reference).toContain('Inker');
+  });
+});
+
+describe('qSOFA Score', () => {
+  it('calculates score 0 for no criteria', () => {
+    const result = calculateQSOFA({
+      respiratory_rate_22_or_more: false,
+      altered_mental_status: false,
+      systolic_bp_100_or_less: false,
+    });
+    expect(result.score).toBe(0);
+    expect(result.riskLevel).toBe('Low');
+  });
+
+  it('calculates score 3 for all criteria present', () => {
+    const result = calculateQSOFA({
+      respiratory_rate_22_or_more: true,
+      altered_mental_status: true,
+      systolic_bp_100_or_less: true,
+    });
+    expect(result.score).toBe(3);
+    expect(result.riskLevel).toBe('High');
+    expect(result.recommendation).toContain('sepsis');
+  });
+
+  it('flags high risk at score 2', () => {
+    const result = calculateQSOFA({
+      respiratory_rate_22_or_more: true,
+      altered_mental_status: true,
+      systolic_bp_100_or_less: false,
+    });
+    expect(result.score).toBe(2);
+    expect(result.riskLevel).toBe('High');
+  });
+
+  it('keeps low risk at score 1', () => {
+    const result = calculateQSOFA({
+      respiratory_rate_22_or_more: true,
+      altered_mental_status: false,
+      systolic_bp_100_or_less: false,
+    });
+    expect(result.score).toBe(1);
+    expect(result.riskLevel).toBe('Low');
+  });
+
+  it('includes Sepsis-3 reference', () => {
+    const result = calculateQSOFA({
+      respiratory_rate_22_or_more: false,
+      altered_mental_status: false,
+      systolic_bp_100_or_less: false,
+    });
+    expect(result.reference).toContain('Singer');
+    expect(result.reference).toContain('Sepsis-3');
+  });
+});
+
 describe('Risk Score Tool', () => {
   it('lists available scores', () => {
     const scores = listAvailableScores();
-    expect(scores.length).toBe(6);
+    expect(scores.length).toBe(8);
     expect(scores.map(s => s.name)).toContain('CHA2DS2-VASc');
     expect(scores.map(s => s.name)).toContain('HEART');
+    expect(scores.map(s => s.name)).toContain('eGFR');
+    expect(scores.map(s => s.name)).toContain('qSOFA');
   });
 
   it('calculates via generic interface', () => {
@@ -270,6 +366,24 @@ describe('Risk Score Tool', () => {
     });
     expect(result.scoreName).toBe('CHA₂DS₂-VASc');
     expect(result.score).toBeGreaterThan(0);
+  });
+
+  it('calculates eGFR via generic interface', () => {
+    const result = calculateRiskScore('eGFR', {
+      creatinine: 1.0, age: 50, sex: 'male',
+    });
+    expect(result.scoreName).toContain('eGFR');
+    expect(result.score).toBeGreaterThan(0);
+  });
+
+  it('calculates qSOFA via generic interface', () => {
+    const result = calculateRiskScore('qSOFA', {
+      respiratory_rate_22_or_more: true,
+      altered_mental_status: true,
+      systolic_bp_100_or_less: false,
+    });
+    expect(result.scoreName).toBe('qSOFA');
+    expect(result.score).toBe(2);
   });
 
   it('throws for unknown score', () => {

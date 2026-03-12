@@ -46,9 +46,9 @@ server.tool(
 // Tool 2: Clinical Risk Score Calculator
 server.tool(
   'calculate_risk_score',
-  'Calculate validated clinical risk scores. Available scores: CHA2DS2-VASc (stroke risk in AFib), HEART (cardiac events in chest pain), Wells-PE (pulmonary embolism probability), MELD/MELD-Na (liver disease severity), CURB-65 (pneumonia severity), GCS (consciousness level). Returns score, risk level, interpretation, and evidence-based recommendations.',
+  'Calculate validated clinical risk scores. Available scores: CHA2DS2-VASc (stroke risk in AFib), HEART (cardiac events in chest pain), Wells-PE (pulmonary embolism probability), MELD/MELD-Na (liver disease severity), CURB-65 (pneumonia severity), GCS (consciousness level), eGFR (kidney function CKD-EPI 2021), qSOFA (sepsis screening). Returns score, risk level, interpretation, and evidence-based recommendations.',
   {
-    score_name: z.enum(['CHA2DS2-VASc', 'HEART', 'Wells-PE', 'MELD', 'CURB-65', 'GCS']).describe('The clinical risk score to calculate'),
+    score_name: z.enum(['CHA2DS2-VASc', 'HEART', 'Wells-PE', 'MELD', 'CURB-65', 'GCS', 'eGFR', 'qSOFA']).describe('The clinical risk score to calculate'),
     parameters: z.record(z.string(), z.unknown()).describe('Score-specific parameters. Use list_risk_scores tool to see required parameters for each score.'),
   },
   async ({ score_name, parameters }) => {
@@ -107,6 +107,14 @@ server.tool(
         description: 'Glasgow Coma Scale',
         parameters: { eye_opening: '1-4', verbal_response: '1-5', motor_response: '1-6' },
       },
+      'eGFR': {
+        description: 'Estimated glomerular filtration rate (kidney function)',
+        parameters: { creatinine: 'number (mg/dL)', age: 'number', sex: '"male" or "female"' },
+      },
+      'qSOFA': {
+        description: 'Quick sepsis-related organ failure assessment',
+        parameters: { respiratory_rate_22_or_more: 'boolean', altered_mental_status: 'boolean', systolic_bp_100_or_less: 'boolean' },
+      },
     };
 
     return {
@@ -121,7 +129,7 @@ server.tool(
 // Tool 4: Lab Result Interpreter
 server.tool(
   'interpret_lab_result',
-  'Interpret a single laboratory test result. Returns reference range, urgency level (normal/borderline/abnormal/critical), clinical significance, and recommended actions. Supports CBC, BMP, liver function, cardiac markers, coagulation, thyroid, and inflammatory markers.',
+  'Interpret a single laboratory test result. Returns reference range, urgency level (normal/borderline/abnormal/critical), clinical significance, and recommended actions. Supports CBC, BMP, liver function, cardiac markers, coagulation, thyroid, inflammatory markers, lipid panel, calcium, magnesium, and procalcitonin.',
   {
     test: z.string().describe('Lab test name or code (e.g., "WBC", "hemoglobin", "potassium", "troponin", "TSH", "HbA1c")'),
     value: z.number().describe('The numerical test result value'),

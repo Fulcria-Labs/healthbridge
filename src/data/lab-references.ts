@@ -219,6 +219,112 @@ export const labReferences: LabReference[] = [
       poorly_controlled: { range: '≥9.0', meaning: 'Poorly controlled diabetes', action: 'Intensify therapy. Evaluate adherence, medication regimen, and barriers. Consider referral to endocrinology.' }
     }
   },
+  // Lipid Panel
+  {
+    testCode: 'TCHOL', testName: 'Total Cholesterol', aliases: ['total cholesterol', 'cholesterol'],
+    unit: 'mg/dL', normalRange: { low: 0, high: 200 },
+    category: 'Lipids',
+    interpretation: {
+      desirable: { range: '0-200', meaning: 'Desirable total cholesterol', action: 'No action required. Rescreen per guidelines.' },
+      borderline: { range: '201-239', meaning: 'Borderline high cholesterol', action: 'Lifestyle modification. Assess cardiovascular risk factors. Consider statin therapy based on ASCVD risk.' },
+      high: { range: '≥240', meaning: 'High cholesterol', action: 'Full lipid panel. ASCVD risk calculation. Lifestyle changes. Statin therapy likely indicated.' }
+    }
+  },
+  {
+    testCode: 'LDL', testName: 'LDL Cholesterol', aliases: ['ldl', 'low-density lipoprotein', 'bad cholesterol'],
+    unit: 'mg/dL', normalRange: { low: 0, high: 100 },
+    category: 'Lipids',
+    interpretation: {
+      optimal: { range: '0-70', meaning: 'Optimal LDL (goal for very high risk)', action: 'Optimal. Maintain current therapy.' },
+      near_optimal: { range: '71-100', meaning: 'Near optimal LDL', action: 'Adequate for most patients. Very high-risk patients may benefit from LDL <70.' },
+      borderline: { range: '101-129', meaning: 'Borderline high LDL', action: 'Lifestyle changes. Consider statin based on overall ASCVD risk.' },
+      high: { range: '130-189', meaning: 'High LDL', action: 'Statin therapy recommended for most patients. Intensify lifestyle modifications.' },
+      very_high: { range: '≥190', meaning: 'Very high LDL', action: 'High-intensity statin therapy. Evaluate for familial hypercholesterolemia. Consider PCSK9 inhibitor if refractory.' }
+    }
+  },
+  {
+    testCode: 'HDL', testName: 'HDL Cholesterol', aliases: ['hdl', 'high-density lipoprotein', 'good cholesterol'],
+    unit: 'mg/dL', normalRange: { low: 40, high: 100 },
+    category: 'Lipids',
+    interpretation: {
+      low: { range: '<40', meaning: 'Low HDL (cardiovascular risk factor)', action: 'Independent CVD risk factor. Lifestyle changes: exercise, weight loss, smoking cessation. Evaluate for metabolic syndrome.' },
+      normal: { range: '40-59', meaning: 'Normal HDL', action: 'Adequate. Continue healthy lifestyle.' },
+      high: { range: '≥60', meaning: 'High HDL (protective)', action: 'Considered protective against cardiovascular disease. No treatment needed.' }
+    }
+  },
+  {
+    testCode: 'TG', testName: 'Triglycerides', aliases: ['triglycerides', 'trig', 'trigs'],
+    unit: 'mg/dL', normalRange: { low: 0, high: 150 }, criticalRange: { high: 500 },
+    category: 'Lipids',
+    interpretation: {
+      normal: { range: '0-150', meaning: 'Normal triglycerides', action: 'No action required.' },
+      borderline: { range: '151-199', meaning: 'Borderline high triglycerides', action: 'Lifestyle modification: reduce refined carbs, alcohol, weight loss, exercise.' },
+      high: { range: '200-499', meaning: 'High triglycerides', action: 'Lifestyle changes. Consider fibrate or omega-3. Evaluate for secondary causes (diabetes, hypothyroidism, medications).' },
+      critical_high: { range: '≥500', meaning: 'Very high triglycerides', action: 'Risk of acute pancreatitis. Urgent treatment with fibrate. Very low-fat diet. Evaluate for familial hypertriglyceridemia.' }
+    }
+  },
+  // Calcium
+  {
+    testCode: 'CA', testName: 'Calcium (Total)', aliases: ['calcium', 'total calcium', 'serum calcium'],
+    unit: 'mg/dL', normalRange: { low: 8.5, high: 10.5 }, criticalRange: { low: 6.0, high: 13.0 },
+    category: 'Metabolic',
+    interpretation: {
+      critical_low: { range: '<6.0', meaning: 'Severe hypocalcemia', action: 'EMERGENCY. IV calcium gluconate. Cardiac monitoring. Evaluate for hypoparathyroidism, vitamin D deficiency, renal failure.' },
+      low: { range: '6.0-8.4', meaning: 'Hypocalcemia', action: 'Check albumin (correct calcium), ionized calcium, PTH, vitamin D, magnesium. Supplement as needed.' },
+      normal: { range: '8.5-10.5', meaning: 'Normal calcium', action: 'No action required.' },
+      high: { range: '10.6-12.9', meaning: 'Hypercalcemia', action: 'Check PTH, vitamin D, PTHrP. Most common causes: primary hyperparathyroidism and malignancy. IV fluids if symptomatic.' },
+      critical_high: { range: '≥13.0', meaning: 'Severe hypercalcemia', action: 'EMERGENCY. Aggressive IV hydration. Calcitonin. Consider bisphosphonate. Evaluate for malignancy.' }
+    }
+  },
+  // Magnesium
+  {
+    testCode: 'MG', testName: 'Magnesium', aliases: ['magnesium', 'mag', 'serum magnesium'],
+    unit: 'mg/dL', normalRange: { low: 1.7, high: 2.2 }, criticalRange: { low: 1.0, high: 4.0 },
+    category: 'Electrolytes',
+    interpretation: {
+      critical_low: { range: '<1.0', meaning: 'Severe hypomagnesemia', action: 'EMERGENCY. IV magnesium sulfate. Cardiac monitoring (risk of torsades de pointes). Check potassium (often co-depleted).' },
+      low: { range: '1.0-1.6', meaning: 'Hypomagnesemia', action: 'Oral or IV magnesium supplementation. Evaluate cause: diuretics, alcohol, GI losses, PPIs. Check calcium and potassium.' },
+      normal: { range: '1.7-2.2', meaning: 'Normal magnesium', action: 'No action required.' },
+      high: { range: '2.3-3.9', meaning: 'Hypermagnesemia', action: 'Usually iatrogenic. Stop magnesium sources. Check renal function.' },
+      critical_high: { range: '≥4.0', meaning: 'Severe hypermagnesemia', action: 'EMERGENCY. IV calcium gluconate as antagonist. Cardiac monitoring. Consider dialysis if renal failure.' }
+    }
+  },
+  // Alkaline Phosphatase
+  {
+    testCode: 'ALP', testName: 'Alkaline Phosphatase', aliases: ['alk phos', 'alkaline phosphatase', 'alp'],
+    unit: 'U/L', normalRange: { low: 44, high: 147 },
+    category: 'Hepatic',
+    interpretation: {
+      normal: { range: '44-147', meaning: 'Normal ALP', action: 'No action required.' },
+      mild: { range: '148-300', meaning: 'Mildly elevated ALP', action: 'Evaluate source: hepatic (check GGT) or bone (check calcium, vitamin D). Consider medications, pregnancy.' },
+      moderate: { range: '301-600', meaning: 'Moderately elevated ALP', action: 'Likely cholestatic liver disease or bone disorder. Liver imaging. Check GGT, bilirubin.' },
+      high: { range: '>600', meaning: 'Markedly elevated ALP', action: 'Biliary obstruction, infiltrative liver disease, or active bone disease. Urgent imaging. GI/hepatology referral.' }
+    }
+  },
+  // D-dimer
+  {
+    testCode: 'DDIMER', testName: 'D-dimer', aliases: ['d-dimer', 'fibrin degradation product'],
+    unit: 'ng/mL', normalRange: { low: 0, high: 500 },
+    category: 'Coagulation',
+    interpretation: {
+      normal: { range: '0-500', meaning: 'Normal D-dimer', action: 'Negative D-dimer effectively excludes PE/DVT in low-moderate pretest probability patients (high NPV).' },
+      elevated: { range: '501-2000', meaning: 'Elevated D-dimer', action: 'Cannot rule out VTE. Consider CT angiography or lower extremity ultrasound. Non-specific: also elevated in infection, surgery, malignancy, pregnancy.' },
+      markedly_elevated: { range: '>2000', meaning: 'Markedly elevated D-dimer', action: 'High suspicion for VTE, DIC, or major thrombotic event. Urgent imaging. Check coagulation panel for DIC.' }
+    }
+  },
+  // Procalcitonin
+  {
+    testCode: 'PCT', testName: 'Procalcitonin', aliases: ['procalcitonin', 'pct'],
+    unit: 'ng/mL', normalRange: { low: 0, high: 0.1 },
+    category: 'Inflammatory',
+    interpretation: {
+      normal: { range: '0-0.1', meaning: 'Normal procalcitonin', action: 'Bacterial infection unlikely. Consider viral etiology. Safe to withhold or discontinue antibiotics.' },
+      low_risk: { range: '0.1-0.25', meaning: 'Low probability of bacterial infection', action: 'Bacterial infection less likely. Antibiotic use discouraged unless clinical suspicion high.' },
+      possible: { range: '0.26-0.49', meaning: 'Possible bacterial infection', action: 'Bacterial infection possible. Consider short-course antibiotics. Repeat in 24-48 hours for trend.' },
+      likely: { range: '0.5-2.0', meaning: 'Bacterial infection likely', action: 'Initiate antibiotics. Cultures before treatment. Repeat procalcitonin to guide duration.' },
+      severe: { range: '>2.0', meaning: 'Severe bacterial infection/sepsis', action: 'Aggressive antibiotic therapy. Evaluate for source. Sepsis protocol.' }
+    }
+  },
 ];
 
 /**

@@ -417,6 +417,128 @@ export function calculateGCS(input: {
   };
 }
 
+/**
+ * eGFR (CKD-EPI 2021) - Estimated Glomerular Filtration Rate
+ * Race-free equation endorsed by NKF/ASN Task Force
+ */
+export function calculateEGFR(input: {
+  creatinine: number;  // mg/dL
+  age: number;
+  sex: 'male' | 'female';
+}): RiskScoreResult {
+  const components: Record<string, { value: number; description: string }> = {};
+
+  components['Creatinine'] = { value: input.creatinine, description: `${input.creatinine} mg/dL` };
+  components['Age'] = { value: input.age, description: `${input.age} years` };
+  components['Sex'] = { value: input.sex === 'female' ? 0 : 1, description: input.sex };
+
+  // CKD-EPI 2021 (race-free) equation
+  let egfr: number;
+  const scr = input.creatinine;
+
+  if (input.sex === 'female') {
+    const kappa = 0.7;
+    const alpha = -0.241;
+    const scrOverKappa = scr / kappa;
+    egfr = 142 * Math.pow(Math.min(scrOverKappa, 1), alpha) * Math.pow(Math.max(scrOverKappa, 1), -1.200) * Math.pow(0.9938, input.age) * 1.012;
+  } else {
+    const kappa = 0.9;
+    const alpha = -0.302;
+    const scrOverKappa = scr / kappa;
+    egfr = 142 * Math.pow(Math.min(scrOverKappa, 1), alpha) * Math.pow(Math.max(scrOverKappa, 1), -1.200) * Math.pow(0.9938, input.age);
+  }
+
+  egfr = Math.round(egfr);
+
+  let riskLevel: string;
+  let ckdStage: string;
+  let recommendation: string;
+
+  if (egfr >= 90) {
+    riskLevel = 'Normal';
+    ckdStage = 'G1 (Normal or high)';
+    recommendation = 'Normal kidney function. If proteinuria present, may still indicate CKD. Repeat annually if risk factors.';
+  } else if (egfr >= 60) {
+    riskLevel = 'Mild';
+    ckdStage = 'G2 (Mildly decreased)';
+    recommendation = 'Mildly decreased kidney function. Monitor annually. Check urine albumin-to-creatinine ratio. Manage cardiovascular risk factors.';
+  } else if (egfr >= 45) {
+    riskLevel = 'Moderate';
+    ckdStage = 'G3a (Mild-moderate decrease)';
+    recommendation = 'Refer to nephrology. Monitor every 6 months. Adjust medications for renal impairment. ACEI/ARB for proteinuria.';
+  } else if (egfr >= 30) {
+    riskLevel = 'Moderate-Severe';
+    ckdStage = 'G3b (Moderate-severe decrease)';
+    recommendation = 'Nephrology referral essential. Monitor every 3-6 months. Dose-adjust all renally cleared medications. Screen for CKD complications.';
+  } else if (egfr >= 15) {
+    riskLevel = 'Severe';
+    ckdStage = 'G4 (Severely decreased)';
+    recommendation = 'Prepare for renal replacement therapy. Nephrology co-management. Avoid nephrotoxins. Vascular access planning.';
+  } else {
+    riskLevel = 'Kidney Failure';
+    ckdStage = 'G5 (Kidney failure)';
+    recommendation = 'Dialysis or transplant evaluation needed. Urgent nephrology if not already engaged.';
+  }
+
+  return {
+    scoreName: 'eGFR (CKD-EPI 2021)',
+    score: egfr,
+    maxScore: 120,
+    riskLevel,
+    interpretation: `eGFR ${egfr} mL/min/1.73m². CKD Stage: ${ckdStage}.`,
+    recommendation,
+    components,
+    reference: 'Inker LA, et al. N Engl J Med 2021;385:1737-1749'
+  };
+}
+
+/**
+ * qSOFA Score for Sepsis Screening
+ * Quick Sequential Organ Failure Assessment
+ */
+export function calculateQSOFA(input: {
+  respiratory_rate_22_or_more: boolean;
+  altered_mental_status: boolean;
+  systolic_bp_100_or_less: boolean;
+}): RiskScoreResult {
+  const components: Record<string, { value: number; description: string }> = {};
+  let score = 0;
+
+  const criteria: Array<{ present: boolean; label: string }> = [
+    { present: input.respiratory_rate_22_or_more, label: 'Respiratory rate ≥ 22/min' },
+    { present: input.altered_mental_status, label: 'Altered mental status (GCS < 15)' },
+    { present: input.systolic_bp_100_or_less, label: 'Systolic BP ≤ 100 mmHg' },
+  ];
+
+  for (const criterion of criteria) {
+    const points = criterion.present ? 1 : 0;
+    components[criterion.label] = { value: points, description: criterion.present ? 'Present' : 'Absent' };
+    score += points;
+  }
+
+  let riskLevel: string;
+  let recommendation: string;
+
+  if (score <= 1) {
+    riskLevel = 'Low';
+    recommendation = 'Low risk of poor outcome. Continue monitoring. qSOFA alone does not diagnose sepsis - use clinical judgment.';
+  } else {
+    riskLevel = 'High';
+    recommendation = 'qSOFA ≥2 associated with 3-14x increased mortality. Evaluate for organ dysfunction (full SOFA). Consider ICU transfer. Obtain lactate, blood cultures. Initiate sepsis bundle if indicated.';
+  }
+
+  return {
+    scoreName: 'qSOFA',
+    score,
+    maxScore: 3,
+    riskLevel,
+    interpretation: `qSOFA ${score}/3. ${riskLevel} risk for sepsis-related poor outcomes.`,
+    recommendation,
+    components,
+    reference: 'Singer M, et al. JAMA 2016;315(8):801-810 (Sepsis-3)'
+  };
+}
+
 /** Available risk score calculators */
 export const availableScores = [
   { name: 'CHA2DS2-VASc', description: 'Stroke risk in atrial fibrillation', function: 'calculateCHA2DS2VASc' },
@@ -425,4 +547,6 @@ export const availableScores = [
   { name: 'MELD/MELD-Na', description: 'End-stage liver disease severity/transplant priority', function: 'calculateMELD' },
   { name: 'CURB-65', description: 'Community-acquired pneumonia severity', function: 'calculateCURB65' },
   { name: 'GCS', description: 'Glasgow Coma Scale for consciousness level', function: 'calculateGCS' },
+  { name: 'eGFR', description: 'Estimated glomerular filtration rate (CKD-EPI 2021)', function: 'calculateEGFR' },
+  { name: 'qSOFA', description: 'Quick sepsis-related organ failure assessment', function: 'calculateQSOFA' },
 ] as const;
