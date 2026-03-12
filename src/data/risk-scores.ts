@@ -990,6 +990,271 @@ export function calculateNEWS2(input: {
   };
 }
 
+/**
+ * HAS-BLED Score for Bleeding Risk on Anticoagulation
+ * Pairs with CHA₂DS₂-VASc for anticoagulation decision-making.
+ */
+export function calculateHASBLED(input: {
+  hypertension: boolean;
+  renal_disease: boolean;
+  liver_disease: boolean;
+  stroke_history: boolean;
+  bleeding_history: boolean;
+  labile_inr: boolean;
+  age_over_65: boolean;
+  antiplatelet_or_nsaid: boolean;
+  alcohol: boolean;
+}): RiskScoreResult {
+  const components: Record<string, { value: number; description: string }> = {};
+  let score = 0;
+
+  const items: Array<{ key: string; label: string; field: keyof typeof input }> = [
+    { key: 'H', label: 'Hypertension (uncontrolled SBP >160)', field: 'hypertension' },
+    { key: 'A', label: 'Abnormal renal function', field: 'renal_disease' },
+    { key: 'A', label: 'Abnormal liver function', field: 'liver_disease' },
+    { key: 'S', label: 'Stroke history', field: 'stroke_history' },
+    { key: 'B', label: 'Bleeding history/predisposition', field: 'bleeding_history' },
+    { key: 'L', label: 'Labile INR (TTR <60%)', field: 'labile_inr' },
+    { key: 'E', label: 'Elderly (age >65)', field: 'age_over_65' },
+    { key: 'D', label: 'Drugs (antiplatelet/NSAID)', field: 'antiplatelet_or_nsaid' },
+    { key: 'D', label: 'Alcohol excess', field: 'alcohol' },
+  ];
+
+  items.forEach((item, i) => {
+    const val = input[item.field] ? 1 : 0;
+    components[`${item.key} - ${item.label}`] = { value: val, description: input[item.field] ? 'Present' : 'Absent' };
+    score += val;
+  });
+
+  let riskLevel: string;
+  let recommendation: string;
+  if (score >= 3) {
+    riskLevel = 'High';
+    recommendation = 'High bleeding risk. Address modifiable risk factors (uncontrolled BP, labile INR, concomitant antiplatelet/NSAID, alcohol). High HAS-BLED is NOT a contraindication to anticoagulation — it identifies patients needing closer monitoring and risk factor modification.';
+  } else {
+    riskLevel = 'Low';
+    recommendation = 'Low-moderate bleeding risk. Proceed with anticoagulation if indicated by CHA₂DS₂-VASc. Standard monitoring. Review modifiable risk factors.';
+  }
+
+  return {
+    scoreName: 'HAS-BLED',
+    score,
+    maxScore: 9,
+    riskLevel,
+    interpretation: `HAS-BLED Score ${score}/9. ${riskLevel} bleeding risk. Annual major bleeding rate: ${score <= 1 ? '1.0-3.4%' : score === 2 ? '4.1%' : score === 3 ? '5.8%' : score === 4 ? '8.7%' : '>10%'}.`,
+    recommendation,
+    components,
+    reference: 'Pisters R, et al. A novel user-friendly score (HAS-BLED) to assess 1-year risk of major bleeding. Chest. 2010;138(5):1093-100.',
+  };
+}
+
+/**
+ * TIMI Risk Score for UA/NSTEMI
+ * Thrombolysis in Myocardial Infarction risk score for unstable angina/NSTEMI.
+ */
+export function calculateTIMI(input: {
+  age_65_or_over: boolean;
+  three_or_more_cad_risk_factors: boolean;
+  known_cad_stenosis_50_percent: boolean;
+  aspirin_use_past_7_days: boolean;
+  severe_angina_24h: boolean;
+  st_deviation: boolean;
+  elevated_cardiac_markers: boolean;
+}): RiskScoreResult {
+  const components: Record<string, { value: number; description: string }> = {};
+  let score = 0;
+
+  const items: Array<{ label: string; field: keyof typeof input }> = [
+    { label: 'Age ≥65 years', field: 'age_65_or_over' },
+    { label: '≥3 CAD risk factors (FHx, HTN, DM, dyslipidemia, smoking)', field: 'three_or_more_cad_risk_factors' },
+    { label: 'Known CAD (stenosis ≥50%)', field: 'known_cad_stenosis_50_percent' },
+    { label: 'Aspirin use in past 7 days', field: 'aspirin_use_past_7_days' },
+    { label: 'Severe angina (≥2 episodes in 24h)', field: 'severe_angina_24h' },
+    { label: 'ST deviation ≥0.5mm on ECG', field: 'st_deviation' },
+    { label: 'Elevated cardiac markers (troponin/CK-MB)', field: 'elevated_cardiac_markers' },
+  ];
+
+  items.forEach(item => {
+    const val = input[item.field] ? 1 : 0;
+    components[item.label] = { value: val, description: input[item.field] ? 'Present' : 'Absent' };
+    score += val;
+  });
+
+  let riskLevel: string;
+  let recommendation: string;
+  const riskPercent = [4.7, 4.7, 8.3, 13.2, 19.9, 26.2, 40.9, 40.9][score] ?? 40.9;
+
+  if (score <= 2) {
+    riskLevel = 'Low';
+    recommendation = 'Low risk of death, MI, or urgent revascularization at 14 days. Consider conservative management with non-invasive testing. Serial troponins and ECGs.';
+  } else if (score <= 4) {
+    riskLevel = 'Intermediate';
+    recommendation = 'Intermediate risk. Consider early invasive strategy (angiography within 24-72h). Dual antiplatelet therapy. Anticoagulation. Cardiology consultation.';
+  } else {
+    riskLevel = 'High';
+    recommendation = 'High risk of death, MI, or urgent revascularization. Early invasive strategy recommended (angiography within 24h). GP IIb/IIIa inhibitor consideration. ICU/CCU admission.';
+  }
+
+  return {
+    scoreName: 'TIMI',
+    score,
+    maxScore: 7,
+    riskLevel,
+    interpretation: `TIMI Score ${score}/7. ${riskLevel} risk. Estimated 14-day risk of death/MI/urgent revascularization: ${riskPercent}%.`,
+    recommendation,
+    components,
+    reference: 'Antman EM, et al. The TIMI risk score for unstable angina/non-ST elevation MI. JAMA. 2000;284(7):835-42.',
+  };
+}
+
+/**
+ * ABCD2 Score for TIA Stroke Risk
+ * Predicts short-term stroke risk after transient ischemic attack.
+ */
+export function calculateABCD2(input: {
+  age_60_or_over: boolean;
+  blood_pressure_elevated: boolean;
+  clinical_features: 'speech_impairment' | 'unilateral_weakness' | 'other';
+  duration_minutes: number;
+  diabetes: boolean;
+}): RiskScoreResult {
+  const components: Record<string, { value: number; description: string }> = {};
+  let score = 0;
+
+  // Age ≥60 (1 point)
+  const ageScore = input.age_60_or_over ? 1 : 0;
+  components['A - Age ≥60'] = { value: ageScore, description: input.age_60_or_over ? '≥60 years' : '<60 years' };
+  score += ageScore;
+
+  // Blood pressure ≥140/90 (1 point)
+  const bpScore = input.blood_pressure_elevated ? 1 : 0;
+  components['B - Blood Pressure ≥140/90'] = { value: bpScore, description: input.blood_pressure_elevated ? 'Elevated' : 'Normal' };
+  score += bpScore;
+
+  // Clinical features (0-2 points)
+  let clinicalScore: number;
+  let clinicalDesc: string;
+  if (input.clinical_features === 'unilateral_weakness') {
+    clinicalScore = 2;
+    clinicalDesc = 'Unilateral weakness';
+  } else if (input.clinical_features === 'speech_impairment') {
+    clinicalScore = 1;
+    clinicalDesc = 'Speech impairment without weakness';
+  } else {
+    clinicalScore = 0;
+    clinicalDesc = 'Other symptoms';
+  }
+  components['C - Clinical features'] = { value: clinicalScore, description: clinicalDesc };
+  score += clinicalScore;
+
+  // Duration (0-2 points)
+  let durScore: number;
+  let durDesc: string;
+  if (input.duration_minutes >= 60) {
+    durScore = 2;
+    durDesc = '≥60 minutes';
+  } else if (input.duration_minutes >= 10) {
+    durScore = 1;
+    durDesc = '10-59 minutes';
+  } else {
+    durScore = 0;
+    durDesc = '<10 minutes';
+  }
+  components['D - Duration'] = { value: durScore, description: durDesc };
+  score += durScore;
+
+  // Diabetes (1 point)
+  const dmScore = input.diabetes ? 1 : 0;
+  components['D - Diabetes'] = { value: dmScore, description: input.diabetes ? 'Present' : 'Absent' };
+  score += dmScore;
+
+  let riskLevel: string;
+  let recommendation: string;
+  if (score <= 3) {
+    riskLevel = 'Low';
+    recommendation = 'Low risk of stroke in 2 days (~1%). Consider outpatient workup with urgent neurology follow-up within 24-48h. Start antiplatelet therapy. Vascular imaging recommended.';
+  } else if (score <= 5) {
+    riskLevel = 'Moderate';
+    recommendation = 'Moderate risk of stroke in 2 days (~4%). Hospital admission for observation and expedited workup. Brain imaging, vascular imaging, cardiac monitoring. Antiplatelet therapy.';
+  } else {
+    riskLevel = 'High';
+    recommendation = 'High risk of stroke in 2 days (~8%). Hospital admission mandatory. Urgent brain and vascular imaging. Neurology consultation. Consider IV thrombolysis eligibility assessment.';
+  }
+
+  return {
+    scoreName: 'ABCD2',
+    score,
+    maxScore: 7,
+    riskLevel,
+    interpretation: `ABCD2 Score ${score}/7. ${riskLevel} risk. 2-day stroke risk: ${score <= 3 ? '~1.0%' : score <= 5 ? '~4.1%' : '~8.1%'}. 7-day stroke risk: ${score <= 3 ? '~1.2%' : score <= 5 ? '~5.9%' : '~11.7%'}.`,
+    recommendation,
+    components,
+    reference: 'Johnston SC, et al. Validation and refinement of scores to predict very early stroke risk after TIA. Lancet. 2007;369(9558):283-92.',
+  };
+}
+
+/**
+ * BMI Calculator with WHO Classification
+ * Basic but frequently needed clinical calculation.
+ */
+export function calculateBMI(input: {
+  weight_kg: number;
+  height_cm: number;
+}): RiskScoreResult {
+  const heightM = input.height_cm / 100;
+  const bmi = input.weight_kg / (heightM * heightM);
+  const roundedBMI = Math.round(bmi * 10) / 10;
+
+  const components: Record<string, { value: number; description: string }> = {
+    'Weight': { value: input.weight_kg, description: `${input.weight_kg} kg` },
+    'Height': { value: input.height_cm, description: `${input.height_cm} cm (${heightM.toFixed(2)} m)` },
+    'BMI': { value: roundedBMI, description: `${roundedBMI} kg/m²` },
+  };
+
+  let riskLevel: string;
+  let classification: string;
+  let recommendation: string;
+
+  if (bmi < 16) {
+    riskLevel = 'Critical'; classification = 'Severe thinness';
+    recommendation = 'Severe underweight. Evaluate for malnutrition, eating disorders, malabsorption, or underlying disease. Nutritional supplementation. Consider refeeding syndrome risk.';
+  } else if (bmi < 17) {
+    riskLevel = 'High'; classification = 'Moderate thinness';
+    recommendation = 'Moderately underweight. Nutritional assessment recommended. Evaluate for underlying causes.';
+  } else if (bmi < 18.5) {
+    riskLevel = 'Moderate'; classification = 'Mild thinness';
+    recommendation = 'Mildly underweight. Monitor nutritional status. Consider dietary counseling.';
+  } else if (bmi < 25) {
+    riskLevel = 'Normal'; classification = 'Normal weight';
+    recommendation = 'Normal BMI. Maintain healthy lifestyle with balanced diet and regular physical activity.';
+  } else if (bmi < 30) {
+    riskLevel = 'Low-Moderate'; classification = 'Overweight (Pre-obese)';
+    recommendation = 'Overweight. Lifestyle modification recommended: dietary changes, increased physical activity. Screen for metabolic syndrome. Calculate ASCVD risk.';
+  } else if (bmi < 35) {
+    riskLevel = 'Moderate'; classification = 'Obese class I';
+    recommendation = 'Obesity class I. Structured weight management program. Screen for type 2 diabetes, hypertension, dyslipidemia. Consider metabolic syndrome evaluation.';
+  } else if (bmi < 40) {
+    riskLevel = 'High'; classification = 'Obese class II';
+    recommendation = 'Obesity class II. Comprehensive weight management including behavioral therapy and dietary intervention. Consider pharmacotherapy. Screen for comorbidities.';
+  } else {
+    riskLevel = 'Very High'; classification = 'Obese class III (Morbid)';
+    recommendation = 'Morbid obesity. Comprehensive evaluation for bariatric surgery eligibility. Multidisciplinary management. Aggressive comorbidity screening and management.';
+  }
+
+  components['WHO Classification'] = { value: roundedBMI, description: classification };
+
+  return {
+    scoreName: 'BMI',
+    score: roundedBMI,
+    maxScore: 100,
+    riskLevel,
+    interpretation: `BMI ${roundedBMI} kg/m². WHO Classification: ${classification}.`,
+    recommendation,
+    components,
+    reference: 'WHO. Body mass index - BMI. Global Database on Body Mass Index, 2006.',
+  };
+}
+
 /** Available risk score calculators */
 export const availableScores = [
   { name: 'CHA2DS2-VASc', description: 'Stroke risk in atrial fibrillation', function: 'calculateCHA2DS2VASc' },
@@ -1004,4 +1269,8 @@ export const availableScores = [
   { name: 'Child-Pugh', description: 'Chronic liver disease classification and prognosis', function: 'calculateChildPugh' },
   { name: 'ASCVD', description: '10-year atherosclerotic cardiovascular disease risk (Pooled Cohort Equations)', function: 'calculateASCVD' },
   { name: 'NEWS2', description: 'National Early Warning Score 2 for acute deterioration detection', function: 'calculateNEWS2' },
+  { name: 'HAS-BLED', description: 'Bleeding risk on anticoagulation (pairs with CHA2DS2-VASc)', function: 'calculateHASBLED' },
+  { name: 'TIMI', description: 'TIMI risk score for UA/NSTEMI (14-day event risk)', function: 'calculateTIMI' },
+  { name: 'ABCD2', description: 'Short-term stroke risk after TIA', function: 'calculateABCD2' },
+  { name: 'BMI', description: 'Body mass index with WHO classification', function: 'calculateBMI' },
 ] as const;

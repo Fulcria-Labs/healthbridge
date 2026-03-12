@@ -19,6 +19,8 @@ import { checkDrugInteractions } from './tools/drug-interaction-tool.js';
 import { calculateRiskScore, listAvailableScores, type ScoreName } from './tools/risk-score-tool.js';
 import { interpretSingleLab, interpretPanel, listAvailableTests } from './tools/lab-interpreter-tool.js';
 import { getPatientSummary } from './tools/patient-summary-tool.js';
+import { registerResources } from './resources.js';
+import { registerPrompts } from './prompts.js';
 
 const server = new McpServer({
   name: 'healthbridge',
@@ -46,9 +48,9 @@ server.tool(
 // Tool 2: Clinical Risk Score Calculator
 server.tool(
   'calculate_risk_score',
-  'Calculate validated clinical risk scores. Available scores: CHA2DS2-VASc (stroke risk in AFib), HEART (cardiac events in chest pain), Wells-PE (pulmonary embolism probability), MELD/MELD-Na (liver disease severity), CURB-65 (pneumonia severity), GCS (consciousness level), eGFR (kidney function CKD-EPI 2021), qSOFA (sepsis screening), SOFA (ICU organ failure assessment), Child-Pugh (chronic liver disease classification), ASCVD (10-year cardiovascular risk), NEWS2 (acute deterioration detection). Returns score, risk level, interpretation, and evidence-based recommendations.',
+  'Calculate validated clinical risk scores. Available scores: CHA2DS2-VASc (stroke risk in AFib), HEART (cardiac events in chest pain), Wells-PE (pulmonary embolism probability), MELD/MELD-Na (liver disease severity), CURB-65 (pneumonia severity), GCS (consciousness level), eGFR (kidney function CKD-EPI 2021), qSOFA (sepsis screening), SOFA (ICU organ failure assessment), Child-Pugh (chronic liver disease classification), ASCVD (10-year cardiovascular risk), NEWS2 (acute deterioration detection), HAS-BLED (bleeding risk on anticoagulation), TIMI (UA/NSTEMI risk), ABCD2 (TIA stroke risk), BMI (body mass index). Returns score, risk level, interpretation, and evidence-based recommendations.',
   {
-    score_name: z.enum(['CHA2DS2-VASc', 'HEART', 'Wells-PE', 'MELD', 'CURB-65', 'GCS', 'eGFR', 'qSOFA', 'SOFA', 'Child-Pugh', 'ASCVD', 'NEWS2']).describe('The clinical risk score to calculate'),
+    score_name: z.enum(['CHA2DS2-VASc', 'HEART', 'Wells-PE', 'MELD', 'CURB-65', 'GCS', 'eGFR', 'qSOFA', 'SOFA', 'Child-Pugh', 'ASCVD', 'NEWS2', 'HAS-BLED', 'TIMI', 'ABCD2', 'BMI']).describe('The clinical risk score to calculate'),
     parameters: z.record(z.string(), z.unknown()).describe('Score-specific parameters. Use list_risk_scores tool to see required parameters for each score.'),
   },
   async ({ score_name, parameters }) => {
@@ -130,6 +132,22 @@ server.tool(
       'NEWS2': {
         description: 'National Early Warning Score 2 - acute deterioration detection',
         parameters: { respiratory_rate: 'number (breaths/min)', spo2: 'number (%)', on_supplemental_o2: 'boolean', spo2_scale2: 'boolean (true for hypercapnic respiratory failure target SpO2 88-92%)', systolic_bp: 'number (mmHg)', heart_rate: 'number (bpm)', consciousness: '"alert", "confusion", "voice", "pain", or "unresponsive"', temperature: 'number (°C)' },
+      },
+      'HAS-BLED': {
+        description: 'Bleeding risk on anticoagulation (pairs with CHA2DS2-VASc)',
+        parameters: { hypertension: 'boolean (uncontrolled SBP >160)', renal_disease: 'boolean', liver_disease: 'boolean', stroke_history: 'boolean', bleeding_history: 'boolean', labile_inr: 'boolean (TTR <60%)', age_over_65: 'boolean', antiplatelet_or_nsaid: 'boolean', alcohol: 'boolean' },
+      },
+      'TIMI': {
+        description: 'TIMI risk score for UA/NSTEMI',
+        parameters: { age_65_or_over: 'boolean', three_or_more_cad_risk_factors: 'boolean', known_cad_stenosis_50_percent: 'boolean', aspirin_use_past_7_days: 'boolean', severe_angina_24h: 'boolean', st_deviation: 'boolean', elevated_cardiac_markers: 'boolean' },
+      },
+      'ABCD2': {
+        description: 'Short-term stroke risk after TIA',
+        parameters: { age_60_or_over: 'boolean', blood_pressure_elevated: 'boolean (≥140/90)', clinical_features: '"speech_impairment", "unilateral_weakness", or "other"', duration_minutes: 'number', diabetes: 'boolean' },
+      },
+      'BMI': {
+        description: 'Body mass index with WHO classification',
+        parameters: { weight_kg: 'number (kg)', height_cm: 'number (cm)' },
       },
     };
 
@@ -320,6 +338,12 @@ server.tool(
     };
   }
 );
+
+// Register MCP Resources (clinical guidelines, formulary, reference data)
+registerResources(server);
+
+// Register MCP Prompts (clinical workflow templates)
+registerPrompts(server);
 
 // Start the server
 async function main() {

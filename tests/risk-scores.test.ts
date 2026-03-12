@@ -12,6 +12,10 @@ import {
   calculateChildPugh,
   calculateASCVD,
   calculateNEWS2,
+  calculateHASBLED,
+  calculateTIMI,
+  calculateABCD2,
+  calculateBMI,
 } from '../src/data/risk-scores';
 import { calculateRiskScore, listAvailableScores } from '../src/tools/risk-score-tool';
 
@@ -613,7 +617,7 @@ describe('ASCVD Risk Calculator', () => {
 describe('Risk Score Tool', () => {
   it('lists available scores', () => {
     const scores = listAvailableScores();
-    expect(scores.length).toBe(12);
+    expect(scores.length).toBe(16);
     expect(scores.map(s => s.name)).toContain('CHA2DS2-VASc');
     expect(scores.map(s => s.name)).toContain('HEART');
     expect(scores.map(s => s.name)).toContain('eGFR');
@@ -881,5 +885,310 @@ describe('NEWS2 - National Early Warning Score 2', () => {
   it('includes reference to RCP 2017', () => {
     const result = calculateNEWS2(normalVitals);
     expect(result.reference).toContain('Royal College of Physicians');
+  });
+});
+
+describe('HAS-BLED Score', () => {
+  const noRiskFactors = {
+    hypertension: false, renal_disease: false, liver_disease: false,
+    stroke_history: false, bleeding_history: false, labile_inr: false,
+    age_over_65: false, antiplatelet_or_nsaid: false, alcohol: false,
+  };
+
+  it('calculates score 0 with no risk factors', () => {
+    const result = calculateHASBLED(noRiskFactors);
+    expect(result.score).toBe(0);
+    expect(result.riskLevel).toBe('Low');
+    expect(result.scoreName).toBe('HAS-BLED');
+    expect(result.maxScore).toBe(9);
+  });
+
+  it('calculates score 1 per risk factor', () => {
+    const result = calculateHASBLED({ ...noRiskFactors, hypertension: true });
+    expect(result.score).toBe(1);
+  });
+
+  it('classifies score ≥3 as high risk', () => {
+    const result = calculateHASBLED({
+      ...noRiskFactors, hypertension: true, renal_disease: true, bleeding_history: true,
+    });
+    expect(result.score).toBe(3);
+    expect(result.riskLevel).toBe('High');
+  });
+
+  it('calculates maximum score of 9', () => {
+    const result = calculateHASBLED({
+      hypertension: true, renal_disease: true, liver_disease: true,
+      stroke_history: true, bleeding_history: true, labile_inr: true,
+      age_over_65: true, antiplatelet_or_nsaid: true, alcohol: true,
+    });
+    expect(result.score).toBe(9);
+  });
+
+  it('includes annual bleeding rate in interpretation', () => {
+    const result = calculateHASBLED(noRiskFactors);
+    expect(result.interpretation).toContain('bleeding risk');
+  });
+
+  it('notes that high score is not contraindication', () => {
+    const result = calculateHASBLED({
+      ...noRiskFactors, hypertension: true, renal_disease: true, bleeding_history: true,
+    });
+    expect(result.recommendation).toContain('NOT a contraindication');
+  });
+
+  it('includes Pisters reference', () => {
+    const result = calculateHASBLED(noRiskFactors);
+    expect(result.reference).toContain('Pisters');
+  });
+
+  it('via generic interface', () => {
+    const result = calculateRiskScore('HAS-BLED', {
+      hypertension: true, renal_disease: false, liver_disease: false,
+      stroke_history: false, bleeding_history: false, labile_inr: false,
+      age_over_65: true, antiplatelet_or_nsaid: false, alcohol: false,
+    });
+    expect(result.scoreName).toBe('HAS-BLED');
+    expect(result.score).toBe(2);
+  });
+});
+
+describe('TIMI Risk Score', () => {
+  const noRiskFactors = {
+    age_65_or_over: false, three_or_more_cad_risk_factors: false,
+    known_cad_stenosis_50_percent: false, aspirin_use_past_7_days: false,
+    severe_angina_24h: false, st_deviation: false, elevated_cardiac_markers: false,
+  };
+
+  it('calculates score 0 with no risk factors', () => {
+    const result = calculateTIMI(noRiskFactors);
+    expect(result.score).toBe(0);
+    expect(result.riskLevel).toBe('Low');
+    expect(result.scoreName).toBe('TIMI');
+    expect(result.maxScore).toBe(7);
+  });
+
+  it('calculates intermediate risk (3-4)', () => {
+    const result = calculateTIMI({
+      ...noRiskFactors,
+      age_65_or_over: true, three_or_more_cad_risk_factors: true,
+      aspirin_use_past_7_days: true,
+    });
+    expect(result.score).toBe(3);
+    expect(result.riskLevel).toBe('Intermediate');
+  });
+
+  it('calculates high risk (5-7)', () => {
+    const result = calculateTIMI({
+      age_65_or_over: true, three_or_more_cad_risk_factors: true,
+      known_cad_stenosis_50_percent: true, aspirin_use_past_7_days: true,
+      severe_angina_24h: true, st_deviation: false, elevated_cardiac_markers: false,
+    });
+    expect(result.score).toBe(5);
+    expect(result.riskLevel).toBe('High');
+  });
+
+  it('calculates maximum score of 7', () => {
+    const result = calculateTIMI({
+      age_65_or_over: true, three_or_more_cad_risk_factors: true,
+      known_cad_stenosis_50_percent: true, aspirin_use_past_7_days: true,
+      severe_angina_24h: true, st_deviation: true, elevated_cardiac_markers: true,
+    });
+    expect(result.score).toBe(7);
+    expect(result.riskLevel).toBe('High');
+  });
+
+  it('includes 14-day risk percentage in interpretation', () => {
+    const result = calculateTIMI(noRiskFactors);
+    expect(result.interpretation).toContain('14-day risk');
+  });
+
+  it('recommends early invasive strategy for high risk', () => {
+    const result = calculateTIMI({
+      ...noRiskFactors,
+      age_65_or_over: true, three_or_more_cad_risk_factors: true,
+      known_cad_stenosis_50_percent: true, st_deviation: true, elevated_cardiac_markers: true,
+    });
+    expect(result.recommendation).toContain('invasive');
+  });
+
+  it('includes Antman reference', () => {
+    const result = calculateTIMI(noRiskFactors);
+    expect(result.reference).toContain('Antman');
+  });
+
+  it('via generic interface', () => {
+    const result = calculateRiskScore('TIMI', {
+      age_65_or_over: true, three_or_more_cad_risk_factors: false,
+      known_cad_stenosis_50_percent: false, aspirin_use_past_7_days: false,
+      severe_angina_24h: false, st_deviation: false, elevated_cardiac_markers: false,
+    });
+    expect(result.scoreName).toBe('TIMI');
+    expect(result.score).toBe(1);
+  });
+});
+
+describe('ABCD2 Score', () => {
+  it('calculates score 0 for low-risk TIA', () => {
+    const result = calculateABCD2({
+      age_60_or_over: false, blood_pressure_elevated: false,
+      clinical_features: 'other', duration_minutes: 5, diabetes: false,
+    });
+    expect(result.score).toBe(0);
+    expect(result.riskLevel).toBe('Low');
+    expect(result.scoreName).toBe('ABCD2');
+    expect(result.maxScore).toBe(7);
+  });
+
+  it('scores age ≥60 as 1 point', () => {
+    const result = calculateABCD2({
+      age_60_or_over: true, blood_pressure_elevated: false,
+      clinical_features: 'other', duration_minutes: 5, diabetes: false,
+    });
+    expect(result.score).toBe(1);
+  });
+
+  it('scores unilateral weakness as 2 points', () => {
+    const result = calculateABCD2({
+      age_60_or_over: false, blood_pressure_elevated: false,
+      clinical_features: 'unilateral_weakness', duration_minutes: 5, diabetes: false,
+    });
+    expect(result.score).toBe(2);
+  });
+
+  it('scores speech impairment as 1 point', () => {
+    const result = calculateABCD2({
+      age_60_or_over: false, blood_pressure_elevated: false,
+      clinical_features: 'speech_impairment', duration_minutes: 5, diabetes: false,
+    });
+    expect(result.score).toBe(1);
+  });
+
+  it('scores duration 10-59 min as 1 point', () => {
+    const result = calculateABCD2({
+      age_60_or_over: false, blood_pressure_elevated: false,
+      clinical_features: 'other', duration_minutes: 30, diabetes: false,
+    });
+    expect(result.score).toBe(1);
+  });
+
+  it('scores duration ≥60 min as 2 points', () => {
+    const result = calculateABCD2({
+      age_60_or_over: false, blood_pressure_elevated: false,
+      clinical_features: 'other', duration_minutes: 90, diabetes: false,
+    });
+    expect(result.score).toBe(2);
+  });
+
+  it('classifies moderate risk (4-5)', () => {
+    const result = calculateABCD2({
+      age_60_or_over: true, blood_pressure_elevated: true,
+      clinical_features: 'unilateral_weakness', duration_minutes: 5, diabetes: false,
+    });
+    expect(result.score).toBe(4);
+    expect(result.riskLevel).toBe('Moderate');
+  });
+
+  it('classifies high risk (6-7)', () => {
+    const result = calculateABCD2({
+      age_60_or_over: true, blood_pressure_elevated: true,
+      clinical_features: 'unilateral_weakness', duration_minutes: 90, diabetes: true,
+    });
+    expect(result.score).toBe(7);
+    expect(result.riskLevel).toBe('High');
+  });
+
+  it('includes 2-day and 7-day stroke risk', () => {
+    const result = calculateABCD2({
+      age_60_or_over: false, blood_pressure_elevated: false,
+      clinical_features: 'other', duration_minutes: 5, diabetes: false,
+    });
+    expect(result.interpretation).toContain('2-day stroke risk');
+    expect(result.interpretation).toContain('7-day stroke risk');
+  });
+
+  it('includes Johnston reference', () => {
+    const result = calculateABCD2({
+      age_60_or_over: false, blood_pressure_elevated: false,
+      clinical_features: 'other', duration_minutes: 5, diabetes: false,
+    });
+    expect(result.reference).toContain('Johnston');
+  });
+
+  it('via generic interface', () => {
+    const result = calculateRiskScore('ABCD2', {
+      age_60_or_over: true, blood_pressure_elevated: true,
+      clinical_features: 'speech_impairment', duration_minutes: 45, diabetes: true,
+    });
+    expect(result.scoreName).toBe('ABCD2');
+    expect(result.score).toBe(5);
+  });
+});
+
+describe('BMI Calculator', () => {
+  it('calculates normal BMI', () => {
+    const result = calculateBMI({ weight_kg: 70, height_cm: 175 });
+    expect(result.score).toBeCloseTo(22.9, 1);
+    expect(result.riskLevel).toBe('Normal');
+    expect(result.scoreName).toBe('BMI');
+  });
+
+  it('classifies severe thinness (BMI <16)', () => {
+    const result = calculateBMI({ weight_kg: 40, height_cm: 170 });
+    expect(result.score).toBeLessThan(16);
+    expect(result.riskLevel).toBe('Critical');
+  });
+
+  it('classifies moderate thinness (BMI 16-17)', () => {
+    const result = calculateBMI({ weight_kg: 48, height_cm: 170 });
+    expect(result.score).toBeGreaterThanOrEqual(16);
+    expect(result.score).toBeLessThan(17);
+    expect(result.riskLevel).toBe('High');
+  });
+
+  it('classifies mild thinness (BMI 17-18.5)', () => {
+    const result = calculateBMI({ weight_kg: 54, height_cm: 175 });
+    expect(result.score).toBeGreaterThanOrEqual(17);
+    expect(result.score).toBeLessThan(18.5);
+    expect(result.riskLevel).toBe('Moderate');
+  });
+
+  it('classifies overweight (BMI 25-30)', () => {
+    const result = calculateBMI({ weight_kg: 85, height_cm: 175 });
+    expect(result.score).toBeGreaterThanOrEqual(25);
+    expect(result.score).toBeLessThan(30);
+    expect(result.riskLevel).toBe('Low-Moderate');
+  });
+
+  it('classifies obese class I (BMI 30-35)', () => {
+    const result = calculateBMI({ weight_kg: 100, height_cm: 175 });
+    expect(result.score).toBeGreaterThanOrEqual(30);
+    expect(result.score).toBeLessThan(35);
+    expect(result.riskLevel).toBe('Moderate');
+  });
+
+  it('classifies obese class II (BMI 35-40)', () => {
+    const result = calculateBMI({ weight_kg: 115, height_cm: 175 });
+    expect(result.score).toBeGreaterThanOrEqual(35);
+    expect(result.score).toBeLessThan(40);
+    expect(result.riskLevel).toBe('High');
+  });
+
+  it('classifies morbid obesity (BMI ≥40)', () => {
+    const result = calculateBMI({ weight_kg: 130, height_cm: 170 });
+    expect(result.score).toBeGreaterThanOrEqual(40);
+    expect(result.riskLevel).toBe('Very High');
+    expect(result.recommendation).toContain('bariatric');
+  });
+
+  it('includes WHO classification', () => {
+    const result = calculateBMI({ weight_kg: 70, height_cm: 175 });
+    expect(result.interpretation).toContain('WHO Classification');
+  });
+
+  it('via generic interface', () => {
+    const result = calculateRiskScore('BMI', { weight_kg: 70, height_cm: 175 });
+    expect(result.scoreName).toBe('BMI');
+    expect(result.score).toBeCloseTo(22.9, 1);
   });
 });

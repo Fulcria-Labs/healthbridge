@@ -11,11 +11,15 @@ import {
   calculateChildPugh,
   calculateASCVD,
   calculateNEWS2,
+  calculateHASBLED,
+  calculateTIMI,
+  calculateABCD2,
+  calculateBMI,
   availableScores,
   type RiskScoreResult,
 } from '../data/risk-scores.js';
 
-export type ScoreName = 'CHA2DS2-VASc' | 'HEART' | 'Wells-PE' | 'MELD' | 'CURB-65' | 'GCS' | 'eGFR' | 'qSOFA' | 'SOFA' | 'Child-Pugh' | 'ASCVD' | 'NEWS2';
+export type ScoreName = 'CHA2DS2-VASc' | 'HEART' | 'Wells-PE' | 'MELD' | 'CURB-65' | 'GCS' | 'eGFR' | 'qSOFA' | 'SOFA' | 'Child-Pugh' | 'ASCVD' | 'NEWS2' | 'HAS-BLED' | 'TIMI' | 'ABCD2' | 'BMI';
 
 export function listAvailableScores() {
   return availableScores.map(s => ({
@@ -141,6 +145,45 @@ export function calculateRiskScore(scoreName: ScoreName, parameters: Record<stri
         heart_rate: Number(parameters.heart_rate),
         consciousness: parameters.consciousness as 'alert' | 'confusion' | 'voice' | 'pain' | 'unresponsive',
         temperature: Number(parameters.temperature),
+      });
+
+    case 'HAS-BLED':
+      return calculateHASBLED({
+        hypertension: Boolean(parameters.hypertension),
+        renal_disease: Boolean(parameters.renal_disease),
+        liver_disease: Boolean(parameters.liver_disease),
+        stroke_history: Boolean(parameters.stroke_history),
+        bleeding_history: Boolean(parameters.bleeding_history),
+        labile_inr: Boolean(parameters.labile_inr),
+        age_over_65: Boolean(parameters.age_over_65),
+        antiplatelet_or_nsaid: Boolean(parameters.antiplatelet_or_nsaid),
+        alcohol: Boolean(parameters.alcohol),
+      });
+
+    case 'TIMI':
+      return calculateTIMI({
+        age_65_or_over: Boolean(parameters.age_65_or_over),
+        three_or_more_cad_risk_factors: Boolean(parameters.three_or_more_cad_risk_factors),
+        known_cad_stenosis_50_percent: Boolean(parameters.known_cad_stenosis_50_percent),
+        aspirin_use_past_7_days: Boolean(parameters.aspirin_use_past_7_days),
+        severe_angina_24h: Boolean(parameters.severe_angina_24h),
+        st_deviation: Boolean(parameters.st_deviation),
+        elevated_cardiac_markers: Boolean(parameters.elevated_cardiac_markers),
+      });
+
+    case 'ABCD2':
+      return calculateABCD2({
+        age_60_or_over: Boolean(parameters.age_60_or_over),
+        blood_pressure_elevated: Boolean(parameters.blood_pressure_elevated),
+        clinical_features: parameters.clinical_features as 'speech_impairment' | 'unilateral_weakness' | 'other',
+        duration_minutes: Number(parameters.duration_minutes),
+        diabetes: Boolean(parameters.diabetes),
+      });
+
+    case 'BMI':
+      return calculateBMI({
+        weight_kg: Number(parameters.weight_kg),
+        height_cm: Number(parameters.height_cm),
       });
 
     default:
