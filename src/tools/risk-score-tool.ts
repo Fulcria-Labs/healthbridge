@@ -10,11 +10,12 @@ import {
   calculateSOFA,
   calculateChildPugh,
   calculateASCVD,
+  calculateNEWS2,
   availableScores,
   type RiskScoreResult,
 } from '../data/risk-scores.js';
 
-export type ScoreName = 'CHA2DS2-VASc' | 'HEART' | 'Wells-PE' | 'MELD' | 'CURB-65' | 'GCS' | 'eGFR' | 'qSOFA' | 'SOFA' | 'Child-Pugh' | 'ASCVD';
+export type ScoreName = 'CHA2DS2-VASc' | 'HEART' | 'Wells-PE' | 'MELD' | 'CURB-65' | 'GCS' | 'eGFR' | 'qSOFA' | 'SOFA' | 'Child-Pugh' | 'ASCVD' | 'NEWS2';
 
 export function listAvailableScores() {
   return availableScores.map(s => ({
@@ -128,6 +129,18 @@ export function calculateRiskScore(scoreName: ScoreName, parameters: Record<stri
         on_bp_treatment: Boolean(parameters.on_bp_treatment),
         diabetes: Boolean(parameters.diabetes),
         smoker: Boolean(parameters.smoker),
+      });
+
+    case 'NEWS2':
+      return calculateNEWS2({
+        respiratory_rate: Number(parameters.respiratory_rate),
+        spo2: Number(parameters.spo2),
+        on_supplemental_o2: Boolean(parameters.on_supplemental_o2),
+        spo2_scale2: Boolean(parameters.spo2_scale2),
+        systolic_bp: Number(parameters.systolic_bp),
+        heart_rate: Number(parameters.heart_rate),
+        consciousness: parameters.consciousness as 'alert' | 'confusion' | 'voice' | 'pain' | 'unresponsive',
+        temperature: Number(parameters.temperature),
       });
 
     default:

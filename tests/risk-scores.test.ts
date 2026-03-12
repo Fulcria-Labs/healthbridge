@@ -11,6 +11,7 @@ import {
   calculateSOFA,
   calculateChildPugh,
   calculateASCVD,
+  calculateNEWS2,
 } from '../src/data/risk-scores';
 import { calculateRiskScore, listAvailableScores } from '../src/tools/risk-score-tool';
 
@@ -612,7 +613,7 @@ describe('ASCVD Risk Calculator', () => {
 describe('Risk Score Tool', () => {
   it('lists available scores', () => {
     const scores = listAvailableScores();
-    expect(scores.length).toBe(11);
+    expect(scores.length).toBe(12);
     expect(scores.map(s => s.name)).toContain('CHA2DS2-VASc');
     expect(scores.map(s => s.name)).toContain('HEART');
     expect(scores.map(s => s.name)).toContain('eGFR');
@@ -678,5 +679,207 @@ describe('Risk Score Tool', () => {
 
   it('throws for unknown score', () => {
     expect(() => calculateRiskScore('Unknown' as any, {})).toThrow('Unknown score');
+  });
+
+  it('calculates NEWS2 via generic interface', () => {
+    const result = calculateRiskScore('NEWS2', {
+      respiratory_rate: 22, spo2: 94, on_supplemental_o2: false,
+      spo2_scale2: false, systolic_bp: 110, heart_rate: 95,
+      consciousness: 'alert', temperature: 37.5,
+    });
+    expect(result.scoreName).toBe('NEWS2');
+    expect(result.score).toBeGreaterThanOrEqual(0);
+  });
+});
+
+describe('NEWS2 - National Early Warning Score 2', () => {
+  const normalVitals = {
+    respiratory_rate: 16, spo2: 97, on_supplemental_o2: false,
+    spo2_scale2: false, systolic_bp: 120, heart_rate: 72,
+    consciousness: 'alert' as const, temperature: 37.0,
+  };
+
+  it('calculates score 0 for completely normal vitals', () => {
+    const result = calculateNEWS2(normalVitals);
+    expect(result.score).toBe(0);
+    expect(result.riskLevel).toBe('Low');
+    expect(result.scoreName).toBe('NEWS2');
+    expect(result.maxScore).toBe(20);
+  });
+
+  it('scores respiratory rate ≤8 as 3', () => {
+    const result = calculateNEWS2({ ...normalVitals, respiratory_rate: 7 });
+    expect(result.score).toBe(3);
+  });
+
+  it('scores respiratory rate 9-11 as 1', () => {
+    const result = calculateNEWS2({ ...normalVitals, respiratory_rate: 10 });
+    expect(result.score).toBe(1);
+  });
+
+  it('scores respiratory rate 12-20 as 0', () => {
+    const result = calculateNEWS2({ ...normalVitals, respiratory_rate: 18 });
+    expect(result.score).toBe(0);
+  });
+
+  it('scores respiratory rate 21-24 as 2', () => {
+    const result = calculateNEWS2({ ...normalVitals, respiratory_rate: 23 });
+    expect(result.score).toBe(2);
+  });
+
+  it('scores respiratory rate ≥25 as 3', () => {
+    const result = calculateNEWS2({ ...normalVitals, respiratory_rate: 28 });
+    expect(result.score).toBe(3);
+  });
+
+  it('scores SpO2 ≤91 as 3 (Scale 1)', () => {
+    const result = calculateNEWS2({ ...normalVitals, spo2: 90 });
+    expect(result.score).toBe(3);
+  });
+
+  it('scores SpO2 92-93 as 2 (Scale 1)', () => {
+    const result = calculateNEWS2({ ...normalVitals, spo2: 92 });
+    expect(result.score).toBe(2);
+  });
+
+  it('scores SpO2 94-95 as 1 (Scale 1)', () => {
+    const result = calculateNEWS2({ ...normalVitals, spo2: 95 });
+    expect(result.score).toBe(1);
+  });
+
+  it('adds 2 for supplemental O2 on Scale 1', () => {
+    const result = calculateNEWS2({ ...normalVitals, on_supplemental_o2: true });
+    expect(result.score).toBe(2);
+  });
+
+  it('uses Scale 2 scoring for hypercapnic patients', () => {
+    const result = calculateNEWS2({
+      ...normalVitals, spo2: 90, spo2_scale2: true,
+    });
+    expect(result.score).toBe(0); // 88-92 on Scale 2 = 0
+  });
+
+  it('scores high SpO2 on O2 as 3 in Scale 2', () => {
+    const result = calculateNEWS2({
+      ...normalVitals, spo2: 98, spo2_scale2: true, on_supplemental_o2: true,
+    });
+    expect(result.score).toBe(3); // ≥97 on O2 in Scale 2 = 3
+  });
+
+  it('scores systolic BP ≤90 as 3', () => {
+    const result = calculateNEWS2({ ...normalVitals, systolic_bp: 85 });
+    expect(result.score).toBe(3);
+  });
+
+  it('scores systolic BP 91-100 as 2', () => {
+    const result = calculateNEWS2({ ...normalVitals, systolic_bp: 95 });
+    expect(result.score).toBe(2);
+  });
+
+  it('scores systolic BP 101-110 as 1', () => {
+    const result = calculateNEWS2({ ...normalVitals, systolic_bp: 105 });
+    expect(result.score).toBe(1);
+  });
+
+  it('scores systolic BP ≥220 as 3', () => {
+    const result = calculateNEWS2({ ...normalVitals, systolic_bp: 225 });
+    expect(result.score).toBe(3);
+  });
+
+  it('scores heart rate ≤40 as 3', () => {
+    const result = calculateNEWS2({ ...normalVitals, heart_rate: 35 });
+    expect(result.score).toBe(3);
+  });
+
+  it('scores heart rate 41-50 as 1', () => {
+    const result = calculateNEWS2({ ...normalVitals, heart_rate: 48 });
+    expect(result.score).toBe(1);
+  });
+
+  it('scores heart rate 91-110 as 1', () => {
+    const result = calculateNEWS2({ ...normalVitals, heart_rate: 100 });
+    expect(result.score).toBe(1);
+  });
+
+  it('scores heart rate 111-130 as 2', () => {
+    const result = calculateNEWS2({ ...normalVitals, heart_rate: 120 });
+    expect(result.score).toBe(2);
+  });
+
+  it('scores heart rate ≥131 as 3', () => {
+    const result = calculateNEWS2({ ...normalVitals, heart_rate: 140 });
+    expect(result.score).toBe(3);
+  });
+
+  it('scores confusion as 3', () => {
+    const result = calculateNEWS2({ ...normalVitals, consciousness: 'confusion' });
+    expect(result.score).toBe(3);
+  });
+
+  it('scores voice response as 3', () => {
+    const result = calculateNEWS2({ ...normalVitals, consciousness: 'voice' });
+    expect(result.score).toBe(3);
+  });
+
+  it('scores unresponsive as 3', () => {
+    const result = calculateNEWS2({ ...normalVitals, consciousness: 'unresponsive' });
+    expect(result.score).toBe(3);
+  });
+
+  it('scores temperature ≤35.0 as 3', () => {
+    const result = calculateNEWS2({ ...normalVitals, temperature: 34.5 });
+    expect(result.score).toBe(3);
+  });
+
+  it('scores temperature 35.1-36.0 as 1', () => {
+    const result = calculateNEWS2({ ...normalVitals, temperature: 35.5 });
+    expect(result.score).toBe(1);
+  });
+
+  it('scores temperature 38.1-39.0 as 1', () => {
+    const result = calculateNEWS2({ ...normalVitals, temperature: 38.5 });
+    expect(result.score).toBe(1);
+  });
+
+  it('scores temperature ≥39.1 as 2', () => {
+    const result = calculateNEWS2({ ...normalVitals, temperature: 39.5 });
+    expect(result.score).toBe(2);
+  });
+
+  it('triggers high risk for score ≥7', () => {
+    const result = calculateNEWS2({
+      respiratory_rate: 28, spo2: 90, on_supplemental_o2: true,
+      spo2_scale2: false, systolic_bp: 85, heart_rate: 72,
+      consciousness: 'alert', temperature: 37.0,
+    });
+    // RR 28 = 3, SpO2 90 = 3, O2 = 2, SBP 85 = 3 => total ≥ 7
+    expect(result.score).toBeGreaterThanOrEqual(7);
+    expect(result.riskLevel).toBe('High');
+  });
+
+  it('triggers medium risk for score 5-6', () => {
+    const result = calculateNEWS2({
+      respiratory_rate: 22, spo2: 92, on_supplemental_o2: true,
+      spo2_scale2: false, systolic_bp: 120, heart_rate: 72,
+      consciousness: 'alert', temperature: 37.0,
+    });
+    // RR 22 = 2, SpO2 92 = 2, O2 = 2 => total = 6
+    expect(result.score).toBe(6);
+    expect(result.riskLevel).toBe('Medium');
+  });
+
+  it('flags single extreme parameter', () => {
+    const result = calculateNEWS2({
+      ...normalVitals, consciousness: 'unresponsive',
+    });
+    // Score = 3 (only consciousness), but extreme parameter
+    expect(result.score).toBe(3);
+    expect(result.riskLevel).toBe('Low-Medium');
+    expect(result.interpretation).toContain('extreme parameter');
+  });
+
+  it('includes reference to RCP 2017', () => {
+    const result = calculateNEWS2(normalVitals);
+    expect(result.reference).toContain('Royal College of Physicians');
   });
 });

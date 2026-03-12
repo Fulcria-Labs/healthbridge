@@ -46,9 +46,9 @@ server.tool(
 // Tool 2: Clinical Risk Score Calculator
 server.tool(
   'calculate_risk_score',
-  'Calculate validated clinical risk scores. Available scores: CHA2DS2-VASc (stroke risk in AFib), HEART (cardiac events in chest pain), Wells-PE (pulmonary embolism probability), MELD/MELD-Na (liver disease severity), CURB-65 (pneumonia severity), GCS (consciousness level), eGFR (kidney function CKD-EPI 2021), qSOFA (sepsis screening), SOFA (ICU organ failure assessment), Child-Pugh (chronic liver disease classification), ASCVD (10-year cardiovascular risk). Returns score, risk level, interpretation, and evidence-based recommendations.',
+  'Calculate validated clinical risk scores. Available scores: CHA2DS2-VASc (stroke risk in AFib), HEART (cardiac events in chest pain), Wells-PE (pulmonary embolism probability), MELD/MELD-Na (liver disease severity), CURB-65 (pneumonia severity), GCS (consciousness level), eGFR (kidney function CKD-EPI 2021), qSOFA (sepsis screening), SOFA (ICU organ failure assessment), Child-Pugh (chronic liver disease classification), ASCVD (10-year cardiovascular risk), NEWS2 (acute deterioration detection). Returns score, risk level, interpretation, and evidence-based recommendations.',
   {
-    score_name: z.enum(['CHA2DS2-VASc', 'HEART', 'Wells-PE', 'MELD', 'CURB-65', 'GCS', 'eGFR', 'qSOFA', 'SOFA', 'Child-Pugh', 'ASCVD']).describe('The clinical risk score to calculate'),
+    score_name: z.enum(['CHA2DS2-VASc', 'HEART', 'Wells-PE', 'MELD', 'CURB-65', 'GCS', 'eGFR', 'qSOFA', 'SOFA', 'Child-Pugh', 'ASCVD', 'NEWS2']).describe('The clinical risk score to calculate'),
     parameters: z.record(z.string(), z.unknown()).describe('Score-specific parameters. Use list_risk_scores tool to see required parameters for each score.'),
   },
   async ({ score_name, parameters }) => {
@@ -126,6 +126,10 @@ server.tool(
       'ASCVD': {
         description: '10-year atherosclerotic cardiovascular disease risk',
         parameters: { age: 'number (40-79)', sex: '"male" or "female"', race: '"white", "african_american", or "other"', total_cholesterol: 'number (mg/dL)', hdl_cholesterol: 'number (mg/dL)', systolic_bp: 'number (mmHg)', on_bp_treatment: 'boolean', diabetes: 'boolean', smoker: 'boolean' },
+      },
+      'NEWS2': {
+        description: 'National Early Warning Score 2 - acute deterioration detection',
+        parameters: { respiratory_rate: 'number (breaths/min)', spo2: 'number (%)', on_supplemental_o2: 'boolean', spo2_scale2: 'boolean (true for hypercapnic respiratory failure target SpO2 88-92%)', systolic_bp: 'number (mmHg)', heart_rate: 'number (bpm)', consciousness: '"alert", "confusion", "voice", "pain", or "unresponsive"', temperature: 'number (°C)' },
       },
     };
 

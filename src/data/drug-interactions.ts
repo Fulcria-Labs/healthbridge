@@ -568,29 +568,7 @@ export const drugInteractions: DrugInteraction[] = [
     clinicalEffect: 'Lithium toxicity (tremor, confusion, seizures, renal failure)',
     management: 'Monitor lithium levels when starting/adjusting diuretic. Consider dose reduction. Maintain adequate hydration.'
   },
-  // PPI + clopidogrel (critical missing interaction)
-  {
-    drug1: 'omeprazole', drug2: 'clopidogrel', severity: 'major',
-    description: 'Reduced antiplatelet effect of clopidogrel',
-    mechanism: 'Omeprazole inhibits CYP2C19, which is required to convert clopidogrel prodrug to active metabolite',
-    clinicalEffect: 'Reduced platelet inhibition, increased risk of cardiovascular events including stent thrombosis',
-    management: 'Use pantoprazole (minimal CYP2C19 inhibition) instead of omeprazole. Avoid omeprazole/esomeprazole with clopidogrel. FDA black box warning.'
-  },
-  // DOAC interactions
-  {
-    drug1: 'apixaban', drug2: 'ketoconazole', severity: 'major',
-    description: 'Increased apixaban levels and bleeding risk',
-    mechanism: 'Ketoconazole is a strong dual CYP3A4/P-gp inhibitor, markedly increasing apixaban exposure',
-    clinicalEffect: 'Significantly increased bleeding risk due to elevated apixaban plasma concentrations',
-    management: 'Reduce apixaban dose by 50% when combined with strong dual CYP3A4/P-gp inhibitors. Monitor for bleeding.'
-  },
-  {
-    drug1: 'rivaroxaban', drug2: 'ketoconazole', severity: 'contraindicated',
-    description: 'Dangerous increase in rivaroxaban levels',
-    mechanism: 'Strong dual CYP3A4/P-gp inhibition dramatically increases rivaroxaban exposure',
-    clinicalEffect: 'Markedly elevated bleeding risk. Contraindicated per prescribing information.',
-    management: 'Do NOT use concomitantly. Choose alternative antifungal or alternative anticoagulant.'
-  },
+  // Rivaroxaban + rifampin
   {
     drug1: 'rivaroxaban', drug2: 'rifampin', severity: 'major',
     description: 'Reduced rivaroxaban efficacy',
@@ -600,56 +578,19 @@ export const drugInteractions: DrugInteraction[] = [
   },
   // Gabapentinoid + opioid (respiratory depression)
   {
-    drug1: 'gabapentin', drug2: 'oxycodone', severity: 'major',
-    description: 'Increased risk of respiratory depression and sedation',
-    mechanism: 'Additive CNS depression; gabapentinoids potentiate opioid-induced respiratory depression',
-    clinicalEffect: 'Serious respiratory depression, sedation, and death. FDA boxed warning.',
-    management: 'If combination necessary, use lowest effective doses. Monitor respiratory status closely. Consider opioid dose reduction.'
-  },
-  {
-    drug1: 'pregabalin', drug2: 'oxycodone', severity: 'major',
-    description: 'Increased risk of respiratory depression and sedation',
-    mechanism: 'Additive CNS depression; pregabalin potentiates opioid respiratory depression',
-    clinicalEffect: 'Serious respiratory depression, profound sedation, coma, and death',
-    management: 'Use lowest effective doses. Monitor respiratory rate. FDA boxed warning on gabapentinoid-opioid combination.'
-  },
-  {
     drug1: 'gabapentin', drug2: 'hydrocodone', severity: 'major',
     description: 'Increased risk of respiratory depression',
     mechanism: 'Additive CNS depressant effects between gabapentinoid and opioid',
     clinicalEffect: 'Respiratory depression, excessive sedation, potentially fatal',
     management: 'Limit dosages and duration. Monitor closely. FDA boxed warning.'
   },
-  // Metformin + contrast dye (renal concern)
-  {
-    drug1: 'metformin', drug2: 'ciprofloxacin', severity: 'moderate',
-    description: 'Risk of hypoglycemia and potential lactic acidosis',
-    mechanism: 'Fluoroquinolones can cause dysglycemia and may increase metformin exposure via renal transporter inhibition',
-    clinicalEffect: 'Hypoglycemia or hyperglycemia episodes; rarely lactic acidosis in renal impairment',
-    management: 'Monitor blood glucose closely during fluoroquinolone therapy. Assess renal function.'
-  },
   // Duloxetine interactions
-  {
-    drug1: 'duloxetine', drug2: 'tramadol', severity: 'major',
-    description: 'Risk of serotonin syndrome and seizures',
-    mechanism: 'Both increase serotonin levels; tramadol also lowers seizure threshold',
-    clinicalEffect: 'Serotonin syndrome (agitation, tremor, hyperthermia, clonus). Increased seizure risk.',
-    management: 'Avoid combination if possible. If used, monitor for serotonin syndrome. Consider alternative analgesic.'
-  },
   {
     drug1: 'duloxetine', drug2: 'warfarin', severity: 'major',
     description: 'Increased bleeding risk',
     mechanism: 'SNRIs impair platelet serotonin uptake, adding to warfarin anticoagulation',
     clinicalEffect: 'Increased risk of GI and other bleeding events',
     management: 'Monitor INR closely when starting/stopping duloxetine. Watch for signs of bleeding.'
-  },
-  // Amiodarone + digoxin
-  {
-    drug1: 'amiodarone', drug2: 'digoxin', severity: 'major',
-    description: 'Increased digoxin levels and toxicity risk',
-    mechanism: 'Amiodarone inhibits P-glycoprotein and renal clearance of digoxin',
-    clinicalEffect: 'Digoxin toxicity (nausea, visual changes, arrhythmias) - digoxin levels increase 70-100%',
-    management: 'Reduce digoxin dose by 50% when initiating amiodarone. Monitor digoxin levels and ECG closely.'
   },
   // Amiodarone + simvastatin
   {
@@ -667,20 +608,207 @@ export const drugInteractions: DrugInteraction[] = [
     clinicalEffect: 'Unpredictable INR changes. Increased bleeding risk.',
     management: 'Monitor INR closely when starting, adjusting, or stopping corticosteroids. Adjust warfarin dose as needed.'
   },
-  // Cyclosporine + simvastatin
-  {
-    drug1: 'cyclosporine', drug2: 'simvastatin', severity: 'contraindicated',
-    description: 'Contraindicated - severe rhabdomyolysis risk',
-    mechanism: 'Cyclosporine is a potent CYP3A4 and P-gp inhibitor, dramatically increasing statin levels',
-    clinicalEffect: 'Rhabdomyolysis, acute renal failure, potentially fatal',
-    management: 'CONTRAINDICATED. Use pravastatin or fluvastatin (lower interaction potential) at reduced doses with monitoring.'
-  },
+  // Cyclosporine + statins
   {
     drug1: 'cyclosporine', drug2: 'atorvastatin', severity: 'major',
     description: 'High risk of rhabdomyolysis',
     mechanism: 'Cyclosporine inhibits CYP3A4 and OATP1B1, greatly increasing atorvastatin exposure',
     clinicalEffect: 'Rhabdomyolysis, myopathy, acute kidney injury',
     management: 'Avoid if possible. If needed, limit atorvastatin to 10mg/day. Monitor CK levels and renal function.'
+  },
+  // === NEW INTERACTIONS ===
+  // Warfarin + amiodarone
+  {
+    drug1: 'warfarin', drug2: 'amiodarone', severity: 'major',
+    description: 'Significantly increased anticoagulant effect',
+    mechanism: 'Amiodarone inhibits CYP2C9 and CYP3A4, reducing warfarin metabolism. Effect persists weeks after amiodarone discontinuation.',
+    clinicalEffect: 'Markedly elevated INR with high bleeding risk. Effect may take 1-2 weeks to manifest.',
+    management: 'Reduce warfarin dose by 30-50% when starting amiodarone. Monitor INR weekly for several weeks. Effect persists for months after amiodarone discontinuation.'
+  },
+  // Warfarin + clarithromycin
+  {
+    drug1: 'warfarin', drug2: 'clarithromycin', severity: 'major',
+    description: 'Significantly increased anticoagulant effect',
+    mechanism: 'Clarithromycin inhibits CYP3A4 metabolism of R-warfarin and alters gut flora vitamin K production',
+    clinicalEffect: 'Elevated INR with increased bleeding risk',
+    management: 'Monitor INR within 3-5 days of starting clarithromycin. Consider azithromycin as alternative (less CYP interaction).'
+  },
+  // Metformin + furosemide
+  {
+    drug1: 'metformin', drug2: 'furosemide', severity: 'moderate',
+    description: 'Altered metformin levels and potential lactic acidosis',
+    mechanism: 'Furosemide increases metformin plasma levels by ~22% via competition for renal tubular secretion',
+    clinicalEffect: 'Increased metformin exposure; dehydration from diuresis can worsen lactic acidosis risk',
+    management: 'Monitor renal function and blood glucose. Ensure adequate hydration. Hold metformin if dehydration occurs.'
+  },
+  // Spironolactone + potassium
+  {
+    drug1: 'spironolactone', drug2: 'potassium', severity: 'major',
+    description: 'Dangerous hyperkalemia risk',
+    mechanism: 'Spironolactone blocks aldosterone-mediated potassium excretion; supplemental potassium adds to load',
+    clinicalEffect: 'Life-threatening hyperkalemia with cardiac arrhythmias',
+    management: 'Avoid potassium supplements with spironolactone unless documented hypokalemia. Monitor potassium closely.'
+  },
+  // Losartan + spironolactone
+  {
+    drug1: 'losartan', drug2: 'spironolactone', severity: 'major',
+    description: 'Risk of hyperkalemia',
+    mechanism: 'Both reduce potassium excretion through RAAS blockade',
+    clinicalEffect: 'Dangerous hyperkalemia potentially causing cardiac arrhythmias',
+    management: 'Monitor potassium within 1 week of starting and regularly thereafter. Avoid potassium supplements.'
+  },
+  // Losartan + potassium
+  {
+    drug1: 'losartan', drug2: 'potassium', severity: 'major',
+    description: 'Risk of hyperkalemia',
+    mechanism: 'ARBs reduce aldosterone-mediated potassium excretion',
+    clinicalEffect: 'Hyperkalemia with cardiac risk',
+    management: 'Monitor serum potassium. Use potassium supplements only if documented hypokalemia.'
+  },
+  // Atenolol + verapamil
+  {
+    drug1: 'atenolol', drug2: 'verapamil', severity: 'major',
+    description: 'Excessive bradycardia and AV block',
+    mechanism: 'Both agents depress SA and AV node conduction',
+    clinicalEffect: 'Severe bradycardia, AV block, heart failure exacerbation',
+    management: 'Avoid IV combination. If oral combination needed, monitor closely. Prefer amlodipine (dihydropyridine CCB).'
+  },
+  // Pregabalin + hydrocodone
+  {
+    drug1: 'pregabalin', drug2: 'hydrocodone', severity: 'major',
+    description: 'Increased risk of respiratory depression',
+    mechanism: 'Additive CNS depression between gabapentinoid and opioid',
+    clinicalEffect: 'Respiratory depression, excessive sedation, potentially fatal',
+    management: 'Limit dosages and duration. Monitor respiratory status. FDA boxed warning.'
+  },
+  // Atorvastatin + erythromycin
+  {
+    drug1: 'atorvastatin', drug2: 'erythromycin', severity: 'major',
+    description: 'Increased risk of myopathy and rhabdomyolysis',
+    mechanism: 'Erythromycin inhibits CYP3A4, increasing atorvastatin exposure',
+    clinicalEffect: 'Elevated risk of rhabdomyolysis',
+    management: 'Suspend atorvastatin during erythromycin course. Use azithromycin as alternative.'
+  },
+  // Atorvastatin + ketoconazole
+  {
+    drug1: 'atorvastatin', drug2: 'ketoconazole', severity: 'major',
+    description: 'Significantly increased atorvastatin levels',
+    mechanism: 'Ketoconazole is a potent CYP3A4 inhibitor, increasing atorvastatin exposure ~3-fold',
+    clinicalEffect: 'High risk of myopathy and rhabdomyolysis',
+    management: 'Avoid combination. Use pravastatin or rosuvastatin (not CYP3A4 substrates) or alternative antifungal.'
+  },
+  // Carbamazepine + erythromycin
+  {
+    drug1: 'carbamazepine', drug2: 'erythromycin', severity: 'major',
+    description: 'Increased carbamazepine levels and toxicity',
+    mechanism: 'Erythromycin inhibits CYP3A4, reducing carbamazepine metabolism',
+    clinicalEffect: 'Carbamazepine toxicity (diplopia, ataxia, drowsiness, nausea)',
+    management: 'Avoid combination. Use azithromycin as alternative macrolide. If unavoidable, reduce carbamazepine dose and monitor levels.'
+  },
+  // Carbamazepine + clarithromycin
+  {
+    drug1: 'carbamazepine', drug2: 'clarithromycin', severity: 'major',
+    description: 'Increased carbamazepine levels and toxicity',
+    mechanism: 'Clarithromycin strongly inhibits CYP3A4 metabolism of carbamazepine',
+    clinicalEffect: 'Carbamazepine toxicity (diplopia, ataxia, drowsiness, nausea)',
+    management: 'Avoid combination. Use azithromycin as alternative macrolide.'
+  },
+  // Phenytoin + fluoxetine
+  {
+    drug1: 'phenytoin', drug2: 'fluoxetine', severity: 'major',
+    description: 'Increased phenytoin levels',
+    mechanism: 'Fluoxetine inhibits CYP2C9, reducing phenytoin metabolism',
+    clinicalEffect: 'Phenytoin toxicity (nystagmus, ataxia, confusion, seizures)',
+    management: 'Monitor phenytoin levels when starting/stopping fluoxetine. May need 25-50% dose reduction.'
+  },
+  // Aspirin + clopidogrel
+  {
+    drug1: 'aspirin', drug2: 'clopidogrel', severity: 'moderate',
+    description: 'Increased bleeding risk with dual antiplatelet therapy',
+    mechanism: 'Additive inhibition of platelet aggregation via different pathways (COX-1 + P2Y12)',
+    clinicalEffect: 'Significantly increased bleeding risk, especially GI. However, combination is standard of care post-ACS/PCI.',
+    management: 'Standard after ACS/PCI for defined duration. Add PPI for GI protection. Monitor for bleeding.'
+  },
+  // Digoxin + hydrochlorothiazide
+  {
+    drug1: 'digoxin', drug2: 'hydrochlorothiazide', severity: 'moderate',
+    description: 'Increased digoxin toxicity risk due to hypokalemia',
+    mechanism: 'Thiazide diuretics cause potassium and magnesium wasting, increasing myocardial sensitivity to digoxin',
+    clinicalEffect: 'Digoxin toxicity (arrhythmias, nausea) at therapeutic digoxin levels',
+    management: 'Monitor potassium and magnesium. Supplement as needed. Check digoxin levels.'
+  },
+  // Apixaban + aspirin
+  {
+    drug1: 'apixaban', drug2: 'aspirin', severity: 'major',
+    description: 'Increased bleeding risk',
+    mechanism: 'Additive effects on hemostasis: anticoagulant + antiplatelet',
+    clinicalEffect: 'Significantly increased bleeding risk, especially GI and intracranial hemorrhage',
+    management: 'Avoid combination unless specifically indicated (e.g., post-ACS). If used, lowest aspirin dose (81mg) and shortest duration.'
+  },
+  // Rivaroxaban + aspirin
+  {
+    drug1: 'rivaroxaban', drug2: 'aspirin', severity: 'major',
+    description: 'Increased bleeding risk',
+    mechanism: 'Additive effects on hemostasis: anticoagulant + antiplatelet',
+    clinicalEffect: 'Significantly increased bleeding risk. COMPASS trial used low-dose rivaroxaban + aspirin.',
+    management: 'Avoid unless specifically indicated. Low-dose rivaroxaban (2.5mg BID) + aspirin approved for CAD/PAD.'
+  },
+  // Paroxetine + tramadol
+  {
+    drug1: 'paroxetine', drug2: 'tramadol', severity: 'major',
+    description: 'Risk of serotonin syndrome and reduced tramadol efficacy',
+    mechanism: 'Paroxetine strongly inhibits CYP2D6 (blocking tramadol activation) and both increase serotonin',
+    clinicalEffect: 'Serotonin syndrome risk AND reduced tramadol analgesic effect',
+    management: 'Use alternative analgesic. If combination necessary, monitor for serotonin syndrome.'
+  },
+  // Amiodarone + warfarin
+  // (already covered by warfarin + amiodarone above, but adding atorvastatin + amiodarone)
+  {
+    drug1: 'amiodarone', drug2: 'atorvastatin', severity: 'major',
+    description: 'Increased risk of myopathy',
+    mechanism: 'Amiodarone inhibits CYP3A4, increasing atorvastatin levels',
+    clinicalEffect: 'Myopathy and rhabdomyolysis risk',
+    management: 'Limit atorvastatin dose. Consider pravastatin or rosuvastatin (less CYP3A4 dependent). Monitor CK.'
+  },
+  // Lithium + naproxen
+  {
+    drug1: 'lithium', drug2: 'naproxen', severity: 'major',
+    description: 'Increased lithium levels',
+    mechanism: 'NSAIDs reduce renal prostaglandin synthesis, decreasing lithium clearance',
+    clinicalEffect: 'Lithium toxicity (tremor, confusion, seizures, renal failure)',
+    management: 'Avoid NSAIDs if possible. If necessary, monitor lithium levels within 5 days and adjust dose.'
+  },
+  // Lithium + enalapril
+  {
+    drug1: 'lithium', drug2: 'enalapril', severity: 'major',
+    description: 'Increased lithium levels',
+    mechanism: 'ACE inhibitors reduce renal lithium clearance',
+    clinicalEffect: 'Lithium toxicity',
+    management: 'Monitor lithium levels closely when starting/stopping ACE inhibitor. May need dose reduction.'
+  },
+  // Lithium + losartan
+  {
+    drug1: 'lithium', drug2: 'losartan', severity: 'major',
+    description: 'Increased lithium levels',
+    mechanism: 'ARBs reduce renal lithium clearance similar to ACE inhibitors',
+    clinicalEffect: 'Lithium toxicity',
+    management: 'Monitor lithium levels closely when starting/stopping ARB. May need dose reduction.'
+  },
+  // Enalapril + ibuprofen
+  {
+    drug1: 'enalapril', drug2: 'ibuprofen', severity: 'moderate',
+    description: 'Reduced antihypertensive effect and risk of acute kidney injury',
+    mechanism: 'NSAIDs inhibit renal prostaglandins, opposing ACE inhibitor effects',
+    clinicalEffect: 'Decreased blood pressure control, increased risk of AKI, hyperkalemia',
+    management: 'Monitor blood pressure and renal function. Use lowest NSAID dose for shortest duration.'
+  },
+  // Losartan + ibuprofen
+  {
+    drug1: 'losartan', drug2: 'ibuprofen', severity: 'moderate',
+    description: 'Reduced antihypertensive effect and renal risk',
+    mechanism: 'NSAIDs inhibit renal prostaglandins, opposing ARB hemodynamic effects',
+    clinicalEffect: 'Attenuated blood pressure control and increased risk of AKI',
+    management: 'Monitor BP and renal function. Prefer acetaminophen for pain relief.'
   },
 ];
 

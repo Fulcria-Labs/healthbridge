@@ -851,6 +851,145 @@ export function calculateASCVD(input: {
   };
 }
 
+/**
+ * NEWS2 - National Early Warning Score 2
+ * Used in UK NHS and internationally for detecting acute deterioration in adult patients.
+ * Royal College of Physicians 2017.
+ */
+export function calculateNEWS2(input: {
+  respiratory_rate: number;         // breaths/min
+  spo2: number;                     // %
+  on_supplemental_o2: boolean;
+  spo2_scale2: boolean;             // true for patients with hypercapnic respiratory failure (target SpO2 88-92%)
+  systolic_bp: number;              // mmHg
+  heart_rate: number;               // bpm
+  consciousness: 'alert' | 'confusion' | 'voice' | 'pain' | 'unresponsive'; // ACVPU scale
+  temperature: number;              // °C
+}): RiskScoreResult {
+  const components: Record<string, { value: number; description: string }> = {};
+  let score = 0;
+
+  // Respiratory rate scoring
+  let rrScore: number;
+  if (input.respiratory_rate <= 8) { rrScore = 3; }
+  else if (input.respiratory_rate <= 11) { rrScore = 1; }
+  else if (input.respiratory_rate <= 20) { rrScore = 0; }
+  else if (input.respiratory_rate <= 24) { rrScore = 2; }
+  else { rrScore = 3; }
+  components['Respiratory rate'] = { value: rrScore, description: `${input.respiratory_rate}/min` };
+  score += rrScore;
+
+  // SpO2 scoring depends on Scale 1 vs Scale 2
+  let spo2Score: number;
+  if (input.spo2_scale2) {
+    // Scale 2: for patients with hypercapnic respiratory failure (target 88-92%)
+    if (input.spo2 <= 83) { spo2Score = 3; }
+    else if (input.spo2 <= 85) { spo2Score = 2; }
+    else if (input.spo2 <= 87) { spo2Score = 1; }
+    else if (input.spo2 <= 92) { spo2Score = 0; }
+    else if (input.spo2 <= 94 && input.on_supplemental_o2) { spo2Score = 1; }
+    else if (input.spo2 <= 96 && input.on_supplemental_o2) { spo2Score = 2; }
+    else if (input.spo2 >= 97 && input.on_supplemental_o2) { spo2Score = 3; }
+    else { spo2Score = 0; } // ≥93 on room air
+    components['SpO₂ (Scale 2)'] = { value: spo2Score, description: `${input.spo2}%${input.on_supplemental_o2 ? ' (on O₂)' : ' (room air)'}` };
+  } else {
+    // Scale 1: standard
+    if (input.spo2 <= 91) { spo2Score = 3; }
+    else if (input.spo2 <= 93) { spo2Score = 2; }
+    else if (input.spo2 <= 95) { spo2Score = 1; }
+    else { spo2Score = 0; }
+    components['SpO₂ (Scale 1)'] = { value: spo2Score, description: `${input.spo2}%` };
+  }
+  score += spo2Score;
+
+  // Supplemental O2
+  const o2Score = input.on_supplemental_o2 && !input.spo2_scale2 ? 2 : 0;
+  if (!input.spo2_scale2) {
+    components['Supplemental O₂'] = { value: o2Score, description: input.on_supplemental_o2 ? 'Yes' : 'No' };
+    score += o2Score;
+  }
+
+  // Systolic BP
+  let bpScore: number;
+  if (input.systolic_bp <= 90) { bpScore = 3; }
+  else if (input.systolic_bp <= 100) { bpScore = 2; }
+  else if (input.systolic_bp <= 110) { bpScore = 1; }
+  else if (input.systolic_bp <= 219) { bpScore = 0; }
+  else { bpScore = 3; }
+  components['Systolic BP'] = { value: bpScore, description: `${input.systolic_bp} mmHg` };
+  score += bpScore;
+
+  // Heart rate
+  let hrScore: number;
+  if (input.heart_rate <= 40) { hrScore = 3; }
+  else if (input.heart_rate <= 50) { hrScore = 1; }
+  else if (input.heart_rate <= 90) { hrScore = 0; }
+  else if (input.heart_rate <= 110) { hrScore = 1; }
+  else if (input.heart_rate <= 130) { hrScore = 2; }
+  else { hrScore = 3; }
+  components['Heart rate'] = { value: hrScore, description: `${input.heart_rate} bpm` };
+  score += hrScore;
+
+  // Consciousness (ACVPU)
+  let consScore: number;
+  const consMap: Record<string, { score: number; desc: string }> = {
+    alert: { score: 0, desc: 'Alert' },
+    confusion: { score: 3, desc: 'New confusion' },
+    voice: { score: 3, desc: 'Responds to voice' },
+    pain: { score: 3, desc: 'Responds to pain' },
+    unresponsive: { score: 3, desc: 'Unresponsive' },
+  };
+  const cons = consMap[input.consciousness];
+  consScore = cons.score;
+  components['Consciousness (ACVPU)'] = { value: consScore, description: cons.desc };
+  score += consScore;
+
+  // Temperature
+  let tempScore: number;
+  if (input.temperature <= 35.0) { tempScore = 3; }
+  else if (input.temperature <= 36.0) { tempScore = 1; }
+  else if (input.temperature <= 38.0) { tempScore = 0; }
+  else if (input.temperature <= 39.0) { tempScore = 1; }
+  else { tempScore = 2; }
+  components['Temperature'] = { value: tempScore, description: `${input.temperature}°C` };
+  score += tempScore;
+
+  // Clinical response thresholds
+  let riskLevel: string;
+  let recommendation: string;
+
+  // Check for individual parameter score of 3 (single extreme trigger)
+  const hasExtremeParameter = [rrScore, spo2Score, o2Score, bpScore, hrScore, consScore, tempScore].some(s => s >= 3);
+
+  if (score >= 7) {
+    riskLevel = 'High';
+    recommendation = 'Emergency response. Continuous monitoring of vital signs. Urgent assessment by critical care team. Consider ICU transfer. Frequency of monitoring: continuous.';
+  } else if (score >= 5) {
+    riskLevel = 'Medium';
+    recommendation = 'Urgent response. Increase monitoring to at least hourly. Urgent assessment by clinician with critical care competencies. Consider higher level of care. Frequency: minimum every hour.';
+  } else if (hasExtremeParameter) {
+    riskLevel = 'Low-Medium';
+    recommendation = 'Urgent ward-based response. Single parameter score of 3 requires urgent assessment by a clinician. Increase monitoring to minimum every hour. Consider cause.';
+  } else if (score >= 1) {
+    riskLevel = 'Low';
+    recommendation = 'Ward-based response. Inform registered nurse. Assess by competent ward nurse to decide frequency of monitoring and escalation. Minimum every 4-6 hours.';
+  } else {
+    riskLevel = 'Low';
+    recommendation = 'Continue routine monitoring. Minimum every 12 hours. NEWS2 = 0: no immediate clinical concern.';
+  }
+
+  return {
+    scoreName: 'NEWS2',
+    score,
+    maxScore: 20,
+    riskLevel,
+    interpretation: `NEWS2 Score ${score}/20. ${riskLevel} clinical risk.${hasExtremeParameter && score < 5 ? ' Single extreme parameter detected - requires urgent assessment.' : ''}`,
+    recommendation,
+    components,
+    reference: 'Royal College of Physicians. National Early Warning Score (NEWS) 2. London: RCP, 2017.',
+  };
+}
+
 /** Available risk score calculators */
 export const availableScores = [
   { name: 'CHA2DS2-VASc', description: 'Stroke risk in atrial fibrillation', function: 'calculateCHA2DS2VASc' },
@@ -864,4 +1003,5 @@ export const availableScores = [
   { name: 'SOFA', description: 'Sequential Organ Failure Assessment for ICU mortality', function: 'calculateSOFA' },
   { name: 'Child-Pugh', description: 'Chronic liver disease classification and prognosis', function: 'calculateChildPugh' },
   { name: 'ASCVD', description: '10-year atherosclerotic cardiovascular disease risk (Pooled Cohort Equations)', function: 'calculateASCVD' },
+  { name: 'NEWS2', description: 'National Early Warning Score 2 for acute deterioration detection', function: 'calculateNEWS2' },
 ] as const;

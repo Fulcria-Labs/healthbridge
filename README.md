@@ -8,8 +8,8 @@ HealthBridge provides validated clinical tools that AI agents can use to support
 
 | Tool | Description |
 |------|-------------|
-| `check_drug_interactions` | Check drug-drug interactions among medications (60+ drug pairs, generic/brand name support) |
-| `calculate_risk_score` | Calculate validated clinical risk scores (11 scores including CHA₂DS₂-VASc, HEART, SOFA, ASCVD, Child-Pugh) |
+| `check_drug_interactions` | Check drug-drug interactions among medications (90+ drug pairs, generic/brand name support) |
+| `calculate_risk_score` | Calculate validated clinical risk scores (12 scores including CHA₂DS₂-VASc, HEART, SOFA, ASCVD, Child-Pugh, NEWS2) |
 | `interpret_lab_result` | Interpret single lab values with reference ranges and clinical significance |
 | `interpret_lab_panel` | Interpret multiple lab results with critical value flagging |
 | `get_patient_summary` | Generate clinical summaries from FHIR R4 patient data |
@@ -20,12 +20,12 @@ HealthBridge provides validated clinical tools that AI agents can use to support
 ## Clinical Capabilities
 
 ### Drug Interaction Database
-- 40+ clinically significant drug-drug interactions
+- 90+ clinically significant drug-drug interactions
 - 4 severity levels: contraindicated, major, moderate, minor
 - Generic and brand name resolution (45+ medications)
 - Mechanism, clinical effect, and management recommendations
 
-### Risk Score Calculators (11 Validated Scores)
+### Risk Score Calculators (12 Validated Scores)
 - **CHA₂DS₂-VASc**: Stroke risk in atrial fibrillation
 - **HEART Score**: Major cardiac events in chest pain
 - **Wells Score**: Pulmonary embolism probability
@@ -37,6 +37,7 @@ HealthBridge provides validated clinical tools that AI agents can use to support
 - **SOFA**: Sequential Organ Failure Assessment (ICU mortality)
 - **Child-Pugh**: Chronic liver disease classification
 - **ASCVD Risk**: 10-year cardiovascular risk (Pooled Cohort Equations)
+- **NEWS2**: National Early Warning Score 2 (acute deterioration detection, RCP 2017)
 
 ### Lab Result Interpretation
 - 28 laboratory tests (CBC, BMP, liver, cardiac, coagulation, thyroid, inflammatory, lipid panel, minerals)
@@ -60,7 +61,7 @@ npm start       # Starts MCP server on stdio
 
 ```bash
 npm run dev           # Run with tsx (hot reload)
-npm test              # Run tests (188 tests)
+npm test              # Run tests (233 tests)
 npm run test:watch    # Watch mode
 npm run test:coverage # Coverage report
 ```
