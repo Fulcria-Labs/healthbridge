@@ -19,6 +19,7 @@ import { checkDrugInteractions } from './tools/drug-interaction-tool.js';
 import { calculateRiskScore, listAvailableScores, type ScoreName } from './tools/risk-score-tool.js';
 import { interpretSingleLab, interpretPanel, listAvailableTests } from './tools/lab-interpreter-tool.js';
 import { getPatientSummary } from './tools/patient-summary-tool.js';
+import { generateClinicalAlerts } from './tools/clinical-alerts-tool.js';
 import { registerResources } from './resources.js';
 import { registerPrompts } from './prompts.js';
 
@@ -334,6 +335,59 @@ server.tool(
                   : 'LOW - No significant concerns identified',
           },
         }, null, 2),
+      }],
+    };
+  }
+);
+
+// Tool 9: Clinical Alerts Aggregator
+server.tool(
+  'clinical_alerts',
+  'Generate prioritized clinical alerts by aggregating lab results, medications, vitals, and patient context. Combines insights from drug interaction checking, lab interpretation, vital sign analysis, and clinical pattern recognition into a single actionable alert list. This is the primary tool for comprehensive patient safety screening.',
+  {
+    age: z.number().optional().describe('Patient age in years'),
+    sex: z.enum(['male', 'female']).optional().describe('Patient sex'),
+    medications: z.array(z.string()).optional().describe('Current medications (generic or brand names)'),
+    lab_results: z.array(z.object({
+      test: z.string().describe('Lab test name or code'),
+      value: z.number().describe('Numerical result value'),
+    })).optional().describe('Recent lab results'),
+    vitals: z.object({
+      systolic_bp: z.number().optional(),
+      diastolic_bp: z.number().optional(),
+      heart_rate: z.number().optional(),
+      respiratory_rate: z.number().optional(),
+      temperature: z.number().optional(),
+      spo2: z.number().optional(),
+      weight_kg: z.number().optional(),
+      height_cm: z.number().optional(),
+    }).optional().describe('Current vital signs'),
+    conditions: z.array(z.string()).optional().describe('Active medical conditions'),
+    allergies: z.array(z.string()).optional().describe('Known allergies'),
+  },
+  async ({ age, sex, medications, lab_results, vitals, conditions, allergies }) => {
+    const result = generateClinicalAlerts({
+      age,
+      sex,
+      medications,
+      labResults: lab_results,
+      vitals: vitals ? {
+        systolicBp: vitals.systolic_bp,
+        diastolicBp: vitals.diastolic_bp,
+        heartRate: vitals.heart_rate,
+        respiratoryRate: vitals.respiratory_rate,
+        temperature: vitals.temperature,
+        spo2: vitals.spo2,
+        weight_kg: vitals.weight_kg,
+        height_cm: vitals.height_cm,
+      } : undefined,
+      conditions,
+      allergies,
+    });
+    return {
+      content: [{
+        type: 'text' as const,
+        text: JSON.stringify(result, null, 2),
       }],
     };
   }
