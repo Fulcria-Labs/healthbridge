@@ -6,7 +6,7 @@ HealthBridge provides validated clinical tools, resources, and workflow prompts 
 
 ## MCP Capabilities
 
-### Tools (8)
+### Tools (9)
 
 | Tool | Description |
 |------|-------------|
@@ -16,6 +16,7 @@ HealthBridge provides validated clinical tools, resources, and workflow prompts 
 | `interpret_lab_panel` | Interpret multiple lab results with critical value flagging |
 | `get_patient_summary` | Generate clinical summaries from FHIR R4 patient data |
 | `medication_review` | Comprehensive medication review with condition/allergy cross-referencing |
+| `clinical_alerts` | Aggregated prioritized clinical alerts across all patient data — drug interactions, critical labs, risk scores, and medication safety |
 | `list_risk_scores` | List available risk scoring systems with parameter guides |
 | `list_lab_tests` | List supported lab tests with reference ranges |
 
@@ -86,7 +87,7 @@ npm start       # Starts MCP server on stdio
 
 ```bash
 npm run dev           # Run with tsx (hot reload)
-npm test              # Run tests (294 tests)
+npm test              # Run tests (1628 tests across 27 suites)
 npm run test:watch    # Watch mode
 npm run test:coverage # Coverage report
 ```
@@ -95,7 +96,7 @@ npm run test:coverage # Coverage report
 
 ```
 src/
-├── index.ts              # MCP server entry point (8 tools)
+├── index.ts              # MCP server entry point (9 tools)
 ├── resources.ts          # MCP resources (5 clinical reference resources)
 ├── prompts.ts            # MCP prompts (4 clinical workflow templates)
 ├── data/
@@ -103,6 +104,7 @@ src/
 │   ├── lab-references.ts     # Lab reference ranges (28 tests)
 │   └── risk-scores.ts        # Clinical risk calculators (16 scores)
 ├── tools/
+│   ├── clinical-alerts-tool.ts  # Aggregated prioritized clinical alerts
 │   ├── drug-interaction-tool.ts
 │   ├── lab-interpreter-tool.ts
 │   ├── patient-summary-tool.ts
