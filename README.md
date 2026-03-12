@@ -8,8 +8,8 @@ HealthBridge provides validated clinical tools that AI agents can use to support
 
 | Tool | Description |
 |------|-------------|
-| `check_drug_interactions` | Check drug-drug interactions among medications (40+ drug pairs, generic/brand name support) |
-| `calculate_risk_score` | Calculate validated clinical risk scores (CHA₂DS₂-VASc, HEART, Wells PE, MELD, CURB-65, GCS) |
+| `check_drug_interactions` | Check drug-drug interactions among medications (60+ drug pairs, generic/brand name support) |
+| `calculate_risk_score` | Calculate validated clinical risk scores (11 scores including CHA₂DS₂-VASc, HEART, SOFA, ASCVD, Child-Pugh) |
 | `interpret_lab_result` | Interpret single lab values with reference ranges and clinical significance |
 | `interpret_lab_panel` | Interpret multiple lab results with critical value flagging |
 | `get_patient_summary` | Generate clinical summaries from FHIR R4 patient data |
@@ -25,16 +25,21 @@ HealthBridge provides validated clinical tools that AI agents can use to support
 - Generic and brand name resolution (45+ medications)
 - Mechanism, clinical effect, and management recommendations
 
-### Risk Score Calculators
+### Risk Score Calculators (11 Validated Scores)
 - **CHA₂DS₂-VASc**: Stroke risk in atrial fibrillation
 - **HEART Score**: Major cardiac events in chest pain
 - **Wells Score**: Pulmonary embolism probability
 - **MELD/MELD-Na**: End-stage liver disease severity
 - **CURB-65**: Community-acquired pneumonia severity
 - **Glasgow Coma Scale**: Consciousness level assessment
+- **eGFR (CKD-EPI 2021)**: Kidney function / CKD staging
+- **qSOFA**: Quick sepsis screening
+- **SOFA**: Sequential Organ Failure Assessment (ICU mortality)
+- **Child-Pugh**: Chronic liver disease classification
+- **ASCVD Risk**: 10-year cardiovascular risk (Pooled Cohort Equations)
 
 ### Lab Result Interpretation
-- 16 common laboratory tests (CBC, BMP, liver, cardiac, coagulation, thyroid, inflammatory)
+- 28 laboratory tests (CBC, BMP, liver, cardiac, coagulation, thyroid, inflammatory, lipid panel, minerals)
 - Critical value identification with urgency levels
 - Evidence-based action recommendations
 
@@ -55,7 +60,7 @@ npm start       # Starts MCP server on stdio
 
 ```bash
 npm run dev           # Run with tsx (hot reload)
-npm test              # Run tests (112 tests)
+npm test              # Run tests (188 tests)
 npm run test:watch    # Watch mode
 npm run test:coverage # Coverage report
 ```

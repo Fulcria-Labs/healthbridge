@@ -7,11 +7,14 @@ import {
   calculateGCS,
   calculateEGFR,
   calculateQSOFA,
+  calculateSOFA,
+  calculateChildPugh,
+  calculateASCVD,
   availableScores,
   type RiskScoreResult,
 } from '../data/risk-scores.js';
 
-export type ScoreName = 'CHA2DS2-VASc' | 'HEART' | 'Wells-PE' | 'MELD' | 'CURB-65' | 'GCS' | 'eGFR' | 'qSOFA';
+export type ScoreName = 'CHA2DS2-VASc' | 'HEART' | 'Wells-PE' | 'MELD' | 'CURB-65' | 'GCS' | 'eGFR' | 'qSOFA' | 'SOFA' | 'Child-Pugh' | 'ASCVD';
 
 export function listAvailableScores() {
   return availableScores.map(s => ({
@@ -91,6 +94,40 @@ export function calculateRiskScore(scoreName: ScoreName, parameters: Record<stri
         respiratory_rate_22_or_more: Boolean(parameters.respiratory_rate_22_or_more),
         altered_mental_status: Boolean(parameters.altered_mental_status),
         systolic_bp_100_or_less: Boolean(parameters.systolic_bp_100_or_less),
+      });
+
+    case 'SOFA':
+      return calculateSOFA({
+        pao2_fio2: Number(parameters.pao2_fio2),
+        on_mechanical_ventilation: Boolean(parameters.on_mechanical_ventilation),
+        platelets: Number(parameters.platelets),
+        bilirubin: Number(parameters.bilirubin),
+        cardiovascular: parameters.cardiovascular as 'no_hypotension' | 'map_under_70' | 'dopamine_lte_5' | 'dopamine_gt_5_or_epi_lte_0_1' | 'dopamine_gt_15_or_epi_gt_0_1',
+        gcs: Number(parameters.gcs),
+        creatinine: Number(parameters.creatinine),
+        urine_output_ml_day: parameters.urine_output_ml_day !== undefined ? Number(parameters.urine_output_ml_day) : undefined,
+      });
+
+    case 'Child-Pugh':
+      return calculateChildPugh({
+        bilirubin: Number(parameters.bilirubin),
+        albumin: Number(parameters.albumin),
+        inr: Number(parameters.inr),
+        ascites: parameters.ascites as 'none' | 'mild' | 'moderate_severe',
+        encephalopathy: parameters.encephalopathy as 'none' | 'grade_1_2' | 'grade_3_4',
+      });
+
+    case 'ASCVD':
+      return calculateASCVD({
+        age: Number(parameters.age),
+        sex: parameters.sex as 'male' | 'female',
+        race: (parameters.race as 'white' | 'african_american' | 'other') ?? 'other',
+        total_cholesterol: Number(parameters.total_cholesterol),
+        hdl_cholesterol: Number(parameters.hdl_cholesterol),
+        systolic_bp: Number(parameters.systolic_bp),
+        on_bp_treatment: Boolean(parameters.on_bp_treatment),
+        diabetes: Boolean(parameters.diabetes),
+        smoker: Boolean(parameters.smoker),
       });
 
     default:

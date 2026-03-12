@@ -539,6 +539,318 @@ export function calculateQSOFA(input: {
   };
 }
 
+/**
+ * SOFA Score - Sequential Organ Failure Assessment
+ * Predicts ICU mortality based on organ dysfunction in 6 systems
+ */
+export function calculateSOFA(input: {
+  pao2_fio2: number;          // PaO2/FiO2 ratio (mmHg)
+  on_mechanical_ventilation: boolean;
+  platelets: number;          // ×10³/µL
+  bilirubin: number;          // mg/dL
+  cardiovascular: 'no_hypotension' | 'map_under_70' | 'dopamine_lte_5' | 'dopamine_gt_5_or_epi_lte_0_1' | 'dopamine_gt_15_or_epi_gt_0_1';
+  gcs: number;                // Glasgow Coma Scale score (3-15)
+  creatinine: number;         // mg/dL
+  urine_output_ml_day?: number;
+}): RiskScoreResult {
+  const components: Record<string, { value: number; description: string }> = {};
+  let score = 0;
+
+  // Respiration: PaO2/FiO2
+  let respScore: number;
+  if (input.pao2_fio2 >= 400) { respScore = 0; }
+  else if (input.pao2_fio2 >= 300) { respScore = 1; }
+  else if (input.pao2_fio2 >= 200) { respScore = 2; }
+  else if (input.pao2_fio2 >= 100 && input.on_mechanical_ventilation) { respScore = 3; }
+  else if (input.pao2_fio2 >= 100) { respScore = 2; }
+  else { respScore = 4; }
+  components['Respiration (PaO2/FiO2)'] = { value: respScore, description: `${input.pao2_fio2} mmHg${input.on_mechanical_ventilation ? ' (ventilated)' : ''}` };
+  score += respScore;
+
+  // Coagulation: Platelets
+  let platScore: number;
+  if (input.platelets >= 150) { platScore = 0; }
+  else if (input.platelets >= 100) { platScore = 1; }
+  else if (input.platelets >= 50) { platScore = 2; }
+  else if (input.platelets >= 20) { platScore = 3; }
+  else { platScore = 4; }
+  components['Coagulation (Platelets)'] = { value: platScore, description: `${input.platelets} ×10³/µL` };
+  score += platScore;
+
+  // Liver: Bilirubin
+  let liverScore: number;
+  if (input.bilirubin < 1.2) { liverScore = 0; }
+  else if (input.bilirubin <= 1.9) { liverScore = 1; }
+  else if (input.bilirubin <= 5.9) { liverScore = 2; }
+  else if (input.bilirubin <= 11.9) { liverScore = 3; }
+  else { liverScore = 4; }
+  components['Liver (Bilirubin)'] = { value: liverScore, description: `${input.bilirubin} mg/dL` };
+  score += liverScore;
+
+  // Cardiovascular
+  const cvMap: Record<string, { score: number; desc: string }> = {
+    no_hypotension: { score: 0, desc: 'No hypotension' },
+    map_under_70: { score: 1, desc: 'MAP < 70 mmHg' },
+    dopamine_lte_5: { score: 2, desc: 'Dopamine ≤5 µg/kg/min' },
+    dopamine_gt_5_or_epi_lte_0_1: { score: 3, desc: 'Dopamine >5 or epinephrine ≤0.1 µg/kg/min' },
+    dopamine_gt_15_or_epi_gt_0_1: { score: 4, desc: 'Dopamine >15 or epinephrine >0.1 µg/kg/min' },
+  };
+  const cv = cvMap[input.cardiovascular];
+  components['Cardiovascular'] = { value: cv.score, description: cv.desc };
+  score += cv.score;
+
+  // CNS: GCS
+  let cnsScore: number;
+  if (input.gcs >= 15) { cnsScore = 0; }
+  else if (input.gcs >= 13) { cnsScore = 1; }
+  else if (input.gcs >= 10) { cnsScore = 2; }
+  else if (input.gcs >= 6) { cnsScore = 3; }
+  else { cnsScore = 4; }
+  components['CNS (GCS)'] = { value: cnsScore, description: `GCS ${input.gcs}` };
+  score += cnsScore;
+
+  // Renal: Creatinine or urine output
+  let renalScore: number;
+  if (input.urine_output_ml_day !== undefined && input.urine_output_ml_day < 200) {
+    renalScore = 4;
+  } else if (input.urine_output_ml_day !== undefined && input.urine_output_ml_day < 500) {
+    renalScore = Math.max(3, input.creatinine >= 3.5 ? 3 : input.creatinine >= 2.0 ? 2 : input.creatinine >= 1.2 ? 1 : 0);
+  } else if (input.creatinine >= 5.0) { renalScore = 4; }
+  else if (input.creatinine >= 3.5) { renalScore = 3; }
+  else if (input.creatinine >= 2.0) { renalScore = 2; }
+  else if (input.creatinine >= 1.2) { renalScore = 1; }
+  else { renalScore = 0; }
+  let renalDesc = `${input.creatinine} mg/dL`;
+  if (input.urine_output_ml_day !== undefined) renalDesc += `, UO ${input.urine_output_ml_day} mL/day`;
+  components['Renal (Creatinine)'] = { value: renalScore, description: renalDesc };
+  score += renalScore;
+
+  // ICU mortality estimates based on SOFA score
+  let riskLevel: string;
+  let mortality: string;
+  let recommendation: string;
+  if (score <= 1) {
+    riskLevel = 'Low'; mortality = '<3.3%';
+    recommendation = 'Low organ dysfunction. Continue monitoring. Reassess SOFA every 24 hours.';
+  } else if (score <= 5) {
+    riskLevel = 'Low-Moderate'; mortality = '<10%';
+    recommendation = 'Mild organ dysfunction. ICU monitoring. Identify and treat underlying cause.';
+  } else if (score <= 9) {
+    riskLevel = 'Moderate'; mortality = '15-20%';
+    recommendation = 'Moderate organ dysfunction. Aggressive ICU management. Consider source control. Reassess q24h.';
+  } else if (score <= 14) {
+    riskLevel = 'High'; mortality = '40-50%';
+    recommendation = 'Severe organ dysfunction. Multi-organ support required. Goals of care discussion may be appropriate.';
+  } else {
+    riskLevel = 'Very High'; mortality = '>80%';
+    recommendation = 'Critical multi-organ failure. Maximum ICU support. Palliative care consultation recommended.';
+  }
+
+  return {
+    scoreName: 'SOFA',
+    score,
+    maxScore: 24,
+    riskLevel,
+    interpretation: `SOFA Score ${score}/24. Estimated ICU mortality: ${mortality}. ${score >= 2 ? 'SOFA ≥2 indicates organ dysfunction consistent with sepsis diagnosis (Sepsis-3).' : ''}`,
+    recommendation,
+    components,
+    reference: 'Vincent JL, et al. Intensive Care Med 1996;22:707-710; Singer M, et al. JAMA 2016 (Sepsis-3)',
+  };
+}
+
+/**
+ * Child-Pugh Score for Chronic Liver Disease Classification
+ */
+export function calculateChildPugh(input: {
+  bilirubin: number;                     // mg/dL
+  albumin: number;                       // g/dL
+  inr: number;
+  ascites: 'none' | 'mild' | 'moderate_severe';
+  encephalopathy: 'none' | 'grade_1_2' | 'grade_3_4';
+}): RiskScoreResult {
+  const components: Record<string, { value: number; description: string }> = {};
+  let score = 0;
+
+  // Bilirubin
+  let bilScore: number;
+  if (input.bilirubin < 2) { bilScore = 1; }
+  else if (input.bilirubin <= 3) { bilScore = 2; }
+  else { bilScore = 3; }
+  components['Bilirubin'] = { value: bilScore, description: `${input.bilirubin} mg/dL` };
+  score += bilScore;
+
+  // Albumin
+  let albScore: number;
+  if (input.albumin > 3.5) { albScore = 1; }
+  else if (input.albumin >= 2.8) { albScore = 2; }
+  else { albScore = 3; }
+  components['Albumin'] = { value: albScore, description: `${input.albumin} g/dL` };
+  score += albScore;
+
+  // INR
+  let inrScore: number;
+  if (input.inr < 1.7) { inrScore = 1; }
+  else if (input.inr <= 2.3) { inrScore = 2; }
+  else { inrScore = 3; }
+  components['INR'] = { value: inrScore, description: `${input.inr}` };
+  score += inrScore;
+
+  // Ascites
+  const ascitesMap: Record<string, { score: number; desc: string }> = {
+    none: { score: 1, desc: 'None' },
+    mild: { score: 2, desc: 'Mild (diuretic-responsive)' },
+    moderate_severe: { score: 3, desc: 'Moderate to severe (refractory)' },
+  };
+  const asc = ascitesMap[input.ascites];
+  components['Ascites'] = { value: asc.score, description: asc.desc };
+  score += asc.score;
+
+  // Encephalopathy
+  const encMap: Record<string, { score: number; desc: string }> = {
+    none: { score: 1, desc: 'None' },
+    grade_1_2: { score: 2, desc: 'Grade I-II (mild confusion, asterixis)' },
+    grade_3_4: { score: 3, desc: 'Grade III-IV (somnolence to coma)' },
+  };
+  const enc = encMap[input.encephalopathy];
+  components['Encephalopathy'] = { value: enc.score, description: enc.desc };
+  score += enc.score;
+
+  let cpClass: string;
+  let riskLevel: string;
+  let survival: string;
+  let recommendation: string;
+  if (score <= 6) {
+    cpClass = 'A'; riskLevel = 'Well-compensated'; survival = '1-year: 100%, 2-year: 85%';
+    recommendation = 'Well-compensated cirrhosis. Standard medical management. Surveillance for HCC and varices.';
+  } else if (score <= 9) {
+    cpClass = 'B'; riskLevel = 'Significant functional compromise'; survival = '1-year: 81%, 2-year: 57%';
+    recommendation = 'Significant hepatic dysfunction. Consider transplant evaluation. Manage complications (ascites, encephalopathy). Avoid hepatotoxic medications.';
+  } else {
+    cpClass = 'C'; riskLevel = 'Decompensated'; survival = '1-year: 45%, 2-year: 35%';
+    recommendation = 'Decompensated cirrhosis. Urgent transplant evaluation. Maximum medical therapy. High surgical risk (perioperative mortality >50%).';
+  }
+
+  return {
+    scoreName: 'Child-Pugh',
+    score,
+    maxScore: 15,
+    riskLevel,
+    interpretation: `Child-Pugh Score ${score}/15, Class ${cpClass}. ${riskLevel} disease. Survival: ${survival}.`,
+    recommendation,
+    components,
+    reference: 'Pugh RN, et al. Br J Surg 1973;60:646-649',
+  };
+}
+
+/**
+ * ASCVD Risk Calculator - Pooled Cohort Equations (2013 ACC/AHA)
+ * 10-year atherosclerotic cardiovascular disease risk
+ */
+export function calculateASCVD(input: {
+  age: number;
+  sex: 'male' | 'female';
+  race: 'white' | 'african_american' | 'other';
+  total_cholesterol: number;   // mg/dL
+  hdl_cholesterol: number;     // mg/dL
+  systolic_bp: number;         // mmHg
+  on_bp_treatment: boolean;
+  diabetes: boolean;
+  smoker: boolean;
+}): RiskScoreResult {
+  const components: Record<string, { value: number; description: string }> = {};
+
+  components['Age'] = { value: input.age, description: `${input.age} years` };
+  components['Sex'] = { value: input.sex === 'male' ? 1 : 0, description: input.sex };
+  components['Race'] = { value: 0, description: input.race.replace(/_/g, ' ') };
+  components['Total Cholesterol'] = { value: input.total_cholesterol, description: `${input.total_cholesterol} mg/dL` };
+  components['HDL Cholesterol'] = { value: input.hdl_cholesterol, description: `${input.hdl_cholesterol} mg/dL` };
+  components['Systolic BP'] = { value: input.systolic_bp, description: `${input.systolic_bp} mmHg${input.on_bp_treatment ? ' (treated)' : ''}` };
+  components['Diabetes'] = { value: input.diabetes ? 1 : 0, description: input.diabetes ? 'Yes' : 'No' };
+  components['Smoker'] = { value: input.smoker ? 1 : 0, description: input.smoker ? 'Current' : 'No' };
+
+  // Pooled Cohort Equations coefficients
+  const lnAge = Math.log(input.age);
+  const lnTC = Math.log(input.total_cholesterol);
+  const lnHDL = Math.log(input.hdl_cholesterol);
+  const lnSBP = Math.log(input.systolic_bp);
+  const lnAgeSq = lnAge * lnAge;
+
+  let sumCoeff: number;
+  let meanCoeff: number;
+  let baseSurvival: number;
+
+  const isAA = input.race === 'african_american';
+
+  if (input.sex === 'male' && !isAA) {
+    // White male coefficients
+    sumCoeff = 12.344 * lnAge + 11.853 * lnTC + -2.664 * lnAge * lnTC
+      + -7.990 * lnHDL + 1.769 * lnAge * lnHDL
+      + (input.on_bp_treatment ? 1.797 * lnSBP : 1.764 * lnSBP)
+      + 7.837 * (input.smoker ? 1 : 0) + -1.795 * lnAge * (input.smoker ? 1 : 0)
+      + 0.658 * (input.diabetes ? 1 : 0);
+    meanCoeff = 61.18;
+    baseSurvival = 0.9144;
+  } else if (input.sex === 'male' && isAA) {
+    // African American male coefficients
+    sumCoeff = 2.469 * lnAge + 0.302 * lnTC
+      + -0.307 * lnHDL
+      + (input.on_bp_treatment ? 1.916 * lnSBP : 1.809 * lnSBP)
+      + 0.549 * (input.smoker ? 1 : 0)
+      + 0.645 * (input.diabetes ? 1 : 0);
+    meanCoeff = 19.54;
+    baseSurvival = 0.8954;
+  } else if (input.sex === 'female' && !isAA) {
+    // White female coefficients
+    sumCoeff = -29.799 * lnAge + 4.884 * lnAgeSq + 13.540 * lnTC + -3.114 * lnAge * lnTC
+      + -13.578 * lnHDL + 3.149 * lnAge * lnHDL
+      + (input.on_bp_treatment ? 2.019 * lnSBP : 1.957 * lnSBP)
+      + 7.574 * (input.smoker ? 1 : 0) + -1.665 * lnAge * (input.smoker ? 1 : 0)
+      + 0.661 * (input.diabetes ? 1 : 0);
+    meanCoeff = -29.18;
+    baseSurvival = 0.9665;
+  } else {
+    // African American female coefficients
+    sumCoeff = 17.114 * lnAge + 0.940 * lnTC
+      + -18.920 * lnHDL + 4.475 * lnAge * lnHDL
+      + (input.on_bp_treatment ? 29.291 * lnSBP + -6.432 * lnAge * lnSBP : 27.820 * lnSBP + -6.087 * lnAge * lnSBP)
+      + 0.691 * (input.smoker ? 1 : 0)
+      + 0.874 * (input.diabetes ? 1 : 0);
+    meanCoeff = 86.61;
+    baseSurvival = 0.9533;
+  }
+
+  const risk10yr = 1 - Math.pow(baseSurvival, Math.exp(sumCoeff - meanCoeff));
+  const riskPct = Math.max(0, Math.min(100, Math.round(risk10yr * 1000) / 10));
+  const riskScore = Math.round(riskPct * 10); // Store as integer tenths for score field
+
+  let riskLevel: string;
+  let recommendation: string;
+  if (riskPct < 5) {
+    riskLevel = 'Low';
+    recommendation = 'Low 10-year ASCVD risk. Emphasize lifestyle modifications. Statin therapy generally not indicated unless LDL ≥190 mg/dL.';
+  } else if (riskPct < 7.5) {
+    riskLevel = 'Borderline';
+    recommendation = 'Borderline risk. Consider risk-enhancing factors (family history, hsCRP, CAC score). Lifestyle modifications. Discuss moderate-intensity statin.';
+  } else if (riskPct < 20) {
+    riskLevel = 'Intermediate';
+    recommendation = 'Intermediate risk. Moderate-intensity statin recommended. Consider coronary artery calcium (CAC) scoring for shared decision-making. Optimize BP and lifestyle.';
+  } else {
+    riskLevel = 'High';
+    recommendation = 'High 10-year ASCVD risk (≥20%). High-intensity statin indicated. Aggressive risk factor management. Consider aspirin if bleeding risk is low. BP target <130/80.';
+  }
+
+  return {
+    scoreName: 'ASCVD Risk (10-year)',
+    score: riskPct,
+    maxScore: 100,
+    riskLevel,
+    interpretation: `Estimated 10-year ASCVD risk: ${riskPct}%. ${riskLevel} risk category.`,
+    recommendation,
+    components,
+    reference: 'Goff DC, et al. J Am Coll Cardiol 2014;63(25):2935-2959 (2013 ACC/AHA Pooled Cohort Equations)',
+  };
+}
+
 /** Available risk score calculators */
 export const availableScores = [
   { name: 'CHA2DS2-VASc', description: 'Stroke risk in atrial fibrillation', function: 'calculateCHA2DS2VASc' },
@@ -549,4 +861,7 @@ export const availableScores = [
   { name: 'GCS', description: 'Glasgow Coma Scale for consciousness level', function: 'calculateGCS' },
   { name: 'eGFR', description: 'Estimated glomerular filtration rate (CKD-EPI 2021)', function: 'calculateEGFR' },
   { name: 'qSOFA', description: 'Quick sepsis-related organ failure assessment', function: 'calculateQSOFA' },
+  { name: 'SOFA', description: 'Sequential Organ Failure Assessment for ICU mortality', function: 'calculateSOFA' },
+  { name: 'Child-Pugh', description: 'Chronic liver disease classification and prognosis', function: 'calculateChildPugh' },
+  { name: 'ASCVD', description: '10-year atherosclerotic cardiovascular disease risk (Pooled Cohort Equations)', function: 'calculateASCVD' },
 ] as const;

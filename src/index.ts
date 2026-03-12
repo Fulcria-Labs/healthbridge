@@ -46,9 +46,9 @@ server.tool(
 // Tool 2: Clinical Risk Score Calculator
 server.tool(
   'calculate_risk_score',
-  'Calculate validated clinical risk scores. Available scores: CHA2DS2-VASc (stroke risk in AFib), HEART (cardiac events in chest pain), Wells-PE (pulmonary embolism probability), MELD/MELD-Na (liver disease severity), CURB-65 (pneumonia severity), GCS (consciousness level), eGFR (kidney function CKD-EPI 2021), qSOFA (sepsis screening). Returns score, risk level, interpretation, and evidence-based recommendations.',
+  'Calculate validated clinical risk scores. Available scores: CHA2DS2-VASc (stroke risk in AFib), HEART (cardiac events in chest pain), Wells-PE (pulmonary embolism probability), MELD/MELD-Na (liver disease severity), CURB-65 (pneumonia severity), GCS (consciousness level), eGFR (kidney function CKD-EPI 2021), qSOFA (sepsis screening), SOFA (ICU organ failure assessment), Child-Pugh (chronic liver disease classification), ASCVD (10-year cardiovascular risk). Returns score, risk level, interpretation, and evidence-based recommendations.',
   {
-    score_name: z.enum(['CHA2DS2-VASc', 'HEART', 'Wells-PE', 'MELD', 'CURB-65', 'GCS', 'eGFR', 'qSOFA']).describe('The clinical risk score to calculate'),
+    score_name: z.enum(['CHA2DS2-VASc', 'HEART', 'Wells-PE', 'MELD', 'CURB-65', 'GCS', 'eGFR', 'qSOFA', 'SOFA', 'Child-Pugh', 'ASCVD']).describe('The clinical risk score to calculate'),
     parameters: z.record(z.string(), z.unknown()).describe('Score-specific parameters. Use list_risk_scores tool to see required parameters for each score.'),
   },
   async ({ score_name, parameters }) => {
@@ -114,6 +114,18 @@ server.tool(
       'qSOFA': {
         description: 'Quick sepsis-related organ failure assessment',
         parameters: { respiratory_rate_22_or_more: 'boolean', altered_mental_status: 'boolean', systolic_bp_100_or_less: 'boolean' },
+      },
+      'SOFA': {
+        description: 'Sequential Organ Failure Assessment (ICU mortality prediction)',
+        parameters: { pao2_fio2: 'number (PaO2/FiO2 ratio, mmHg)', on_mechanical_ventilation: 'boolean', platelets: 'number (×10³/µL)', bilirubin: 'number (mg/dL)', cardiovascular: '"no_hypotension", "map_under_70", "dopamine_lte_5", "dopamine_gt_5_or_epi_lte_0_1", or "dopamine_gt_15_or_epi_gt_0_1"', gcs: 'number (3-15)', creatinine: 'number (mg/dL)', urine_output_ml_day: 'number (optional, mL/day)' },
+      },
+      'Child-Pugh': {
+        description: 'Chronic liver disease classification and prognosis',
+        parameters: { bilirubin: 'number (mg/dL)', albumin: 'number (g/dL)', inr: 'number', ascites: '"none", "mild", or "moderate_severe"', encephalopathy: '"none", "grade_1_2", or "grade_3_4"' },
+      },
+      'ASCVD': {
+        description: '10-year atherosclerotic cardiovascular disease risk',
+        parameters: { age: 'number (40-79)', sex: '"male" or "female"', race: '"white", "african_american", or "other"', total_cholesterol: 'number (mg/dL)', hdl_cholesterol: 'number (mg/dL)', systolic_bp: 'number (mmHg)', on_bp_treatment: 'boolean', diabetes: 'boolean', smoker: 'boolean' },
       },
     };
 
