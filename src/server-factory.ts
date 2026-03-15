@@ -12,6 +12,9 @@ import { interpretSingleLab, interpretPanel, listAvailableTests } from './tools/
 import { getPatientSummary } from './tools/patient-summary-tool.js';
 import { generateClinicalAlerts } from './tools/clinical-alerts-tool.js';
 import { checkMedicationRenalDosing, checkSingleDrugDosing, listAvailableRenalDosingDrugs } from './tools/renal-dosing-tool.js';
+import { getPediatricDose, listPediatricDrugs } from './tools/pediatric-dosing-tool.js';
+import { checkSingleCrossReactivity, checkBulkCrossReactivity, listAvailableAllergyClasses } from './tools/allergy-crossreactivity-tool.js';
+import { runPKCalculator, listPKCalculators } from './tools/pharmacokinetics-tool.js';
 import { registerResources } from './resources.js';
 import { registerPrompts } from './prompts.js';
 import { getSHARPContext, hasFHIRAccess, fetchFHIRResource } from './sharp-context.js';
@@ -389,6 +392,132 @@ export function createHealthBridgeServer(): McpServer {
         content: [{
           type: 'text' as const,
           text: JSON.stringify({ drugs, count: drugs.length }, null, 2),
+        }],
+      };
+    }
+  );
+
+  // Tool 13: Pediatric Dosing Calculator
+  server.tool(
+    'pediatric_dosing',
+    'Calculate weight-based and age-based medication doses for pediatric patients. Covers antibiotics, antipyretics, anticonvulsants, asthma medications, and more. Returns calculated dose, max limits, age-appropriateness, and safety warnings based on Harriet Lane Handbook and AAP guidelines.',
+    {
+      drug: z.string().describe('Medication name (e.g., "amoxicillin", "ibuprofen", "acetaminophen")'),
+      weight_kg: z.number().min(0.5).max(150).describe('Patient weight in kilograms'),
+      age_months: z.number().min(0).max(216).describe('Patient age in months (e.g., 24 = 2 years, 72 = 6 years)'),
+      indication: z.string().optional().describe('Specific indication to filter dosing (e.g., "otitis media", "fever")'),
+    },
+    async ({ drug, weight_kg, age_months, indication }) => {
+      const result = getPediatricDose({ drug, weightKg: weight_kg, ageMonths: age_months, indication });
+      return {
+        content: [{
+          type: 'text' as const,
+          text: JSON.stringify(result, null, 2),
+        }],
+      };
+    }
+  );
+
+  // Tool 14: List Pediatric Dosing Drugs
+  server.tool(
+    'list_pediatric_drugs',
+    'List all medications available in the pediatric dosing database with their drug classes and minimum ages.',
+    {},
+    async () => {
+      const drugs = listPediatricDrugs();
+      return {
+        content: [{
+          type: 'text' as const,
+          text: JSON.stringify({ drugs, count: drugs.length }, null, 2),
+        }],
+      };
+    }
+  );
+
+  // Tool 15: Allergy Cross-Reactivity Check
+  server.tool(
+    'check_allergy_cross_reactivity',
+    'Check for drug allergy cross-reactivity between a known allergy and a proposed medication. Covers penicillin/cephalosporin, sulfonamide, NSAID, opioid, local anesthetic, ACE-inhibitor, and statin cross-reactivity patterns. Returns risk level, evidence, and safe alternatives.',
+    {
+      allergy: z.string().describe('Known drug allergy (e.g., "penicillin", "sulfa", "aspirin", "morphine")'),
+      proposed_drug: z.string().describe('Drug being considered for the patient'),
+    },
+    async ({ allergy, proposed_drug }) => {
+      const result = checkSingleCrossReactivity({ allergy, proposedDrug: proposed_drug });
+      return {
+        content: [{
+          type: 'text' as const,
+          text: JSON.stringify(result, null, 2),
+        }],
+      };
+    }
+  );
+
+  // Tool 16: Bulk Allergy Cross-Reactivity Screening
+  server.tool(
+    'screen_allergies',
+    'Screen all patient allergies against all proposed medications for cross-reactivity. Returns prioritized alerts with risk levels and safe alternatives for each flagged medication.',
+    {
+      allergies: z.array(z.string()).min(1).describe('List of known drug allergies'),
+      medications: z.array(z.string()).min(1).describe('List of proposed or current medications to screen'),
+    },
+    async ({ allergies, medications }) => {
+      const result = checkBulkCrossReactivity({ allergies, medications });
+      return {
+        content: [{
+          type: 'text' as const,
+          text: JSON.stringify(result, null, 2),
+        }],
+      };
+    }
+  );
+
+  // Tool 17: List Allergy Classes
+  server.tool(
+    'list_allergy_classes',
+    'List all drug allergy classes in the cross-reactivity database with their member drugs.',
+    {},
+    async () => {
+      const classes = listAvailableAllergyClasses();
+      return {
+        content: [{
+          type: 'text' as const,
+          text: JSON.stringify({ allergyClasses: classes, count: classes.length }, null, 2),
+        }],
+      };
+    }
+  );
+
+  // Tool 18: Pharmacokinetic Calculator
+  server.tool(
+    'pk_calculator',
+    'Run pharmacokinetic calculations for drug dosing. Available calculators: CrCl (Cockcroft-Gault creatinine clearance), IBW (ideal body weight), ABW (adjusted body weight), BSA (body surface area), correctedCalcium, correctedPhenytoin (Sheiner-Tozer), anionGap. Use list_pk_calculators for parameter details.',
+    {
+      calculator: z.string().describe('Calculator name: CrCl, IBW, ABW, BSA, correctedCalcium, correctedPhenytoin, anionGap'),
+      parameters: z.record(z.string(), z.unknown()).describe('Calculator-specific parameters. Use list_pk_calculators to see required parameters.'),
+    },
+    async ({ calculator, parameters }) => {
+      const result = runPKCalculator({ calculator, parameters });
+      return {
+        content: [{
+          type: 'text' as const,
+          text: JSON.stringify(result, null, 2),
+        }],
+      };
+    }
+  );
+
+  // Tool 19: List PK Calculators
+  server.tool(
+    'list_pk_calculators',
+    'List all available pharmacokinetic calculators with their descriptions and required parameters.',
+    {},
+    async () => {
+      const calculators = listPKCalculators();
+      return {
+        content: [{
+          type: 'text' as const,
+          text: JSON.stringify({ calculators, count: calculators.length }, null, 2),
         }],
       };
     }
