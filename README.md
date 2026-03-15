@@ -171,7 +171,7 @@ npm start       # Starts MCP server on stdio
 
 ```bash
 npm run dev           # Run with tsx (hot reload)
-npm test              # Run tests (2444 tests across 42 suites)
+npm test              # Run tests (2544 tests across 43 suites)
 npm run test:watch    # Watch mode
 npm run test:coverage # Coverage report
 ```
