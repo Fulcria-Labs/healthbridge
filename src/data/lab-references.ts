@@ -470,6 +470,106 @@ export const labReferences: LabReference[] = [
       critical_high: { range: '≥120', meaning: 'Severe hyperchloremia', action: 'EMERGENCY. Evaluate for severe dehydration, diabetes insipidus, or excessive saline administration. Check acid-base status.' }
     }
   },
+  // ===== NEW LAB TESTS =====
+  // Coagulation - Extended
+  {
+    testCode: 'FIBR', testName: 'Fibrinogen', aliases: ['fibrinogen', 'factor I', 'serum fibrinogen'],
+    unit: 'mg/dL', normalRange: { low: 200, high: 400 }, criticalRange: { low: 100 },
+    category: 'Coagulation',
+    interpretation: {
+      critical_low: { range: '<100', meaning: 'Critical hypofibrinogenemia', action: 'EMERGENCY. High bleeding risk. Cryoprecipitate infusion. Evaluate for DIC, massive transfusion, liver failure.' },
+      low: { range: '100-199', meaning: 'Low fibrinogen', action: 'Evaluate for DIC, liver disease, dysfibrinogenemia, L-asparaginase therapy. Consider cryoprecipitate if active bleeding.' },
+      normal: { range: '200-400', meaning: 'Normal fibrinogen', action: 'No action required.' },
+      high: { range: '>400', meaning: 'Elevated fibrinogen', action: 'Acute phase reactant. Seen in infection, inflammation, malignancy, pregnancy. Not usually acted upon directly.' }
+    }
+  },
+  // Liver Function - Extended
+  {
+    testCode: 'LDH', testName: 'Lactate Dehydrogenase', aliases: ['ldh', 'lactate dehydrogenase', 'ld'],
+    unit: 'U/L', normalRange: { low: 120, high: 246 },
+    category: 'General Chemistry',
+    interpretation: {
+      low: { range: '<120', meaning: 'Low LDH', action: 'Usually not clinically significant.' },
+      normal: { range: '120-246', meaning: 'Normal LDH', action: 'No action required.' },
+      elevated: { range: '247-500', meaning: 'Elevated LDH', action: 'Nonspecific marker of tissue damage. Consider hemolysis, liver disease, MI, PE, malignancy. Correlate with clinical context.' },
+      high: { range: '>500', meaning: 'Markedly elevated LDH', action: 'Significant tissue damage. Evaluate for tumor lysis syndrome, hemolytic anemia, severe liver injury, widespread malignancy. Check haptoglobin, reticulocytes.' }
+    }
+  },
+  {
+    testCode: 'AMYLASE', testName: 'Amylase', aliases: ['amylase', 'serum amylase'],
+    unit: 'U/L', normalRange: { low: 28, high: 100 }, criticalRange: { high: 300 },
+    category: 'Pancreatic',
+    interpretation: {
+      normal: { range: '28-100', meaning: 'Normal amylase', action: 'No action required.' },
+      elevated: { range: '101-299', meaning: 'Elevated amylase', action: 'Evaluate for pancreatitis (>3x ULN diagnostic), salivary gland disease, bowel obstruction, renal failure. Check lipase for specificity.' },
+      critical_high: { range: '≥300', meaning: 'Markedly elevated amylase', action: 'Strongly suggestive of acute pancreatitis. NPO, IV fluids, pain management. CT abdomen if diagnosis unclear. Check lipase.' }
+    }
+  },
+  {
+    testCode: 'LIPASE', testName: 'Lipase', aliases: ['lipase', 'serum lipase'],
+    unit: 'U/L', normalRange: { low: 0, high: 60 }, criticalRange: { high: 180 },
+    category: 'Pancreatic',
+    interpretation: {
+      normal: { range: '0-60', meaning: 'Normal lipase', action: 'No action required.' },
+      elevated: { range: '61-179', meaning: 'Elevated lipase', action: 'More specific than amylase for pancreatitis. >3x ULN diagnostic. Also elevated in renal failure, bowel obstruction.' },
+      critical_high: { range: '≥180', meaning: 'Markedly elevated lipase', action: 'Diagnostic of acute pancreatitis (>3x ULN). NPO, aggressive IV hydration, pain control, CT abdomen.' }
+    }
+  },
+  // Cardiac Markers - Extended
+  {
+    testCode: 'NTPROBNP', testName: 'NT-proBNP', aliases: ['nt-probnp', 'n-terminal pro bnp', 'pro bnp', 'ntprobnp'],
+    unit: 'pg/mL', normalRange: { low: 0, high: 125 }, criticalRange: { high: 1800 },
+    category: 'Cardiac',
+    interpretation: {
+      normal: { range: '0-125', meaning: 'Heart failure excluded', action: 'HF very unlikely. Age-adjusted: <50y: <450, 50-75y: <900, >75y: <1800.' },
+      elevated: { range: '126-449', meaning: 'Possible heart failure', action: 'Consider HF. Age-adjusted cutoffs apply. Echocardiogram recommended.' },
+      high: { range: '450-1799', meaning: 'Heart failure probable', action: 'HF likely if age <50. Further workup and treatment initiation. Echocardiogram.' },
+      critical_high: { range: '≥1800', meaning: 'Severe heart failure', action: 'Advanced HF in most age groups. Urgent cardiology consultation. Consider hospitalization.' }
+    }
+  },
+  {
+    testCode: 'CKMB', testName: 'CK-MB', aliases: ['ck-mb', 'creatine kinase mb', 'ckmb'],
+    unit: 'ng/mL', normalRange: { low: 0, high: 5 }, criticalRange: { high: 25 },
+    category: 'Cardiac',
+    interpretation: {
+      normal: { range: '0-5', meaning: 'Normal CK-MB', action: 'No myocardial injury detected. Troponin is preferred biomarker.' },
+      elevated: { range: '5.1-24.9', meaning: 'Elevated CK-MB', action: 'Possible myocardial injury. Serial measurements. CK-MB relative index (CK-MB/total CK × 100 > 5% suggests cardiac source).' },
+      critical_high: { range: '≥25', meaning: 'Markedly elevated CK-MB', action: 'Strong indicator of acute MI if relative index elevated. Cardiology consult. ECG. Consider cardiac catheterization.' }
+    }
+  },
+  // Endocrine
+  {
+    testCode: 'CORTISOL', testName: 'Cortisol (AM)', aliases: ['cortisol', 'serum cortisol', 'morning cortisol', 'am cortisol'],
+    unit: 'mcg/dL', normalRange: { low: 6, high: 23 }, criticalRange: { low: 3 },
+    category: 'Endocrine',
+    interpretation: {
+      critical_low: { range: '<3', meaning: 'Adrenal insufficiency likely', action: 'URGENT. Cosyntropin stimulation test. If clinically ill, stress-dose hydrocortisone immediately.' },
+      low: { range: '3-5.9', meaning: 'Low cortisol', action: 'Suggestive of adrenal insufficiency. Perform cosyntropin stimulation test. Check ACTH to differentiate primary vs secondary.' },
+      normal: { range: '6-23', meaning: 'Normal AM cortisol', action: 'No action required. Note: must be drawn 6-8 AM.' },
+      high: { range: '>23', meaning: 'Elevated cortisol', action: 'Screen for Cushing syndrome: 24h urine free cortisol, late-night salivary cortisol, overnight dexamethasone suppression test.' }
+    }
+  },
+  {
+    testCode: 'PTH', testName: 'Parathyroid Hormone', aliases: ['pth', 'parathyroid hormone', 'intact pth', 'parathormone'],
+    unit: 'pg/mL', normalRange: { low: 15, high: 65 },
+    category: 'Endocrine',
+    interpretation: {
+      low: { range: '<15', meaning: 'Hypoparathyroidism', action: 'Evaluate for post-surgical hypoparathyroidism, autoimmune destruction, magnesium deficiency. Check calcium, magnesium, vitamin D.' },
+      normal: { range: '15-65', meaning: 'Normal PTH', action: 'Interpret with calcium: "inappropriately normal" PTH with high calcium suggests primary hyperparathyroidism.' },
+      high: { range: '>65', meaning: 'Elevated PTH', action: 'If calcium high: primary hyperparathyroidism (parathyroid adenoma). If calcium low/normal: secondary (vitamin D deficiency, CKD). Check calcium, vitamin D, creatinine.' }
+    }
+  },
+  // Vitamins and Minerals
+  {
+    testCode: 'IRON', testName: 'Serum Iron', aliases: ['iron', 'serum iron', 'fe'],
+    unit: 'mcg/dL', normalRange: { low: 60, high: 170 },
+    category: 'Hematology',
+    interpretation: {
+      low: { range: '<60', meaning: 'Low serum iron', action: 'Evaluate for iron deficiency anemia, chronic disease. Check ferritin, TIBC, transferrin saturation. GI evaluation if appropriate.' },
+      normal: { range: '60-170', meaning: 'Normal serum iron', action: 'No action required. Interpret with TIBC and ferritin for complete iron status.' },
+      high: { range: '>170', meaning: 'Elevated serum iron', action: 'Evaluate for hemochromatosis, iron supplementation, transfusion-related. Check transferrin saturation. HFE gene testing if indicated.' }
+    }
+  },
 ];
 
 /**

@@ -186,6 +186,62 @@ export const drugDirectory: Record<string, DrugInfo> = {
   doxycycline: { genericName: 'doxycycline', brandNames: ['vibramycin', 'doryx'], drugClass: 'tetracycline' },
   trimethoprim: { genericName: 'trimethoprim', brandNames: ['bactrim', 'primsol'], drugClass: 'antibiotic' },
   meropenem: { genericName: 'meropenem', brandNames: ['merrem'], drugClass: 'carbapenem' },
+  // Oncology drugs
+  cisplatin: { genericName: 'cisplatin', brandNames: ['platinol'], drugClass: 'platinum-agent' },
+  carboplatin: { genericName: 'carboplatin', brandNames: ['paraplatin'], drugClass: 'platinum-agent' },
+  doxorubicin: { genericName: 'doxorubicin', brandNames: ['adriamycin'], drugClass: 'anthracycline' },
+  paclitaxel: { genericName: 'paclitaxel', brandNames: ['taxol', 'abraxane'], drugClass: 'taxane' },
+  docetaxel: { genericName: 'docetaxel', brandNames: ['taxotere'], drugClass: 'taxane' },
+  cyclophosphamide: { genericName: 'cyclophosphamide', brandNames: ['cytoxan'], drugClass: 'alkylating-agent' },
+  fluorouracil: { genericName: 'fluorouracil', brandNames: ['adrucil', '5-fu'], drugClass: 'antimetabolite' },
+  capecitabine: { genericName: 'capecitabine', brandNames: ['xeloda'], drugClass: 'antimetabolite' },
+  imatinib: { genericName: 'imatinib', brandNames: ['gleevec'], drugClass: 'tyrosine-kinase-inhibitor' },
+  erlotinib: { genericName: 'erlotinib', brandNames: ['tarceva'], drugClass: 'tyrosine-kinase-inhibitor' },
+  sorafenib: { genericName: 'sorafenib', brandNames: ['nexavar'], drugClass: 'tyrosine-kinase-inhibitor' },
+  ibrutinib: { genericName: 'ibrutinib', brandNames: ['imbruvica'], drugClass: 'btk-inhibitor' },
+  venetoclax: { genericName: 'venetoclax', brandNames: ['venclexta'], drugClass: 'bcl2-inhibitor' },
+  pembrolizumab: { genericName: 'pembrolizumab', brandNames: ['keytruda'], drugClass: 'checkpoint-inhibitor' },
+  nivolumab: { genericName: 'nivolumab', brandNames: ['opdivo'], drugClass: 'checkpoint-inhibitor' },
+  // HIV antiretrovirals (additional)
+  efavirenz: { genericName: 'efavirenz', brandNames: ['sustiva'], drugClass: 'nnrti' },
+  nevirapine: { genericName: 'nevirapine', brandNames: ['viramune'], drugClass: 'nnrti' },
+  dolutegravir: { genericName: 'dolutegravir', brandNames: ['tivicay'], drugClass: 'integrase-inhibitor' },
+  raltegravir: { genericName: 'raltegravir', brandNames: ['isentress'], drugClass: 'integrase-inhibitor' },
+  tenofovir: { genericName: 'tenofovir', brandNames: ['viread'], drugClass: 'nrti' },
+  emtricitabine: { genericName: 'emtricitabine', brandNames: ['emtriva'], drugClass: 'nrti' },
+  abacavir: { genericName: 'abacavir', brandNames: ['ziagen'], drugClass: 'nrti' },
+  darunavir: { genericName: 'darunavir', brandNames: ['prezista'], drugClass: 'protease-inhibitor' },
+  cobicistat: { genericName: 'cobicistat', brandNames: ['tybost'], drugClass: 'pharmacokinetic-enhancer' },
+  // Psychiatric drugs (additional)
+  clozapine: { genericName: 'clozapine', brandNames: ['clozaril', 'fazaclo'], drugClass: 'atypical-antipsychotic' },
+  risperidone: { genericName: 'risperidone', brandNames: ['risperdal'], drugClass: 'atypical-antipsychotic' },
+  paliperidone: { genericName: 'paliperidone', brandNames: ['invega'], drugClass: 'atypical-antipsychotic' },
+  chlorpromazine: { genericName: 'chlorpromazine', brandNames: ['thorazine'], drugClass: 'antipsychotic' },
+  fluphenazine: { genericName: 'fluphenazine', brandNames: ['prolixin'], drugClass: 'antipsychotic' },
+  amitriptyline: { genericName: 'amitriptyline', brandNames: ['elavil'], drugClass: 'tca' },
+  nortriptyline: { genericName: 'nortriptyline', brandNames: ['pamelor'], drugClass: 'tca' },
+  imipramine: { genericName: 'imipramine', brandNames: ['tofranil'], drugClass: 'tca' },
+  desipramine: { genericName: 'desipramine', brandNames: ['norpramin'], drugClass: 'tca' },
+  clomipramine: { genericName: 'clomipramine', brandNames: ['anafranil'], drugClass: 'tca' },
+  methylphenidate: { genericName: 'methylphenidate', brandNames: ['ritalin', 'concerta'], drugClass: 'stimulant' },
+  amphetamine: { genericName: 'amphetamine', brandNames: ['adderall', 'vyvanse'], drugClass: 'stimulant' },
+  atomoxetine: { genericName: 'atomoxetine', brandNames: ['strattera'], drugClass: 'snri' },
+  // Geriatric high-risk / Beers Criteria
+  diphenhydramine: { genericName: 'diphenhydramine', brandNames: ['benadryl'], drugClass: 'antihistamine' },
+  hydroxyzine: { genericName: 'hydroxyzine', brandNames: ['vistaril', 'atarax'], drugClass: 'antihistamine' },
+  promethazine: { genericName: 'promethazine', brandNames: ['phenergan'], drugClass: 'antihistamine' },
+  oxybutynin: { genericName: 'oxybutynin', brandNames: ['ditropan'], drugClass: 'anticholinergic' },
+  tolterodine: { genericName: 'tolterodine', brandNames: ['detrol'], drugClass: 'anticholinergic' },
+  donepezil: { genericName: 'donepezil', brandNames: ['aricept'], drugClass: 'cholinesterase-inhibitor' },
+  memantine: { genericName: 'memantine', brandNames: ['namenda'], drugClass: 'nmda-antagonist' },
+  zolpidem: { genericName: 'zolpidem', brandNames: ['ambien'], drugClass: 'z-drug' },
+  eszopiclone: { genericName: 'eszopiclone', brandNames: ['lunesta'], drugClass: 'z-drug' },
+  // Cardiovascular additions
+  ranolazine: { genericName: 'ranolazine', brandNames: ['ranexa'], drugClass: 'antianginal' },
+  ivabradine: { genericName: 'ivabradine', brandNames: ['corlanor'], drugClass: 'hcn-blocker' },
+  sacubitril_valsartan: { genericName: 'sacubitril_valsartan', brandNames: ['entresto'], drugClass: 'arni' },
+  eplerenone: { genericName: 'eplerenone', brandNames: ['inspra'], drugClass: 'potassium-sparing-diuretic' },
+  hydralazine: { genericName: 'hydralazine', brandNames: ['apresoline'], drugClass: 'vasodilator' },
 };
 
 // Drug interaction database
@@ -2157,6 +2213,353 @@ export const drugInteractions: DrugInteraction[] = [
     mechanism: 'SGLT2 inhibitor adds glucose-lowering effect to insulin therapy',
     clinicalEffect: 'Hypoglycemia, potentially severe if insulin dose not adjusted',
     management: 'Consider reducing insulin dose by 10-20% when adding canagliflozin. Monitor blood glucose closely.'
+  },
+
+  // ===== ONCOLOGY DRUG INTERACTIONS =====
+  {
+    drug1: 'methotrexate', drug2: 'pantoprazole', severity: 'major',
+    description: 'Increased methotrexate toxicity',
+    mechanism: 'PPIs inhibit renal tubular secretion of methotrexate',
+    clinicalEffect: 'Delayed methotrexate clearance with increased toxicity risk',
+    management: 'Discontinue PPI during high-dose methotrexate cycles.'
+  },
+  {
+    drug1: 'cisplatin', drug2: 'furosemide', severity: 'major',
+    description: 'Enhanced nephrotoxicity and ototoxicity',
+    mechanism: 'Both drugs are nephrotoxic; furosemide-induced dehydration worsens cisplatin renal toxicity',
+    clinicalEffect: 'Acute kidney injury, permanent hearing loss',
+    management: 'Ensure aggressive IV hydration before cisplatin. Avoid furosemide within 24h of cisplatin if possible.'
+  },
+  {
+    drug1: 'cisplatin', drug2: 'carboplatin', severity: 'major',
+    description: 'Additive nephrotoxicity and myelosuppression',
+    mechanism: 'Both are platinum agents with overlapping toxicity profiles',
+    clinicalEffect: 'Severe renal damage, profound cytopenias',
+    management: 'Sequential platinum agents require renal function monitoring. Allow adequate washout period.'
+  },
+  {
+    drug1: 'doxorubicin', drug2: 'paclitaxel', severity: 'major',
+    description: 'Increased doxorubicin cardiotoxicity',
+    mechanism: 'Paclitaxel reduces doxorubicin clearance and increases doxorubicin metabolite formation',
+    clinicalEffect: 'Enhanced risk of cardiomyopathy and heart failure',
+    management: 'Administer doxorubicin before paclitaxel. Monitor cumulative doxorubicin dose. Serial echocardiography.'
+  },
+  {
+    drug1: 'doxorubicin', drug2: 'cyclosporine', severity: 'major',
+    description: 'Increased doxorubicin toxicity',
+    mechanism: 'Cyclosporine inhibits P-glycoprotein efflux of doxorubicin',
+    clinicalEffect: 'Increased doxorubicin levels, greater myelosuppression and cardiotoxicity',
+    management: 'Reduce doxorubicin dose. Monitor blood counts and cardiac function closely.'
+  },
+  {
+    drug1: 'capecitabine', drug2: 'warfarin', severity: 'contraindicated',
+    description: 'Dramatically increased anticoagulant effect',
+    mechanism: 'Capecitabine inhibits CYP2C9, the primary enzyme metabolizing S-warfarin',
+    clinicalEffect: 'Markedly elevated INR, life-threatening bleeding reported',
+    management: 'Avoid combination. If essential, reduce warfarin dose significantly and monitor INR at least twice weekly.'
+  },
+  {
+    drug1: 'fluorouracil', drug2: 'warfarin', severity: 'contraindicated',
+    description: 'Severely increased anticoagulant effect',
+    mechanism: '5-FU inhibits CYP2C9 metabolism of warfarin',
+    clinicalEffect: 'Fatal bleeding events reported',
+    management: 'Avoid combination. Switch to LMWH during 5-FU chemotherapy.'
+  },
+  {
+    drug1: 'imatinib', drug2: 'simvastatin', severity: 'major',
+    description: 'Increased statin toxicity',
+    mechanism: 'Imatinib inhibits CYP3A4, increasing statin exposure',
+    clinicalEffect: 'Rhabdomyolysis risk',
+    management: 'Use pravastatin or rosuvastatin instead (not CYP3A4 substrates).'
+  },
+  {
+    drug1: 'imatinib', drug2: 'warfarin', severity: 'major',
+    description: 'Unpredictable anticoagulant effect',
+    mechanism: 'Imatinib inhibits CYP2C9 and CYP3A4, affecting warfarin metabolism',
+    clinicalEffect: 'Either increased or decreased INR reported',
+    management: 'Switch to LMWH during imatinib therapy. If warfarin used, monitor INR very frequently.'
+  },
+  {
+    drug1: 'ibrutinib', drug2: 'warfarin', severity: 'contraindicated',
+    description: 'High bleeding risk',
+    mechanism: 'Ibrutinib inhibits platelet aggregation via BTK pathway plus anticoagulant effect',
+    clinicalEffect: 'Serious and fatal bleeding events reported',
+    management: 'Avoid warfarin. Use alternative anticoagulant with caution if needed.'
+  },
+  {
+    drug1: 'ibrutinib', drug2: 'ketoconazole', severity: 'contraindicated',
+    description: 'Dramatically increased ibrutinib levels',
+    mechanism: 'Ketoconazole strongly inhibits CYP3A4, ibrutinib primary metabolic pathway',
+    clinicalEffect: '24-fold increase in ibrutinib exposure reported',
+    management: 'Avoid strong CYP3A4 inhibitors. Use alternative antifungal.'
+  },
+  {
+    drug1: 'venetoclax', drug2: 'ketoconazole', severity: 'contraindicated',
+    description: 'Markedly increased venetoclax exposure',
+    mechanism: 'CYP3A4 inhibition dramatically increases venetoclax levels',
+    clinicalEffect: 'Severe tumor lysis syndrome, fatal cases reported',
+    management: 'Contraindicated during venetoclax dose ramp-up. Reduce venetoclax dose by 75% at steady state.'
+  },
+  {
+    drug1: 'venetoclax', drug2: 'rifampin', severity: 'contraindicated',
+    description: 'Dramatically reduced venetoclax efficacy',
+    mechanism: 'Rifampin induces CYP3A4, reducing venetoclax exposure by >90%',
+    clinicalEffect: 'Loss of therapeutic effect, disease progression',
+    management: 'Avoid strong CYP3A4 inducers during venetoclax therapy.'
+  },
+  {
+    drug1: 'erlotinib', drug2: 'omeprazole', severity: 'major',
+    description: 'Reduced erlotinib absorption',
+    mechanism: 'PPIs increase gastric pH, reducing erlotinib solubility and absorption',
+    clinicalEffect: 'Significantly reduced erlotinib plasma levels, treatment failure',
+    management: 'Avoid PPIs. Use H2 blocker if needed, separated by 10h before and 2h after erlotinib.'
+  },
+  {
+    drug1: 'sorafenib', drug2: 'warfarin', severity: 'major',
+    description: 'Increased bleeding risk',
+    mechanism: 'Sorafenib may increase warfarin effect; both increase bleeding risk independently',
+    clinicalEffect: 'INR elevation, hemorrhage',
+    management: 'Monitor INR frequently. Consider LMWH alternative.'
+  },
+
+  // ===== HIV/ANTIRETROVIRAL INTERACTIONS =====
+  {
+    drug1: 'efavirenz', drug2: 'simvastatin', severity: 'major',
+    description: 'Reduced statin efficacy',
+    mechanism: 'Efavirenz induces CYP3A4, increasing simvastatin metabolism',
+    clinicalEffect: 'Subtherapeutic statin levels, inadequate lipid control',
+    management: 'May need higher statin doses. Monitor lipid levels closely.'
+  },
+  {
+    drug1: 'efavirenz', drug2: 'carbamazepine', severity: 'major',
+    description: 'Bidirectional reduction in drug levels',
+    mechanism: 'Both are CYP3A4 inducers and substrates, mutually increasing metabolism',
+    clinicalEffect: 'Subtherapeutic levels of both drugs, HIV treatment failure and seizure breakthrough',
+    management: 'Avoid combination. Use valproic acid or levetiracetam for seizures.'
+  },
+  {
+    drug1: 'dolutegravir', drug2: 'rifampin', severity: 'major',
+    description: 'Reduced dolutegravir levels',
+    mechanism: 'Rifampin induces UGT1A1 and CYP3A4, increasing dolutegravir metabolism',
+    clinicalEffect: 'Subtherapeutic dolutegravir levels, risk of HIV resistance',
+    management: 'Double dolutegravir dose to 50mg BID during rifampin co-administration.'
+  },
+  {
+    drug1: 'dolutegravir', drug2: 'metformin', severity: 'moderate',
+    description: 'Increased metformin levels',
+    mechanism: 'Dolutegravir inhibits OCT2 and MATE1 renal transporters of metformin',
+    clinicalEffect: 'Increased metformin exposure, potential lactic acidosis in renal impairment',
+    management: 'Limit metformin to 1000mg/day when starting dolutegravir. Monitor renal function.'
+  },
+  {
+    drug1: 'tenofovir', drug2: 'cisplatin', severity: 'contraindicated',
+    description: 'Severe nephrotoxicity',
+    mechanism: 'Both drugs are nephrotoxic via tubular damage',
+    clinicalEffect: 'Acute kidney injury, Fanconi syndrome',
+    management: 'Avoid combination. If unavoidable, monitor renal function very closely.'
+  },
+  {
+    drug1: 'cobicistat', drug2: 'simvastatin', severity: 'contraindicated',
+    description: 'Rhabdomyolysis risk',
+    mechanism: 'Cobicistat inhibits CYP3A4 similarly to ritonavir',
+    clinicalEffect: 'Massive statin level increase, rhabdomyolysis',
+    management: 'Contraindicated. Use pravastatin or rosuvastatin.'
+  },
+  {
+    drug1: 'cobicistat', drug2: 'midazolam', severity: 'contraindicated',
+    description: 'Profound sedation',
+    mechanism: 'Strong CYP3A4 inhibition increases midazolam levels dramatically',
+    clinicalEffect: 'Respiratory depression, prolonged sedation',
+    management: 'Contraindicated. Use lorazepam or oxazepam.'
+  },
+  // ===== PSYCHIATRIC DRUG INTERACTIONS =====
+  {
+    drug1: 'clozapine', drug2: 'ciprofloxacin', severity: 'contraindicated',
+    description: 'Clozapine toxicity',
+    mechanism: 'Ciprofloxacin inhibits CYP1A2, the primary metabolic enzyme for clozapine',
+    clinicalEffect: 'Seizures, myocarditis, agranulocytosis, potentially fatal',
+    management: 'Avoid combination. If unavoidable, reduce clozapine dose by 50% and monitor levels.'
+  },
+  {
+    drug1: 'clozapine', drug2: 'carbamazepine', severity: 'contraindicated',
+    description: 'Additive bone marrow suppression',
+    mechanism: 'Both drugs independently cause agranulocytosis',
+    clinicalEffect: 'Potentially fatal agranulocytosis',
+    management: 'Absolutely contraindicated. Use alternative anticonvulsant.'
+  },
+  {
+    drug1: 'clozapine', drug2: 'fluoxetine', severity: 'major',
+    description: 'Increased clozapine levels',
+    mechanism: 'Fluoxetine inhibits CYP2D6 and moderately inhibits CYP1A2',
+    clinicalEffect: 'Clozapine toxicity including seizures and sedation',
+    management: 'Monitor clozapine levels. Reduce dose if needed. Use sertraline as preferred SSRI.'
+  },
+  {
+    drug1: 'amitriptyline', drug2: 'phenelzine', severity: 'contraindicated',
+    description: 'Serotonin syndrome and hypertensive crisis',
+    mechanism: 'TCA serotonergic effects combined with MAOI inhibition of serotonin metabolism',
+    clinicalEffect: 'Hyperthermia, seizures, cardiovascular collapse, death',
+    management: 'Contraindicated. Allow 14-day MAOI washout before starting TCA.'
+  },
+  {
+    drug1: 'amitriptyline', drug2: 'tramadol', severity: 'major',
+    description: 'Serotonin syndrome and seizure risk',
+    mechanism: 'Both have serotonergic activity; both lower seizure threshold',
+    clinicalEffect: 'Serotonin syndrome, seizures',
+    management: 'Avoid if possible. If used, start with low doses and monitor for serotonin syndrome.'
+  },
+  {
+    drug1: 'nortriptyline', drug2: 'fluoxetine', severity: 'major',
+    description: 'Markedly increased TCA levels',
+    mechanism: 'Fluoxetine potently inhibits CYP2D6, the primary TCA metabolic pathway',
+    clinicalEffect: 'TCA toxicity: QT prolongation, arrhythmias, anticholinergic crisis',
+    management: 'Avoid combination. If necessary, reduce TCA dose by 75% and monitor levels and ECG.'
+  },
+  {
+    drug1: 'methylphenidate', drug2: 'phenelzine', severity: 'contraindicated',
+    description: 'Hypertensive crisis',
+    mechanism: 'MAOI prevents catecholamine breakdown; stimulant releases catecholamines',
+    clinicalEffect: 'Severe hypertension, stroke, death',
+    management: 'Absolutely contraindicated. Allow 14-day MAOI washout.'
+  },
+  {
+    drug1: 'amphetamine', drug2: 'phenelzine', severity: 'contraindicated',
+    description: 'Hypertensive crisis',
+    mechanism: 'Amphetamine releases catecholamines; MAOI prevents their breakdown',
+    clinicalEffect: 'Malignant hypertension, intracranial hemorrhage, death',
+    management: 'Absolutely contraindicated. Allow 14-day MAOI washout.'
+  },
+  {
+    drug1: 'risperidone', drug2: 'fluoxetine', severity: 'major',
+    description: 'Increased risperidone levels',
+    mechanism: 'Fluoxetine inhibits CYP2D6, the primary metabolic pathway for risperidone',
+    clinicalEffect: 'Extrapyramidal symptoms, QT prolongation, hyperprolactinemia',
+    management: 'Reduce risperidone dose. Monitor for EPS and QT prolongation.'
+  },
+  {
+    drug1: 'chlorpromazine', drug2: 'methadone', severity: 'major',
+    description: 'Additive QT prolongation and CNS depression',
+    mechanism: 'Both prolong QT interval; combined CNS depressant effects',
+    clinicalEffect: 'Cardiac arrhythmias, excessive sedation, respiratory depression',
+    management: 'Monitor ECG. Use lowest effective doses. Watch for excessive sedation.'
+  },
+
+  // ===== GERIATRIC HIGH-RISK INTERACTIONS =====
+  {
+    drug1: 'donepezil', drug2: 'oxybutynin', severity: 'major',
+    description: 'Pharmacological antagonism',
+    mechanism: 'Oxybutynin (anticholinergic) directly opposes donepezil (cholinesterase inhibitor)',
+    clinicalEffect: 'Loss of dementia treatment efficacy, worsened cognitive function',
+    management: 'Avoid anticholinergics in dementia patients. Use mirabegron for overactive bladder instead.'
+  },
+  {
+    drug1: 'donepezil', drug2: 'diphenhydramine', severity: 'major',
+    description: 'Anticholinergic antagonism of dementia treatment',
+    mechanism: 'Diphenhydramine anticholinergic effects oppose cholinesterase inhibitor mechanism',
+    clinicalEffect: 'Reduced dementia medication efficacy, increased confusion',
+    management: 'Avoid anticholinergic antihistamines. Use cetirizine or loratadine if needed.'
+  },
+  {
+    drug1: 'zolpidem', drug2: 'oxycodone', severity: 'major',
+    description: 'Severe CNS depression',
+    mechanism: 'Additive CNS depressant effects via different receptor pathways',
+    clinicalEffect: 'Profound sedation, respiratory depression, death',
+    management: 'FDA boxed warning. Avoid combination. If necessary, use lowest doses with monitoring.'
+  },
+  {
+    drug1: 'zolpidem', drug2: 'lorazepam', severity: 'major',
+    description: 'Excessive CNS depression',
+    mechanism: 'Both enhance GABA-A receptor activity',
+    clinicalEffect: 'Excessive sedation, falls, respiratory depression',
+    management: 'Avoid combination, especially in elderly. High fall risk.'
+  },
+  {
+    drug1: 'diphenhydramine', drug2: 'oxycodone', severity: 'major',
+    description: 'Additive CNS and respiratory depression',
+    mechanism: 'Both cause CNS depression through different mechanisms',
+    clinicalEffect: 'Excessive sedation, respiratory depression, particularly dangerous in elderly',
+    management: 'Avoid in elderly. If needed, use lowest doses with close monitoring.'
+  },
+  {
+    drug1: 'hydroxyzine', drug2: 'methadone', severity: 'major',
+    description: 'Additive QT prolongation and CNS depression',
+    mechanism: 'Both prolong QT; combined sedative effects',
+    clinicalEffect: 'Torsades de pointes, excessive sedation, respiratory failure',
+    management: 'Avoid combination. Monitor ECG if unavoidable.'
+  },
+
+  // ===== CARDIOVASCULAR EXPANDED INTERACTIONS =====
+  {
+    drug1: 'ranolazine', drug2: 'simvastatin', severity: 'major',
+    description: 'Increased statin levels',
+    mechanism: 'Ranolazine inhibits CYP3A4 and P-glycoprotein, increasing simvastatin exposure',
+    clinicalEffect: 'Myopathy, rhabdomyolysis risk',
+    management: 'Limit simvastatin to 20mg/day with ranolazine.'
+  },
+  {
+    drug1: 'ranolazine', drug2: 'digoxin', severity: 'major',
+    description: 'Increased digoxin levels',
+    mechanism: 'Ranolazine inhibits P-glycoprotein-mediated digoxin efflux',
+    clinicalEffect: 'Digoxin toxicity: nausea, visual changes, arrhythmias',
+    management: 'Reduce digoxin dose. Monitor digoxin levels closely.'
+  },
+  {
+    drug1: 'ivabradine', drug2: 'diltiazem', severity: 'contraindicated',
+    description: 'Excessive bradycardia',
+    mechanism: 'Both reduce heart rate through different mechanisms; diltiazem also inhibits CYP3A4',
+    clinicalEffect: 'Severe bradycardia, heart block, syncope',
+    management: 'Contraindicated. Do not combine.'
+  },
+  {
+    drug1: 'ivabradine', drug2: 'verapamil', severity: 'contraindicated',
+    description: 'Severe bradycardia and increased ivabradine levels',
+    mechanism: 'Additive heart rate reduction; verapamil inhibits CYP3A4 increasing ivabradine exposure',
+    clinicalEffect: 'Extreme bradycardia, syncope, hemodynamic instability',
+    management: 'Contraindicated. Do not combine.'
+  },
+  {
+    drug1: 'sacubitril_valsartan', drug2: 'lisinopril', severity: 'contraindicated',
+    description: 'Angioedema risk',
+    mechanism: 'Sacubitril inhibits neprilysin which degrades bradykinin; ACEi also increases bradykinin',
+    clinicalEffect: 'Potentially fatal angioedema',
+    management: 'Contraindicated. Allow 36-hour washout between ACEi and sacubitril/valsartan.'
+  },
+  {
+    drug1: 'sacubitril_valsartan', drug2: 'enalapril', severity: 'contraindicated',
+    description: 'Angioedema risk from dual bradykinin elevation',
+    mechanism: 'Neprilysin and ACE both degrade bradykinin; dual inhibition causes accumulation',
+    clinicalEffect: 'Life-threatening angioedema',
+    management: 'Contraindicated. 36-hour washout required between ACEi and Entresto.'
+  },
+  {
+    drug1: 'eplerenone', drug2: 'ketoconazole', severity: 'contraindicated',
+    description: 'Dangerous hyperkalemia from increased eplerenone levels',
+    mechanism: 'Ketoconazole inhibits CYP3A4, the sole metabolic pathway for eplerenone',
+    clinicalEffect: 'Severe hyperkalemia, cardiac arrhythmias',
+    management: 'Contraindicated. Avoid strong CYP3A4 inhibitors with eplerenone.'
+  },
+  {
+    drug1: 'hydralazine', drug2: 'metoprolol', severity: 'moderate',
+    description: 'Enhanced hypotension and increased metoprolol levels',
+    mechanism: 'Hydralazine reduces hepatic blood flow, decreasing first-pass metabolism of metoprolol',
+    clinicalEffect: 'Excessive hypotension, bradycardia',
+    management: 'Monitor blood pressure closely. May need to reduce beta-blocker dose.'
+  },
+
+  // ===== ADDITIONAL HIGH-YIELD INTERACTIONS =====
+  {
+    drug1: 'promethazine', drug2: 'morphine', severity: 'major',
+    description: 'Severe CNS and respiratory depression',
+    mechanism: 'Additive CNS depressant effects; promethazine anticholinergic effects compound opioid effects',
+    clinicalEffect: 'Profound sedation, respiratory depression, death in elderly',
+    management: 'If necessary, use lowest doses. Monitor respiratory status. Avoid in elderly.'
+  },
+  {
+    drug1: 'atomoxetine', drug2: 'fluoxetine', severity: 'major',
+    description: 'Increased atomoxetine levels',
+    mechanism: 'Fluoxetine inhibits CYP2D6, the primary metabolic pathway of atomoxetine',
+    clinicalEffect: 'QT prolongation, increased heart rate, liver injury',
+    management: 'Reduce atomoxetine dose. Monitor heart rate and QT interval.'
   },
 ];
 
