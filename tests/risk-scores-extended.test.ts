@@ -27,7 +27,7 @@ describe('Risk Score Tool Error Handling', () => {
 
   it('listAvailableScores returns all 16 scores', () => {
     const scores = listAvailableScores();
-    expect(scores.length).toBe(16);
+    expect(scores.length).toBe(21);
     expect(scores.some(s => s.name === 'CHA2DS2-VASc')).toBe(true);
     expect(scores.some(s => s.name === 'HEART')).toBe(true);
     expect(scores.some(s => s.name === 'Wells PE')).toBe(true);
@@ -35,7 +35,7 @@ describe('Risk Score Tool Error Handling', () => {
   });
 
   it('availableScores constant has correct entries', () => {
-    expect(availableScores.length).toBe(16);
+    expect(availableScores.length).toBe(21);
     for (const score of availableScores) {
       expect(score.name).toBeTruthy();
       expect(score.description).toBeTruthy();

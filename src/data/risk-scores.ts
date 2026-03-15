@@ -1255,6 +1255,695 @@ export function calculateBMI(input: {
   };
 }
 
+/**
+ * Framingham Risk Score - 10-Year Coronary Heart Disease Risk
+ * Based on Wilson PWF, et al. Prediction of Coronary Heart Disease Using Risk Factor Categories.
+ * Uses ATP III categorical model.
+ */
+export function calculateFramingham(input: {
+  age: number;
+  sex: 'male' | 'female';
+  total_cholesterol: number;  // mg/dL
+  hdl_cholesterol: number;    // mg/dL
+  systolic_bp: number;        // mmHg
+  bp_treated: boolean;
+  smoker: boolean;
+  diabetes: boolean;
+}): RiskScoreResult {
+  const components: Record<string, { value: number; description: string }> = {};
+  let points = 0;
+
+  // Age points
+  let agePoints: number;
+  if (input.sex === 'male') {
+    if (input.age < 35) agePoints = -9;
+    else if (input.age <= 39) agePoints = -4;
+    else if (input.age <= 44) agePoints = 0;
+    else if (input.age <= 49) agePoints = 3;
+    else if (input.age <= 54) agePoints = 6;
+    else if (input.age <= 59) agePoints = 8;
+    else if (input.age <= 64) agePoints = 10;
+    else if (input.age <= 69) agePoints = 11;
+    else if (input.age <= 74) agePoints = 12;
+    else agePoints = 13;
+  } else {
+    if (input.age < 35) agePoints = -7;
+    else if (input.age <= 39) agePoints = -3;
+    else if (input.age <= 44) agePoints = 0;
+    else if (input.age <= 49) agePoints = 3;
+    else if (input.age <= 54) agePoints = 6;
+    else if (input.age <= 59) agePoints = 8;
+    else if (input.age <= 64) agePoints = 10;
+    else if (input.age <= 69) agePoints = 12;
+    else if (input.age <= 74) agePoints = 14;
+    else agePoints = 16;
+  }
+  components['Age'] = { value: agePoints, description: `${input.age} years` };
+  points += agePoints;
+
+  // Total cholesterol points
+  let tcPoints: number;
+  if (input.sex === 'male') {
+    if (input.total_cholesterol < 160) tcPoints = -7;
+    else if (input.total_cholesterol <= 199) tcPoints = -3;
+    else if (input.total_cholesterol <= 239) tcPoints = 0;
+    else if (input.total_cholesterol <= 279) tcPoints = 1;
+    else tcPoints = 3;
+  } else {
+    if (input.total_cholesterol < 160) tcPoints = -9;
+    else if (input.total_cholesterol <= 199) tcPoints = -4;
+    else if (input.total_cholesterol <= 239) tcPoints = 0;
+    else if (input.total_cholesterol <= 279) tcPoints = 1;
+    else tcPoints = 3;
+  }
+  components['Total Cholesterol'] = { value: tcPoints, description: `${input.total_cholesterol} mg/dL` };
+  points += tcPoints;
+
+  // HDL cholesterol points
+  let hdlPoints: number;
+  if (input.hdl_cholesterol >= 60) hdlPoints = -1;
+  else if (input.hdl_cholesterol >= 50) hdlPoints = 0;
+  else if (input.hdl_cholesterol >= 40) hdlPoints = 1;
+  else hdlPoints = 2;
+  components['HDL Cholesterol'] = { value: hdlPoints, description: `${input.hdl_cholesterol} mg/dL` };
+  points += hdlPoints;
+
+  // Systolic BP points (differs by treated/untreated)
+  let bpPoints: number;
+  if (input.bp_treated) {
+    if (input.systolic_bp < 120) bpPoints = 0;
+    else if (input.systolic_bp <= 129) bpPoints = 1;
+    else if (input.systolic_bp <= 139) bpPoints = 2;
+    else if (input.systolic_bp <= 159) bpPoints = 3;
+    else bpPoints = 4;
+    // Males and females have same treated BP points in ATP III model
+    if (input.sex === 'female') {
+      if (input.systolic_bp < 120) bpPoints = 0;
+      else if (input.systolic_bp <= 129) bpPoints = 3;
+      else if (input.systolic_bp <= 139) bpPoints = 4;
+      else if (input.systolic_bp <= 159) bpPoints = 5;
+      else bpPoints = 6;
+    }
+  } else {
+    if (input.sex === 'male') {
+      if (input.systolic_bp < 120) bpPoints = 0;
+      else if (input.systolic_bp <= 129) bpPoints = 0;
+      else if (input.systolic_bp <= 139) bpPoints = 1;
+      else if (input.systolic_bp <= 159) bpPoints = 1;
+      else bpPoints = 2;
+    } else {
+      if (input.systolic_bp < 120) bpPoints = 0;
+      else if (input.systolic_bp <= 129) bpPoints = 1;
+      else if (input.systolic_bp <= 139) bpPoints = 2;
+      else if (input.systolic_bp <= 159) bpPoints = 3;
+      else bpPoints = 4;
+    }
+  }
+  components['Systolic BP'] = { value: bpPoints, description: `${input.systolic_bp} mmHg (${input.bp_treated ? 'treated' : 'untreated'})` };
+  points += bpPoints;
+
+  // Smoking
+  const smokePoints = input.smoker ? (input.sex === 'male' ? 3 : 2) : 0;
+  components['Smoking'] = { value: smokePoints, description: input.smoker ? 'Current smoker' : 'Non-smoker' };
+  points += smokePoints;
+
+  // Diabetes
+  const dmPoints = input.diabetes ? (input.sex === 'male' ? 2 : 4) : 0;
+  components['Diabetes'] = { value: dmPoints, description: input.diabetes ? 'Present' : 'Absent' };
+  points += dmPoints;
+
+  // Calculate 10-year risk percentage based on point total
+  let riskPercent: number;
+  if (input.sex === 'male') {
+    if (points <= 0) riskPercent = 1;
+    else if (points <= 4) riskPercent = 2;
+    else if (points <= 6) riskPercent = 3;
+    else if (points === 7) riskPercent = 4;
+    else if (points === 8) riskPercent = 5;
+    else if (points === 9) riskPercent = 7;
+    else if (points === 10) riskPercent = 8;
+    else if (points === 11) riskPercent = 10;
+    else if (points === 12) riskPercent = 13;
+    else if (points === 13) riskPercent = 16;
+    else if (points === 14) riskPercent = 20;
+    else if (points === 15) riskPercent = 25;
+    else if (points === 16) riskPercent = 30;
+    else riskPercent = 30;
+  } else {
+    if (points <= 8) riskPercent = 1;
+    else if (points <= 12) riskPercent = 2;
+    else if (points <= 14) riskPercent = 3;
+    else if (points === 15) riskPercent = 4;
+    else if (points === 16) riskPercent = 5;
+    else if (points === 17) riskPercent = 6;
+    else if (points === 18) riskPercent = 8;
+    else if (points === 19) riskPercent = 11;
+    else if (points === 20) riskPercent = 14;
+    else if (points === 21) riskPercent = 17;
+    else if (points === 22) riskPercent = 22;
+    else if (points === 23) riskPercent = 27;
+    else if (points === 24) riskPercent = 30;
+    else riskPercent = 30;
+  }
+
+  let riskLevel: string;
+  let recommendation: string;
+  if (riskPercent < 10) {
+    riskLevel = 'Low';
+    recommendation = 'Low 10-year CHD risk (<10%). Lifestyle modifications: healthy diet, regular exercise, smoking cessation if applicable. Reassess in 5 years. Therapeutic lifestyle changes if LDL ≥160 mg/dL.';
+  } else if (riskPercent < 20) {
+    riskLevel = 'Intermediate';
+    recommendation = 'Intermediate 10-year CHD risk (10-20%). Aggressive risk factor modification. Consider statin therapy if LDL ≥130 mg/dL. Aspirin therapy may be considered. Reassess in 1-2 years.';
+  } else {
+    riskLevel = 'High';
+    recommendation = 'High 10-year CHD risk (≥20%). Treat as CHD risk equivalent. Statin therapy recommended (LDL goal <100 mg/dL, optional <70). Aspirin therapy. Aggressive blood pressure and glucose management.';
+  }
+
+  return {
+    scoreName: 'Framingham Risk Score',
+    score: points,
+    maxScore: 30,
+    riskLevel,
+    interpretation: `Framingham Risk Score ${points} points. Estimated 10-year CHD risk: ${riskPercent}%. ${riskLevel} risk category.`,
+    recommendation,
+    components,
+    reference: 'Wilson PWF, et al. Prediction of Coronary Heart Disease Using Risk Factor Categories. Circulation. 1998;97(18):1837-47. ATP III Guidelines.',
+  };
+}
+
+/**
+ * APACHE II Score - Acute Physiology and Chronic Health Evaluation II
+ * ICU mortality prediction scoring system using acute physiology variables, age, and chronic health.
+ * Original: Knaus WA, et al. APACHE II: a severity of disease classification system. Crit Care Med. 1985.
+ */
+export function calculateAPACHEII(input: {
+  temperature: number;           // °C (rectal/core)
+  mean_arterial_pressure: number; // mmHg
+  heart_rate: number;            // bpm
+  respiratory_rate: number;      // breaths/min
+  oxygenation: number;           // If FiO2 ≥ 0.5: A-a gradient; if FiO2 < 0.5: PaO2 (mmHg)
+  fio2_gte_50: boolean;          // true if FiO2 ≥ 0.5 (use A-a gradient)
+  arterial_ph: number;           // arterial blood gas pH
+  sodium: number;                // mEq/L
+  potassium: number;             // mEq/L
+  creatinine: number;            // mg/dL
+  acute_renal_failure: boolean;  // doubled if acute renal failure
+  hematocrit: number;            // %
+  wbc: number;                   // x10³/mm³
+  gcs: number;                   // Glasgow Coma Scale (3-15)
+  age: number;                   // years
+  chronic_health: 'none' | 'nonoperative' | 'emergency_postop' | 'elective_postop';
+  // nonoperative or emergency_postop = 5 pts; elective_postop = 2 pts
+  severe_organ_insufficiency: boolean; // liver cirrhosis, NYHA IV, dialysis, immunocompromised
+}): RiskScoreResult {
+  const components: Record<string, { value: number; description: string }> = {};
+  let score = 0;
+
+  // Temperature
+  let tempPts: number;
+  const temp = input.temperature;
+  if (temp >= 41) tempPts = 4;
+  else if (temp >= 39) tempPts = 3;
+  else if (temp >= 38.5) tempPts = 1;
+  else if (temp >= 36) tempPts = 0;
+  else if (temp >= 34) tempPts = 1;
+  else if (temp >= 32) tempPts = 2;
+  else if (temp >= 30) tempPts = 3;
+  else tempPts = 4;
+  components['Temperature'] = { value: tempPts, description: `${temp}°C` };
+  score += tempPts;
+
+  // Mean Arterial Pressure
+  let mapPts: number;
+  const map = input.mean_arterial_pressure;
+  if (map >= 160) mapPts = 4;
+  else if (map >= 130) mapPts = 3;
+  else if (map >= 110) mapPts = 2;
+  else if (map >= 70) mapPts = 0;
+  else if (map >= 50) mapPts = 2;
+  else mapPts = 4;
+  components['Mean Arterial Pressure'] = { value: mapPts, description: `${map} mmHg` };
+  score += mapPts;
+
+  // Heart Rate
+  let hrPts: number;
+  const hr = input.heart_rate;
+  if (hr >= 180) hrPts = 4;
+  else if (hr >= 140) hrPts = 3;
+  else if (hr >= 110) hrPts = 2;
+  else if (hr >= 70) hrPts = 0;
+  else if (hr >= 55) hrPts = 2;
+  else if (hr >= 40) hrPts = 3;
+  else hrPts = 4;
+  components['Heart Rate'] = { value: hrPts, description: `${hr} bpm` };
+  score += hrPts;
+
+  // Respiratory Rate
+  let rrPts: number;
+  const rr = input.respiratory_rate;
+  if (rr >= 50) rrPts = 4;
+  else if (rr >= 35) rrPts = 3;
+  else if (rr >= 25) rrPts = 1;
+  else if (rr >= 12) rrPts = 0;
+  else if (rr >= 10) rrPts = 1;
+  else if (rr >= 6) rrPts = 2;
+  else rrPts = 4;
+  components['Respiratory Rate'] = { value: rrPts, description: `${rr} /min` };
+  score += rrPts;
+
+  // Oxygenation
+  let o2Pts: number;
+  if (input.fio2_gte_50) {
+    // Use A-a gradient
+    const aag = input.oxygenation;
+    if (aag >= 500) o2Pts = 4;
+    else if (aag >= 350) o2Pts = 3;
+    else if (aag >= 200) o2Pts = 2;
+    else o2Pts = 0;
+    components['Oxygenation (A-a gradient)'] = { value: o2Pts, description: `A-a gradient ${aag} mmHg (FiO2 ≥50%)` };
+  } else {
+    // Use PaO2
+    const pao2 = input.oxygenation;
+    if (pao2 > 70) o2Pts = 0;
+    else if (pao2 >= 61) o2Pts = 1;
+    else if (pao2 >= 55) o2Pts = 3;
+    else o2Pts = 4;
+    components['Oxygenation (PaO2)'] = { value: o2Pts, description: `PaO2 ${pao2} mmHg (FiO2 <50%)` };
+  }
+  score += o2Pts;
+
+  // Arterial pH
+  let phPts: number;
+  const ph = input.arterial_ph;
+  if (ph >= 7.70) phPts = 4;
+  else if (ph >= 7.60) phPts = 3;
+  else if (ph >= 7.50) phPts = 1;
+  else if (ph >= 7.33) phPts = 0;
+  else if (ph >= 7.25) phPts = 2;
+  else if (ph >= 7.15) phPts = 3;
+  else phPts = 4;
+  components['Arterial pH'] = { value: phPts, description: `${ph}` };
+  score += phPts;
+
+  // Sodium
+  let naPts: number;
+  const na = input.sodium;
+  if (na >= 180) naPts = 4;
+  else if (na >= 160) naPts = 3;
+  else if (na >= 155) naPts = 2;
+  else if (na >= 150) naPts = 1;
+  else if (na >= 130) naPts = 0;
+  else if (na >= 120) naPts = 2;
+  else if (na >= 111) naPts = 3;
+  else naPts = 4;
+  components['Sodium'] = { value: naPts, description: `${na} mEq/L` };
+  score += naPts;
+
+  // Potassium
+  let kPts: number;
+  const k = input.potassium;
+  if (k >= 7.0) kPts = 4;
+  else if (k >= 6.0) kPts = 3;
+  else if (k >= 5.5) kPts = 1;
+  else if (k >= 3.5) kPts = 0;
+  else if (k >= 3.0) kPts = 1;
+  else if (k >= 2.5) kPts = 2;
+  else kPts = 4;
+  components['Potassium'] = { value: kPts, description: `${k} mEq/L` };
+  score += kPts;
+
+  // Creatinine (double points if acute renal failure)
+  let crPts: number;
+  const cr = input.creatinine;
+  if (cr >= 3.5) crPts = 4;
+  else if (cr >= 2.0) crPts = 3;
+  else if (cr >= 1.5) crPts = 2;
+  else if (cr >= 0.6) crPts = 0;
+  else crPts = 2;
+  if (input.acute_renal_failure) crPts = crPts * 2;
+  components['Creatinine'] = { value: crPts, description: `${cr} mg/dL${input.acute_renal_failure ? ' (acute renal failure - doubled)' : ''}` };
+  score += crPts;
+
+  // Hematocrit
+  let hctPts: number;
+  const hct = input.hematocrit;
+  if (hct >= 60) hctPts = 4;
+  else if (hct >= 50) hctPts = 2;
+  else if (hct >= 46) hctPts = 1;
+  else if (hct >= 30) hctPts = 0;
+  else if (hct >= 20) hctPts = 2;
+  else hctPts = 4;
+  components['Hematocrit'] = { value: hctPts, description: `${hct}%` };
+  score += hctPts;
+
+  // WBC
+  let wbcPts: number;
+  const wbc = input.wbc;
+  if (wbc >= 40) wbcPts = 4;
+  else if (wbc >= 20) wbcPts = 2;
+  else if (wbc >= 15) wbcPts = 1;
+  else if (wbc >= 3) wbcPts = 0;
+  else if (wbc >= 1) wbcPts = 2;
+  else wbcPts = 4;
+  components['WBC'] = { value: wbcPts, description: `${wbc} x10³/mm³` };
+  score += wbcPts;
+
+  // GCS (APACHE II uses 15 - GCS)
+  const gcsPts = 15 - input.gcs;
+  components['GCS'] = { value: gcsPts, description: `GCS ${input.gcs} (score = 15 - ${input.gcs} = ${gcsPts})` };
+  score += gcsPts;
+
+  // Age points
+  let agePts: number;
+  if (input.age < 45) agePts = 0;
+  else if (input.age <= 54) agePts = 2;
+  else if (input.age <= 64) agePts = 3;
+  else if (input.age <= 74) agePts = 5;
+  else agePts = 6;
+  components['Age'] = { value: agePts, description: `${input.age} years` };
+  score += agePts;
+
+  // Chronic Health Points
+  let chPts = 0;
+  if (input.severe_organ_insufficiency) {
+    if (input.chronic_health === 'nonoperative' || input.chronic_health === 'emergency_postop') {
+      chPts = 5;
+    } else if (input.chronic_health === 'elective_postop') {
+      chPts = 2;
+    }
+  }
+  const chDesc = input.severe_organ_insufficiency
+    ? `Severe organ insufficiency (${input.chronic_health.replace(/_/g, ' ')})`
+    : 'No severe organ insufficiency';
+  components['Chronic Health'] = { value: chPts, description: chDesc };
+  score += chPts;
+
+  // Mortality estimation (approximate from original APACHE II data)
+  let riskLevel: string;
+  let mortality: string;
+  let recommendation: string;
+
+  if (score <= 4) {
+    riskLevel = 'Low'; mortality = '~4%';
+    recommendation = 'Low ICU mortality risk. Standard ICU monitoring. Reassess daily for step-down eligibility.';
+  } else if (score <= 9) {
+    riskLevel = 'Low-Moderate'; mortality = '~8%';
+    recommendation = 'Low-moderate ICU mortality risk. Standard ICU care with vigilant monitoring. Address reversible physiologic derangements.';
+  } else if (score <= 14) {
+    riskLevel = 'Moderate'; mortality = '~15%';
+    recommendation = 'Moderate ICU mortality risk. Active organ support may be needed. Consider goals of care discussion if pre-existing comorbidities.';
+  } else if (score <= 19) {
+    riskLevel = 'Moderate-High'; mortality = '~25%';
+    recommendation = 'Moderate-high ICU mortality risk. Aggressive critical care interventions. Multi-organ support likely needed. Goals of care discussion recommended.';
+  } else if (score <= 24) {
+    riskLevel = 'High'; mortality = '~40%';
+    recommendation = 'High ICU mortality risk. Maximum critical care support. Family meeting and goals of care discussion essential. Consider palliative care consultation.';
+  } else if (score <= 29) {
+    riskLevel = 'Very High'; mortality = '~55%';
+    recommendation = 'Very high ICU mortality risk. Serious prognostic discussion needed. Palliative care consultation strongly recommended.';
+  } else {
+    riskLevel = 'Critical'; mortality = '>70%';
+    recommendation = 'Critical ICU mortality risk. Urgent goals of care discussion. Comfort care may be most appropriate depending on clinical context.';
+  }
+
+  return {
+    scoreName: 'APACHE II',
+    score,
+    maxScore: 71,
+    riskLevel,
+    interpretation: `APACHE II Score ${score}/71. Estimated ICU mortality: ${mortality}. ${riskLevel} risk category.`,
+    recommendation,
+    components,
+    reference: 'Knaus WA, et al. APACHE II: a severity of disease classification system. Crit Care Med. 1985;13(10):818-29.',
+  };
+}
+
+/**
+ * PESI - Pulmonary Embolism Severity Index
+ * Prognostic model for patients with acute pulmonary embolism.
+ * Original PESI (not simplified) for 30-day mortality.
+ */
+export function calculatePESI(input: {
+  age: number;
+  sex: 'male' | 'female';
+  cancer: boolean;
+  heart_failure: boolean;
+  chronic_lung_disease: boolean;
+  heart_rate_gte_110: boolean;
+  systolic_bp_lt_100: boolean;
+  respiratory_rate_gte_30: boolean;
+  temperature_lt_36: boolean;
+  altered_mental_status: boolean;
+  spo2_lt_90: boolean;
+}): RiskScoreResult {
+  const components: Record<string, { value: number; description: string }> = {};
+  let score = 0;
+
+  // Age (age in years)
+  components['Age'] = { value: input.age, description: `${input.age} years (+${input.age} points)` };
+  score += input.age;
+
+  // Male sex (+10)
+  const sexPts = input.sex === 'male' ? 10 : 0;
+  components['Male sex'] = { value: sexPts, description: input.sex === 'male' ? 'Male (+10)' : 'Female (+0)' };
+  score += sexPts;
+
+  // Cancer (+30)
+  const cancerPts = input.cancer ? 30 : 0;
+  components['Cancer'] = { value: cancerPts, description: input.cancer ? 'Present (+30)' : 'Absent' };
+  score += cancerPts;
+
+  // Heart failure (+10)
+  const hfPts = input.heart_failure ? 10 : 0;
+  components['Heart failure'] = { value: hfPts, description: input.heart_failure ? 'Present (+10)' : 'Absent' };
+  score += hfPts;
+
+  // Chronic lung disease (+10)
+  const lungPts = input.chronic_lung_disease ? 10 : 0;
+  components['Chronic lung disease'] = { value: lungPts, description: input.chronic_lung_disease ? 'Present (+10)' : 'Absent' };
+  score += lungPts;
+
+  // Heart rate ≥110 (+20)
+  const hrPts = input.heart_rate_gte_110 ? 20 : 0;
+  components['Heart rate ≥110 bpm'] = { value: hrPts, description: input.heart_rate_gte_110 ? 'Yes (+20)' : 'No' };
+  score += hrPts;
+
+  // Systolic BP <100 (+30)
+  const sbpPts = input.systolic_bp_lt_100 ? 30 : 0;
+  components['Systolic BP <100 mmHg'] = { value: sbpPts, description: input.systolic_bp_lt_100 ? 'Yes (+30)' : 'No' };
+  score += sbpPts;
+
+  // Respiratory rate ≥30 (+20)
+  const rrPts = input.respiratory_rate_gte_30 ? 20 : 0;
+  components['Respiratory rate ≥30'] = { value: rrPts, description: input.respiratory_rate_gte_30 ? 'Yes (+20)' : 'No' };
+  score += rrPts;
+
+  // Temperature <36°C (+20)
+  const tempPts = input.temperature_lt_36 ? 20 : 0;
+  components['Temperature <36°C'] = { value: tempPts, description: input.temperature_lt_36 ? 'Yes (+20)' : 'No' };
+  score += tempPts;
+
+  // Altered mental status (+60)
+  const amsPts = input.altered_mental_status ? 60 : 0;
+  components['Altered mental status'] = { value: amsPts, description: input.altered_mental_status ? 'Present (+60)' : 'Absent' };
+  score += amsPts;
+
+  // SpO2 <90% (+20)
+  const spo2Pts = input.spo2_lt_90 ? 20 : 0;
+  components['SpO₂ <90%'] = { value: spo2Pts, description: input.spo2_lt_90 ? 'Yes (+20)' : 'No' };
+  score += spo2Pts;
+
+  // PESI Class determination
+  let pesiClass: string;
+  let mortality: string;
+  let riskLevel: string;
+  let recommendation: string;
+
+  if (score <= 65) {
+    pesiClass = 'Class I'; mortality = '0-1.6%'; riskLevel = 'Very Low';
+    recommendation = 'Very low 30-day mortality risk. Consider outpatient management if no contraindications. Anticoagulation with follow-up in 24-48h. Ensure adequate social support and access to care.';
+  } else if (score <= 85) {
+    pesiClass = 'Class II'; mortality = '1.7-3.5%'; riskLevel = 'Low';
+    recommendation = 'Low 30-day mortality risk. Consider early discharge with close outpatient follow-up. Standard anticoagulation. Outpatient management may be appropriate for selected patients.';
+  } else if (score <= 105) {
+    pesiClass = 'Class III'; mortality = '3.2-7.1%'; riskLevel = 'Intermediate';
+    recommendation = 'Intermediate 30-day mortality risk. Hospital admission recommended. Standard anticoagulation. Monitor for hemodynamic instability. Consider echocardiography and troponin.';
+  } else if (score <= 125) {
+    pesiClass = 'Class IV'; mortality = '4.0-11.4%'; riskLevel = 'High';
+    recommendation = 'High 30-day mortality risk. Hospital admission required. Close hemodynamic monitoring. Assess for RV dysfunction (echo/CT). Consider ICU admission. Evaluate for thrombolysis if hemodynamically unstable.';
+  } else {
+    pesiClass = 'Class V'; mortality = '10.0-24.5%'; riskLevel = 'Very High';
+    recommendation = 'Very high 30-day mortality risk. ICU admission. Close hemodynamic monitoring. Consider systemic thrombolysis or catheter-directed therapy. Evaluate for surgical embolectomy if massive PE. ECMO consideration.';
+  }
+
+  return {
+    scoreName: 'PESI',
+    score,
+    maxScore: 300,
+    riskLevel,
+    interpretation: `PESI Score ${score} - ${pesiClass}. Estimated 30-day mortality: ${mortality}. ${riskLevel} risk.`,
+    recommendation,
+    components,
+    reference: 'Aujesky D, et al. Derivation and validation of a prognostic model for pulmonary embolism. Am J Respir Crit Care Med. 2005;172(8):1041-6.',
+  };
+}
+
+/**
+ * Modified Rankin Scale (mRS) - Stroke Disability Assessment
+ * Standardized scale for measuring degree of disability/dependence after stroke.
+ * Score range 0-6.
+ */
+export function calculateModifiedRankin(input: {
+  functional_status: 0 | 1 | 2 | 3 | 4 | 5 | 6;
+  // 0 = No symptoms
+  // 1 = No significant disability despite symptoms
+  // 2 = Slight disability (unable to carry out all previous activities but independent)
+  // 3 = Moderate disability (requires some help but walks without assistance)
+  // 4 = Moderately severe disability (unable to walk/attend to bodily needs without assistance)
+  // 5 = Severe disability (bedridden, incontinent, requires constant nursing)
+  // 6 = Dead
+}): RiskScoreResult {
+  const components: Record<string, { value: number; description: string }> = {};
+
+  const descriptions: Record<number, string> = {
+    0: 'No symptoms at all',
+    1: 'No significant disability despite symptoms; able to carry out all usual duties and activities',
+    2: 'Slight disability; unable to carry out all previous activities but able to look after own affairs without assistance',
+    3: 'Moderate disability; requiring some help, but able to walk without assistance',
+    4: 'Moderately severe disability; unable to walk without assistance and unable to attend to own bodily needs without assistance',
+    5: 'Severe disability; bedridden, incontinent, and requiring constant nursing care and attention',
+    6: 'Dead',
+  };
+
+  const score = input.functional_status;
+  components['Functional Status'] = { value: score, description: descriptions[score] };
+
+  let riskLevel: string;
+  let recommendation: string;
+
+  if (score === 0) {
+    riskLevel = 'No disability';
+    recommendation = 'No disability. Continue secondary stroke prevention (antiplatelet/anticoagulation, statin, BP management). Regular follow-up. Educate on stroke recurrence signs.';
+  } else if (score === 1) {
+    riskLevel = 'No significant disability';
+    recommendation = 'No significant disability. Standard secondary prevention. Outpatient rehabilitation assessment. Return to normal activities as tolerated.';
+  } else if (score === 2) {
+    riskLevel = 'Slight disability';
+    recommendation = 'Slight disability. Outpatient rehabilitation (PT/OT/Speech as needed). Secondary prevention. May need workplace/driving assessment. Community support services.';
+  } else if (score === 3) {
+    riskLevel = 'Moderate disability';
+    recommendation = 'Moderate disability. Comprehensive rehabilitation program. Occupational therapy for daily living skills. Assess home safety. Caregiver support. Depression screening. May require supervised living.';
+  } else if (score === 4) {
+    riskLevel = 'Moderately severe disability';
+    recommendation = 'Moderately severe disability. Inpatient or intensive outpatient rehabilitation. Full-time caregiver needed. Assess for nursing home placement if no home support. Depression screening. DVT prophylaxis. Pressure sore prevention.';
+  } else if (score === 5) {
+    riskLevel = 'Severe disability';
+    recommendation = 'Severe disability. Long-term care facility or 24h home care. Palliative care consultation. Address comfort, nutrition (PEG consideration), skin integrity. Family meeting for goals of care. DVT and aspiration prophylaxis.';
+  } else {
+    riskLevel = 'Dead';
+    recommendation = 'Patient deceased. Complete death certificate. Offer autopsy if appropriate. Family bereavement support.';
+  }
+
+  return {
+    scoreName: 'Modified Rankin Scale',
+    score,
+    maxScore: 6,
+    riskLevel,
+    interpretation: `Modified Rankin Scale (mRS) ${score}/6. ${riskLevel}. ${descriptions[score]}.`,
+    recommendation,
+    components,
+    reference: 'van Swieten JC, et al. Interobserver agreement for the assessment of handicap in stroke patients. Stroke. 1988;19(5):604-7.',
+  };
+}
+
+/**
+ * Morse Fall Scale - Fall Risk Assessment
+ * Widely used in acute care settings to identify patients at risk for falling.
+ * Score range 0-125.
+ */
+export function calculateMorseFallScale(input: {
+  history_of_falling: boolean;          // 25 points
+  secondary_diagnosis: boolean;          // 15 points (≥2 medical diagnoses)
+  ambulatory_aid: 'none' | 'crutch_cane_walker' | 'furniture';  // 0, 15, or 30
+  iv_heparin_lock: boolean;             // 20 points
+  gait: 'normal' | 'weak' | 'impaired'; // 0, 10, or 20
+  mental_status: 'oriented' | 'overestimates';  // 0 or 15 (forgets limitations)
+}): RiskScoreResult {
+  const components: Record<string, { value: number; description: string }> = {};
+  let score = 0;
+
+  // History of falling (within 3 months)
+  const fallPts = input.history_of_falling ? 25 : 0;
+  components['History of falling'] = { value: fallPts, description: input.history_of_falling ? 'Yes (+25)' : 'No' };
+  score += fallPts;
+
+  // Secondary diagnosis
+  const dxPts = input.secondary_diagnosis ? 15 : 0;
+  components['Secondary diagnosis'] = { value: dxPts, description: input.secondary_diagnosis ? '≥2 diagnoses (+15)' : '<2 diagnoses' };
+  score += dxPts;
+
+  // Ambulatory aid
+  let aidPts: number;
+  let aidDesc: string;
+  if (input.ambulatory_aid === 'none') {
+    aidPts = 0; aidDesc = 'None/bedrest/nurse assist';
+  } else if (input.ambulatory_aid === 'crutch_cane_walker') {
+    aidPts = 15; aidDesc = 'Crutches/cane/walker (+15)';
+  } else {
+    aidPts = 30; aidDesc = 'Furniture for support (+30)';
+  }
+  components['Ambulatory aid'] = { value: aidPts, description: aidDesc };
+  score += aidPts;
+
+  // IV/heparin lock
+  const ivPts = input.iv_heparin_lock ? 20 : 0;
+  components['IV/heparin lock'] = { value: ivPts, description: input.iv_heparin_lock ? 'Yes (+20)' : 'No' };
+  score += ivPts;
+
+  // Gait
+  let gaitPts: number;
+  let gaitDesc: string;
+  if (input.gait === 'normal') {
+    gaitPts = 0; gaitDesc = 'Normal/bedrest/immobile';
+  } else if (input.gait === 'weak') {
+    gaitPts = 10; gaitDesc = 'Weak (+10)';
+  } else {
+    gaitPts = 20; gaitDesc = 'Impaired (+20)';
+  }
+  components['Gait'] = { value: gaitPts, description: gaitDesc };
+  score += gaitPts;
+
+  // Mental status
+  const mentalPts = input.mental_status === 'overestimates' ? 15 : 0;
+  components['Mental status'] = { value: mentalPts, description: input.mental_status === 'overestimates' ? 'Overestimates/forgets limitations (+15)' : 'Oriented to own ability' };
+  score += mentalPts;
+
+  let riskLevel: string;
+  let recommendation: string;
+
+  if (score <= 24) {
+    riskLevel = 'No risk';
+    recommendation = 'No risk for falls. Implement standard fall prevention: maintain safe environment, adequate lighting, non-slip footwear, call bell within reach. Good clinical practice measures.';
+  } else if (score <= 50) {
+    riskLevel = 'Low risk';
+    recommendation = 'Low fall risk. Standard fall prevention interventions. Fall risk sign at bedside. Non-slip footwear. Bed in low position. Call bell in reach. Orient patient to environment. Reassess with condition changes.';
+  } else {
+    riskLevel = 'High risk';
+    recommendation = 'High fall risk. Implement high-risk fall prevention protocol: Fall risk bracelet. Bed alarm/chair alarm. Toileting schedule. Assist with ambulation. Move closer to nurses station. Consider 1:1 sitter if very high risk. Remove environmental hazards. Physical therapy consultation.';
+  }
+
+  return {
+    scoreName: 'Morse Fall Scale',
+    score,
+    maxScore: 125,
+    riskLevel,
+    interpretation: `Morse Fall Scale ${score}/125. ${riskLevel}. ${score <= 24 ? 'No action needed beyond standard precautions.' : score <= 50 ? 'Implement standard fall prevention interventions.' : 'Implement high-risk fall prevention protocol.'}`,
+    recommendation,
+    components,
+    reference: 'Morse JM, et al. Development of a scale to identify the fall-prone patient. Canadian Journal of Aging. 1989;8(4):366-77.',
+  };
+}
+
 /** Available risk score calculators */
 export const availableScores = [
   { name: 'CHA2DS2-VASc', description: 'Stroke risk in atrial fibrillation', function: 'calculateCHA2DS2VASc' },
@@ -1273,4 +1962,9 @@ export const availableScores = [
   { name: 'TIMI', description: 'TIMI risk score for UA/NSTEMI (14-day event risk)', function: 'calculateTIMI' },
   { name: 'ABCD2', description: 'Short-term stroke risk after TIA', function: 'calculateABCD2' },
   { name: 'BMI', description: 'Body mass index with WHO classification', function: 'calculateBMI' },
+  { name: 'Framingham', description: '10-year coronary heart disease risk (ATP III)', function: 'calculateFramingham' },
+  { name: 'APACHE II', description: 'ICU mortality prediction (Acute Physiology and Chronic Health Evaluation)', function: 'calculateAPACHEII' },
+  { name: 'PESI', description: 'Pulmonary Embolism Severity Index (30-day mortality)', function: 'calculatePESI' },
+  { name: 'mRS', description: 'Modified Rankin Scale for stroke disability assessment', function: 'calculateModifiedRankin' },
+  { name: 'Morse Fall Scale', description: 'Fall risk assessment for acute care patients', function: 'calculateMorseFallScale' },
 ] as const;

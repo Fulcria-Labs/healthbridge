@@ -306,7 +306,9 @@ describe('Drug Directory Completeness', () => {
   it('generic name key matches genericName field', () => {
     for (const [key, info] of Object.entries(drugDirectory)) {
       // The key should match the start of genericName (some have extra text like "potassium chloride")
-      expect(info.genericName.startsWith(key) || key === 'potassium').toBeTruthy();
+      // Compound names may use underscores as keys (e.g., "calcium_carbonate" -> "calcium carbonate")
+      const keyNormalized = key.replace(/_/g, ' ');
+      expect(info.genericName.startsWith(key) || info.genericName.startsWith(keyNormalized) || key === 'potassium').toBeTruthy();
     }
   });
 });

@@ -85,6 +85,62 @@ export const drugDirectory: Record<string, DrugInfo> = {
   pravastatin: { genericName: 'pravastatin', brandNames: ['pravachol'], drugClass: 'statin' },
   apixaban: { genericName: 'apixaban', brandNames: ['eliquis'], drugClass: 'doac' },
   rivaroxaban: { genericName: 'rivaroxaban', brandNames: ['xarelto'], drugClass: 'doac' },
+  dabigatran: { genericName: 'dabigatran', brandNames: ['pradaxa'], drugClass: 'doac' },
+  edoxaban: { genericName: 'edoxaban', brandNames: ['savaysa'], drugClass: 'doac' },
+  // HIV antivirals
+  ritonavir: { genericName: 'ritonavir', brandNames: ['norvir'], drugClass: 'protease-inhibitor' },
+  atazanavir: { genericName: 'atazanavir', brandNames: ['reyataz'], drugClass: 'protease-inhibitor' },
+  lopinavir: { genericName: 'lopinavir', brandNames: ['kaletra'], drugClass: 'protease-inhibitor' },
+  // Immunosuppressants
+  tacrolimus: { genericName: 'tacrolimus', brandNames: ['prograf', 'envarsus'], drugClass: 'immunosuppressant' },
+  mycophenolate: { genericName: 'mycophenolate', brandNames: ['cellcept', 'myfortic'], drugClass: 'immunosuppressant' },
+  // Antipsychotics
+  haloperidol: { genericName: 'haloperidol', brandNames: ['haldol'], drugClass: 'antipsychotic' },
+  quetiapine: { genericName: 'quetiapine', brandNames: ['seroquel'], drugClass: 'atypical-antipsychotic' },
+  ziprasidone: { genericName: 'ziprasidone', brandNames: ['geodon'], drugClass: 'atypical-antipsychotic' },
+  aripiprazole: { genericName: 'aripiprazole', brandNames: ['abilify'], drugClass: 'atypical-antipsychotic' },
+  olanzapine: { genericName: 'olanzapine', brandNames: ['zyprexa'], drugClass: 'atypical-antipsychotic' },
+  // Benzodiazepines
+  alprazolam: { genericName: 'alprazolam', brandNames: ['xanax'], drugClass: 'benzodiazepine' },
+  diazepam: { genericName: 'diazepam', brandNames: ['valium'], drugClass: 'benzodiazepine' },
+  lorazepam: { genericName: 'lorazepam', brandNames: ['ativan'], drugClass: 'benzodiazepine' },
+  midazolam: { genericName: 'midazolam', brandNames: ['versed'], drugClass: 'benzodiazepine' },
+  // Muscle relaxants
+  cyclobenzaprine: { genericName: 'cyclobenzaprine', brandNames: ['flexeril', 'amrix'], drugClass: 'muscle-relaxant' },
+  baclofen: { genericName: 'baclofen', brandNames: ['lioresal', 'gablofen'], drugClass: 'muscle-relaxant' },
+  // Additional cardiovascular
+  sotalol: { genericName: 'sotalol', brandNames: ['betapace'], drugClass: 'antiarrhythmic' },
+  dofetilide: { genericName: 'dofetilide', brandNames: ['tikosyn'], drugClass: 'antiarrhythmic' },
+  dronedarone: { genericName: 'dronedarone', brandNames: ['multaq'], drugClass: 'antiarrhythmic' },
+  // Fluoroquinolones
+  levofloxacin: { genericName: 'levofloxacin', brandNames: ['levaquin'], drugClass: 'fluoroquinolone' },
+  moxifloxacin: { genericName: 'moxifloxacin', brandNames: ['avelox'], drugClass: 'fluoroquinolone' },
+  // Antacids / minerals
+  calcium_carbonate: { genericName: 'calcium carbonate', brandNames: ['tums', 'caltrate'], drugClass: 'antacid' },
+  aluminum_hydroxide: { genericName: 'aluminum hydroxide', brandNames: ['maalox', 'alternagel'], drugClass: 'antacid' },
+  magnesium_hydroxide: { genericName: 'magnesium hydroxide', brandNames: ['milk of magnesia'], drugClass: 'antacid' },
+  // Insulin
+  insulin: { genericName: 'insulin', brandNames: ['humalog', 'novolog', 'lantus', 'levemir'], drugClass: 'insulin' },
+  // Anticoagulant
+  heparin: { genericName: 'heparin', brandNames: ['hep-lock'], drugClass: 'anticoagulant' },
+  enoxaparin: { genericName: 'enoxaparin', brandNames: ['lovenox'], drugClass: 'lmwh' },
+  // Antidepressants
+  venlafaxine: { genericName: 'venlafaxine', brandNames: ['effexor'], drugClass: 'snri' },
+  citalopram: { genericName: 'citalopram', brandNames: ['celexa'], drugClass: 'ssri' },
+  escitalopram: { genericName: 'escitalopram', brandNames: ['lexapro'], drugClass: 'ssri' },
+  trazodone: { genericName: 'trazodone', brandNames: ['desyrel', 'oleptro'], drugClass: 'sari' },
+  // Opioids
+  morphine: { genericName: 'morphine', brandNames: ['ms contin', 'kadian'], drugClass: 'opioid' },
+  fentanyl: { genericName: 'fentanyl', brandNames: ['duragesic', 'sublimaze'], drugClass: 'opioid' },
+  codeine: { genericName: 'codeine', brandNames: ['tylenol with codeine'], drugClass: 'opioid' },
+  methadone: { genericName: 'methadone', brandNames: ['dolophine', 'methadose'], drugClass: 'opioid' },
+  // Miscellaneous
+  fluconazole: { genericName: 'fluconazole', brandNames: ['diflucan'], drugClass: 'azole-antifungal' },
+  itraconazole: { genericName: 'itraconazole', brandNames: ['sporanox'], drugClass: 'azole-antifungal' },
+  linezolid: { genericName: 'linezolid', brandNames: ['zyvox'], drugClass: 'oxazolidinone' },
+  ondansetron: { genericName: 'ondansetron', brandNames: ['zofran'], drugClass: 'antiemetic' },
+  domperidone: { genericName: 'domperidone', brandNames: ['motilium'], drugClass: 'antiemetic' },
+  levothyroxine: { genericName: 'levothyroxine', brandNames: ['synthroid', 'levoxyl'], drugClass: 'thyroid-hormone' },
 };
 
 // Drug interaction database
@@ -817,6 +873,576 @@ export const drugInteractions: DrugInteraction[] = [
     mechanism: 'NSAIDs inhibit renal prostaglandins, opposing ARB hemodynamic effects',
     clinicalEffect: 'Attenuated blood pressure control and increased risk of AKI',
     management: 'Monitor BP and renal function. Prefer acetaminophen for pain relief.'
+  },
+
+  // === FLUOROQUINOLONE + ANTACID INTERACTIONS ===
+  {
+    drug1: 'ciprofloxacin', drug2: 'calcium_carbonate', severity: 'major',
+    description: 'Dramatically reduced ciprofloxacin absorption',
+    mechanism: 'Divalent and trivalent cations (Ca2+, Mg2+, Al3+) chelate fluoroquinolones in the GI tract, forming insoluble complexes',
+    clinicalEffect: 'Ciprofloxacin levels reduced by up to 90%, leading to treatment failure',
+    management: 'Administer ciprofloxacin at least 2 hours before or 6 hours after antacids or calcium supplements.'
+  },
+  {
+    drug1: 'ciprofloxacin', drug2: 'aluminum_hydroxide', severity: 'major',
+    description: 'Dramatically reduced ciprofloxacin absorption',
+    mechanism: 'Aluminum cations chelate fluoroquinolones, forming insoluble complexes that cannot be absorbed',
+    clinicalEffect: 'Up to 85% reduction in ciprofloxacin bioavailability, risk of treatment failure',
+    management: 'Give ciprofloxacin at least 2 hours before or 6 hours after aluminum-containing antacids.'
+  },
+  {
+    drug1: 'levofloxacin', drug2: 'calcium_carbonate', severity: 'major',
+    description: 'Reduced levofloxacin absorption',
+    mechanism: 'Calcium chelates fluoroquinolones in the GI tract',
+    clinicalEffect: 'Reduced levofloxacin bioavailability, potential treatment failure',
+    management: 'Administer levofloxacin at least 2 hours before or 2 hours after calcium products.'
+  },
+  {
+    drug1: 'levofloxacin', drug2: 'magnesium_hydroxide', severity: 'major',
+    description: 'Reduced levofloxacin absorption',
+    mechanism: 'Magnesium cations chelate fluoroquinolones in the GI tract',
+    clinicalEffect: 'Significantly reduced levofloxacin levels, risk of therapeutic failure',
+    management: 'Give levofloxacin at least 2 hours before or 2 hours after magnesium-containing antacids.'
+  },
+  {
+    drug1: 'moxifloxacin', drug2: 'aluminum_hydroxide', severity: 'major',
+    description: 'Reduced moxifloxacin absorption',
+    mechanism: 'Aluminum cations chelate moxifloxacin, reducing GI absorption',
+    clinicalEffect: 'Moxifloxacin bioavailability reduced by ~40%, risk of treatment failure',
+    management: 'Take moxifloxacin at least 4 hours before or 8 hours after aluminum-containing antacids.'
+  },
+
+  // === MACROLIDE + STATIN INTERACTIONS ===
+  {
+    drug1: 'clarithromycin', drug2: 'rosuvastatin', severity: 'moderate',
+    description: 'Increased rosuvastatin levels',
+    mechanism: 'Clarithromycin inhibits OATP1B1 transporter, increasing rosuvastatin exposure (rosuvastatin is not primarily CYP3A4 metabolized)',
+    clinicalEffect: 'Approximately 2-fold increase in rosuvastatin levels, increased myopathy risk',
+    management: 'Limit rosuvastatin dose to 5mg during clarithromycin therapy. Monitor for muscle symptoms.'
+  },
+  {
+    drug1: 'erythromycin', drug2: 'atorvastatin', severity: 'major',
+    description: 'Increased risk of myopathy and rhabdomyolysis',
+    mechanism: 'Erythromycin inhibits CYP3A4, increasing atorvastatin exposure',
+    clinicalEffect: 'Elevated risk of rhabdomyolysis',
+    management: 'Suspend atorvastatin during erythromycin course. Use azithromycin as alternative.'
+  },
+
+  // === HIV PROTEASE INHIBITOR INTERACTIONS ===
+  {
+    drug1: 'ritonavir', drug2: 'simvastatin', severity: 'contraindicated',
+    description: 'Dramatically increased simvastatin levels causing rhabdomyolysis',
+    mechanism: 'Ritonavir is one of the most potent CYP3A4 inhibitors known, increasing simvastatin AUC by >30-fold',
+    clinicalEffect: 'Near-certain rhabdomyolysis with renal failure and potentially death',
+    management: 'NEVER combine. Use pravastatin, rosuvastatin, or pitavastatin as alternatives.'
+  },
+  {
+    drug1: 'ritonavir', drug2: 'atorvastatin', severity: 'major',
+    description: 'Markedly increased atorvastatin levels',
+    mechanism: 'Ritonavir potently inhibits CYP3A4, increasing atorvastatin exposure 5-9 fold',
+    clinicalEffect: 'High risk of rhabdomyolysis and myopathy',
+    management: 'Use lowest possible atorvastatin dose (max 20mg) or switch to pravastatin/rosuvastatin. Monitor CK.'
+  },
+  {
+    drug1: 'ritonavir', drug2: 'midazolam', severity: 'contraindicated',
+    description: 'Profound and prolonged sedation',
+    mechanism: 'Ritonavir potently inhibits CYP3A4, the primary route of midazolam metabolism',
+    clinicalEffect: 'Midazolam AUC increased >10-fold, causing extreme sedation and respiratory depression',
+    management: 'NEVER combine oral midazolam with ritonavir. IV midazolam with caution only in ICU setting.'
+  },
+  {
+    drug1: 'ritonavir', drug2: 'alprazolam', severity: 'contraindicated',
+    description: 'Markedly increased alprazolam levels and toxicity',
+    mechanism: 'Ritonavir inhibits CYP3A4 metabolism of alprazolam',
+    clinicalEffect: 'Profound CNS depression, respiratory depression',
+    management: 'Avoid combination. Use lorazepam or oxazepam (glucuronidated, not CYP3A4 dependent) as alternatives.'
+  },
+  {
+    drug1: 'atazanavir', drug2: 'omeprazole', severity: 'contraindicated',
+    description: 'Dramatically reduced atazanavir absorption',
+    mechanism: 'Atazanavir requires gastric acidity for dissolution and absorption; PPIs raise gastric pH',
+    clinicalEffect: 'Atazanavir levels reduced by ~75%, leading to virologic failure and HIV resistance',
+    management: 'Do not use PPIs with atazanavir. H2 blockers may be used with timing separation (12h apart).'
+  },
+  {
+    drug1: 'ritonavir', drug2: 'rivaroxaban', severity: 'contraindicated',
+    description: 'Dramatically increased rivaroxaban levels',
+    mechanism: 'Ritonavir inhibits both CYP3A4 and P-glycoprotein, dramatically increasing rivaroxaban exposure',
+    clinicalEffect: 'Rivaroxaban AUC increased by 153%, very high bleeding risk',
+    management: 'Avoid combination. Consider warfarin with INR monitoring as alternative anticoagulant.'
+  },
+  {
+    drug1: 'ritonavir', drug2: 'apixaban', severity: 'major',
+    description: 'Significantly increased apixaban levels',
+    mechanism: 'Ritonavir inhibits CYP3A4 and P-glycoprotein involved in apixaban clearance',
+    clinicalEffect: 'Approximately 2-fold increase in apixaban exposure with increased bleeding risk',
+    management: 'Reduce apixaban dose by 50%. Avoid if patient is already on reduced dose. Monitor for bleeding.'
+  },
+  {
+    drug1: 'lopinavir', drug2: 'simvastatin', severity: 'contraindicated',
+    description: 'Dramatically increased simvastatin levels',
+    mechanism: 'Lopinavir/ritonavir potently inhibits CYP3A4',
+    clinicalEffect: 'Extreme risk of rhabdomyolysis',
+    management: 'NEVER combine. Use pravastatin or rosuvastatin as alternatives.'
+  },
+
+  // === IMMUNOSUPPRESSANT INTERACTIONS ===
+  {
+    drug1: 'cyclosporine', drug2: 'clarithromycin', severity: 'major',
+    description: 'Significantly increased cyclosporine levels',
+    mechanism: 'Clarithromycin inhibits CYP3A4 and P-glycoprotein, reducing cyclosporine clearance',
+    clinicalEffect: 'Cyclosporine toxicity: nephrotoxicity, hypertension, tremor, seizures',
+    management: 'Monitor cyclosporine trough levels closely. Reduce cyclosporine dose by 25-50%. Use azithromycin as alternative.'
+  },
+  {
+    drug1: 'tacrolimus', drug2: 'ketoconazole', severity: 'major',
+    description: 'Dramatically increased tacrolimus levels',
+    mechanism: 'Ketoconazole potently inhibits CYP3A4 and P-glycoprotein, the primary clearance pathways for tacrolimus',
+    clinicalEffect: 'Tacrolimus toxicity: nephrotoxicity, neurotoxicity, hyperglycemia, QT prolongation',
+    management: 'Reduce tacrolimus dose by 50-75%. Monitor trough levels every 2-3 days until stable.'
+  },
+  {
+    drug1: 'tacrolimus', drug2: 'clarithromycin', severity: 'major',
+    description: 'Significantly increased tacrolimus levels',
+    mechanism: 'Clarithromycin inhibits CYP3A4, reducing tacrolimus metabolism',
+    clinicalEffect: 'Tacrolimus toxicity: nephrotoxicity, neurotoxicity, electrolyte disturbances',
+    management: 'Monitor tacrolimus trough levels. Reduce dose. Use azithromycin as alternative macrolide.'
+  },
+  {
+    drug1: 'tacrolimus', drug2: 'fluconazole', severity: 'major',
+    description: 'Increased tacrolimus levels',
+    mechanism: 'Fluconazole inhibits CYP3A4 (dose-dependent), increasing tacrolimus exposure',
+    clinicalEffect: 'Tacrolimus toxicity, particularly nephrotoxicity',
+    management: 'Reduce tacrolimus dose by 25-50%. Monitor trough levels. Effect is dose-dependent (worse with fluconazole >200mg/day).'
+  },
+  {
+    drug1: 'cyclosporine', drug2: 'rifampin', severity: 'major',
+    description: 'Dramatically reduced cyclosporine levels',
+    mechanism: 'Rifampin potently induces CYP3A4 and P-glycoprotein, massively increasing cyclosporine clearance',
+    clinicalEffect: 'Loss of immunosuppression leading to organ rejection',
+    management: 'Avoid if possible. If unavoidable, may need 3-5x cyclosporine dose increase with frequent trough monitoring.'
+  },
+  {
+    drug1: 'tacrolimus', drug2: 'rifampin', severity: 'major',
+    description: 'Dramatically reduced tacrolimus levels',
+    mechanism: 'Rifampin induces CYP3A4 and P-glycoprotein, greatly accelerating tacrolimus metabolism',
+    clinicalEffect: 'Subtherapeutic tacrolimus levels, risk of graft rejection',
+    management: 'Avoid if possible. If unavoidable, increase tacrolimus dose substantially with daily trough monitoring.'
+  },
+  {
+    drug1: 'methotrexate', drug2: 'omeprazole', severity: 'moderate',
+    description: 'Increased methotrexate levels',
+    mechanism: 'PPIs inhibit renal tubular secretion of methotrexate via inhibition of breast cancer resistance protein (BCRP)',
+    clinicalEffect: 'Delayed methotrexate elimination, increased toxicity risk especially with high-dose MTX',
+    management: 'Discontinue PPIs 1 week before high-dose methotrexate. Monitor methotrexate levels.'
+  },
+  {
+    drug1: 'cyclosporine', drug2: 'methotrexate', severity: 'major',
+    description: 'Increased methotrexate toxicity and immunosuppression',
+    mechanism: 'Cyclosporine reduces renal clearance of methotrexate and both are immunosuppressive',
+    clinicalEffect: 'Enhanced methotrexate toxicity (pancytopenia, hepatotoxicity) and excessive immunosuppression',
+    management: 'Monitor methotrexate levels, CBC, and renal/liver function closely. Reduce doses if needed.'
+  },
+
+  // === DOAC INTERACTIONS ===
+  {
+    drug1: 'apixaban', drug2: 'clarithromycin', severity: 'major',
+    description: 'Increased apixaban levels with bleeding risk',
+    mechanism: 'Clarithromycin inhibits CYP3A4 and P-glycoprotein, both involved in apixaban clearance',
+    clinicalEffect: 'Approximately 60% increase in apixaban exposure, elevated bleeding risk',
+    management: 'Consider apixaban dose reduction. Monitor for bleeding signs. Use azithromycin as alternative.'
+  },
+  {
+    drug1: 'rivaroxaban', drug2: 'clarithromycin', severity: 'major',
+    description: 'Increased rivaroxaban levels with bleeding risk',
+    mechanism: 'Clarithromycin inhibits CYP3A4 and P-glycoprotein, both critical for rivaroxaban clearance',
+    clinicalEffect: 'Significant increase in rivaroxaban exposure with heightened bleeding risk',
+    management: 'Use azithromycin instead. If unavoidable, monitor closely for bleeding. Consider dose reduction.'
+  },
+  {
+    drug1: 'dabigatran', drug2: 'ketoconazole', severity: 'contraindicated',
+    description: 'Dramatically increased dabigatran levels',
+    mechanism: 'Ketoconazole potently inhibits P-glycoprotein, the primary efflux transporter for dabigatran',
+    clinicalEffect: 'Dabigatran AUC increased by 138-153%, very high bleeding risk',
+    management: 'Avoid combination. Use alternative antifungal or alternative anticoagulant.'
+  },
+  {
+    drug1: 'dabigatran', drug2: 'rifampin', severity: 'major',
+    description: 'Significantly reduced dabigatran levels',
+    mechanism: 'Rifampin induces P-glycoprotein, increasing dabigatran elimination',
+    clinicalEffect: 'Dabigatran AUC reduced by ~66%, loss of anticoagulant effect',
+    management: 'Avoid combination. Use warfarin with INR monitoring if rifampin is required.'
+  },
+  {
+    drug1: 'edoxaban', drug2: 'ketoconazole', severity: 'major',
+    description: 'Increased edoxaban levels',
+    mechanism: 'Ketoconazole inhibits P-glycoprotein, reducing edoxaban clearance',
+    clinicalEffect: 'Edoxaban exposure increased by ~87%, increased bleeding risk',
+    management: 'Reduce edoxaban dose by 50% when used with strong P-gp inhibitors.'
+  },
+
+  // === OPIOID + BENZODIAZEPINE INTERACTIONS (FDA Black Box Warning) ===
+  {
+    drug1: 'oxycodone', drug2: 'alprazolam', severity: 'major',
+    description: 'Life-threatening respiratory depression (FDA Black Box Warning)',
+    mechanism: 'Additive CNS depression from opioid mu-receptor and GABA-A receptor agonism',
+    clinicalEffect: 'Profound sedation, respiratory depression, coma, and death',
+    management: 'Avoid combination. If medically necessary, limit doses and duration. FDA Black Box Warning on concurrent use.'
+  },
+  {
+    drug1: 'oxycodone', drug2: 'diazepam', severity: 'major',
+    description: 'Life-threatening respiratory depression (FDA Black Box Warning)',
+    mechanism: 'Synergistic CNS depression from opioid and benzodiazepine',
+    clinicalEffect: 'Profound sedation, respiratory depression, coma, death',
+    management: 'Avoid concurrent prescribing. If needed, lowest doses for shortest duration with respiratory monitoring.'
+  },
+  {
+    drug1: 'hydrocodone', drug2: 'alprazolam', severity: 'major',
+    description: 'Life-threatening respiratory depression (FDA Black Box Warning)',
+    mechanism: 'Additive CNS depression from combined opioid and benzodiazepine',
+    clinicalEffect: 'Respiratory depression, sedation, coma, death',
+    management: 'Avoid combination. Prescribe lowest effective doses if medically necessary. Monitor respiratory status.'
+  },
+  {
+    drug1: 'hydrocodone', drug2: 'diazepam', severity: 'major',
+    description: 'Life-threatening respiratory depression (FDA Black Box Warning)',
+    mechanism: 'Synergistic CNS depression',
+    clinicalEffect: 'Respiratory depression, oversedation, death',
+    management: 'Avoid. If essential, use lowest doses, shortest duration, and monitor closely.'
+  },
+  {
+    drug1: 'morphine', drug2: 'lorazepam', severity: 'major',
+    description: 'Life-threatening respiratory depression (FDA Black Box Warning)',
+    mechanism: 'Additive CNS depression from opioid mu-receptor agonism and GABA-A receptor activation',
+    clinicalEffect: 'Profound sedation, respiratory depression, death',
+    management: 'Avoid combination. In palliative care settings, use lowest effective doses with close monitoring.'
+  },
+  {
+    drug1: 'fentanyl', drug2: 'midazolam', severity: 'major',
+    description: 'Severe respiratory depression (FDA Black Box Warning)',
+    mechanism: 'Potent synergistic CNS depression between strong opioid and benzodiazepine',
+    clinicalEffect: 'Profound respiratory depression, apnea, death. Common in procedural sedation.',
+    management: 'In procedural sedation, use reduced doses with continuous monitoring. Outside ICU/OR, avoid combination.'
+  },
+  {
+    drug1: 'methadone', drug2: 'alprazolam', severity: 'major',
+    description: 'Life-threatening respiratory depression and QT prolongation',
+    mechanism: 'Additive CNS depression; methadone also prolongs QT interval',
+    clinicalEffect: 'Respiratory depression, oversedation, death. Methadone QT effects add cardiac risk.',
+    management: 'Avoid combination. Benzodiazepine-related deaths are a leading cause of methadone program fatalities.'
+  },
+
+  // === OPIOID + MUSCLE RELAXANT INTERACTIONS ===
+  {
+    drug1: 'oxycodone', drug2: 'cyclobenzaprine', severity: 'major',
+    description: 'Excessive CNS depression and serotonin syndrome risk',
+    mechanism: 'Additive CNS depression; cyclobenzaprine is structurally related to TCAs and has serotonergic activity',
+    clinicalEffect: 'Excessive sedation, respiratory depression, potential serotonin syndrome',
+    management: 'Use lowest effective doses. Monitor for sedation and respiratory depression. Consider non-sedating alternatives.'
+  },
+  {
+    drug1: 'hydrocodone', drug2: 'cyclobenzaprine', severity: 'major',
+    description: 'Excessive CNS depression',
+    mechanism: 'Additive sedation from opioid and centrally-acting muscle relaxant',
+    clinicalEffect: 'Respiratory depression, excessive sedation, falls risk',
+    management: 'Limit doses and duration. Monitor respiratory status. Consider topical muscle relaxant alternatives.'
+  },
+  {
+    drug1: 'oxycodone', drug2: 'baclofen', severity: 'major',
+    description: 'Enhanced CNS and respiratory depression',
+    mechanism: 'Additive CNS depression from opioid and GABA-B agonist',
+    clinicalEffect: 'Respiratory depression, sedation, potentially fatal',
+    management: 'Use lowest effective doses. Monitor respiratory status closely.'
+  },
+
+  // === QT-PROLONGING DRUG COMBINATIONS ===
+  {
+    drug1: 'amiodarone', drug2: 'sotalol', severity: 'contraindicated',
+    description: 'Excessive QT prolongation and torsades de pointes',
+    mechanism: 'Both drugs independently prolong QT interval via potassium channel blockade',
+    clinicalEffect: 'Severe QT prolongation, torsades de pointes, ventricular fibrillation, sudden death',
+    management: 'NEVER combine. Allow adequate washout (amiodarone has very long half-life, weeks to months).'
+  },
+  {
+    drug1: 'haloperidol', drug2: 'amiodarone', severity: 'major',
+    description: 'Additive QT prolongation',
+    mechanism: 'Both agents block cardiac potassium channels (hERG), prolonging the QT interval',
+    clinicalEffect: 'QT prolongation, torsades de pointes, cardiac arrest',
+    management: 'Avoid combination. If necessary, monitor ECG and QTc closely. Correct hypokalemia and hypomagnesemia.'
+  },
+  {
+    drug1: 'ziprasidone', drug2: 'amiodarone', severity: 'contraindicated',
+    description: 'High risk of QT prolongation and torsades de pointes',
+    mechanism: 'Ziprasidone has the highest QT-prolonging potential among atypical antipsychotics; additive with amiodarone',
+    clinicalEffect: 'Severe QT prolongation, torsades de pointes, sudden cardiac death',
+    management: 'NEVER combine. Use alternative antipsychotic with lower QT risk (e.g., aripiprazole).'
+  },
+  {
+    drug1: 'haloperidol', drug2: 'sotalol', severity: 'major',
+    description: 'Additive QT prolongation',
+    mechanism: 'Both agents independently prolong QT interval',
+    clinicalEffect: 'Increased risk of torsades de pointes and ventricular arrhythmias',
+    management: 'Avoid if possible. If necessary, baseline and periodic ECG monitoring. Maintain normal K+ and Mg2+.'
+  },
+  {
+    drug1: 'moxifloxacin', drug2: 'amiodarone', severity: 'major',
+    description: 'Additive QT prolongation',
+    mechanism: 'Moxifloxacin prolongs QT interval more than other fluoroquinolones; additive with amiodarone',
+    clinicalEffect: 'Increased risk of torsades de pointes',
+    management: 'Use alternative fluoroquinolone (levofloxacin or ciprofloxacin have less QT effect). Monitor ECG if unavoidable.'
+  },
+  {
+    drug1: 'ondansetron', drug2: 'amiodarone', severity: 'major',
+    description: 'Additive QT prolongation',
+    mechanism: 'Both agents block hERG potassium channels, prolonging cardiac repolarization',
+    clinicalEffect: 'QT prolongation, torsades de pointes risk',
+    management: 'Limit ondansetron dose to 16mg IV max. Monitor ECG. Consider alternative antiemetics (metoclopramide).'
+  },
+  {
+    drug1: 'methadone', drug2: 'sotalol', severity: 'contraindicated',
+    description: 'Severe QT prolongation and cardiac arrhythmia risk',
+    mechanism: 'Both agents cause dose-dependent QT prolongation via hERG channel blockade',
+    clinicalEffect: 'Torsades de pointes, ventricular fibrillation, sudden death',
+    management: 'NEVER combine. Use alternative opioid without QT-prolonging properties. ECG monitoring mandatory.'
+  },
+  {
+    drug1: 'citalopram', drug2: 'amiodarone', severity: 'major',
+    description: 'Additive QT prolongation',
+    mechanism: 'Citalopram causes dose-dependent QT prolongation (FDA warning); additive with amiodarone',
+    clinicalEffect: 'QT prolongation, risk of torsades de pointes',
+    management: 'Avoid combination. Max citalopram dose 20mg/day. Monitor ECG. Consider sertraline (less QT effect).'
+  },
+  {
+    drug1: 'domperidone', drug2: 'ketoconazole', severity: 'contraindicated',
+    description: 'QT prolongation and cardiac arrhythmias',
+    mechanism: 'Ketoconazole inhibits CYP3A4 metabolism of domperidone, increasing levels; both prolong QT',
+    clinicalEffect: 'Elevated domperidone levels with additive QT prolongation; torsades de pointes risk',
+    management: 'NEVER combine. Use alternative antiemetic or antifungal.'
+  },
+
+  // === PSYCHIATRIC MEDICATION INTERACTIONS ===
+  {
+    drug1: 'quetiapine', drug2: 'ketoconazole', severity: 'major',
+    description: 'Significantly increased quetiapine levels',
+    mechanism: 'Ketoconazole inhibits CYP3A4, the primary metabolic pathway for quetiapine',
+    clinicalEffect: 'Quetiapine exposure increased 6-fold, causing excessive sedation, hypotension, QT prolongation',
+    management: 'Reduce quetiapine dose to 1/6th when used with strong CYP3A4 inhibitors. Monitor sedation and ECG.'
+  },
+  {
+    drug1: 'aripiprazole', drug2: 'fluoxetine', severity: 'major',
+    description: 'Increased aripiprazole levels',
+    mechanism: 'Fluoxetine inhibits CYP2D6, a major pathway for aripiprazole metabolism',
+    clinicalEffect: 'Aripiprazole AUC increased ~112%, risk of akathisia, EPS, sedation',
+    management: 'Reduce aripiprazole dose by 50% when used with strong CYP2D6 inhibitors.'
+  },
+  {
+    drug1: 'olanzapine', drug2: 'ciprofloxacin', severity: 'moderate',
+    description: 'Increased olanzapine levels',
+    mechanism: 'Ciprofloxacin inhibits CYP1A2, the primary metabolic pathway for olanzapine',
+    clinicalEffect: 'Increased olanzapine exposure with risk of sedation, weight gain, metabolic effects',
+    management: 'Monitor for olanzapine toxicity. Consider olanzapine dose reduction during ciprofloxacin course.'
+  },
+  {
+    drug1: 'linezolid', drug2: 'fluoxetine', severity: 'contraindicated',
+    description: 'Risk of serotonin syndrome',
+    mechanism: 'Linezolid is a reversible non-selective MAO inhibitor; combined with SSRI causes serotonin excess',
+    clinicalEffect: 'Life-threatening serotonin syndrome: hyperthermia, rigidity, myoclonus, autonomic instability',
+    management: 'NEVER combine unless life-threatening infection with no alternatives. If linezolid essential, stop SSRI and monitor for serotonin syndrome.'
+  },
+  {
+    drug1: 'linezolid', drug2: 'sertraline', severity: 'contraindicated',
+    description: 'Risk of serotonin syndrome',
+    mechanism: 'Linezolid has MAO-inhibiting properties; combined with SSRI produces excess serotonin',
+    clinicalEffect: 'Life-threatening serotonin syndrome',
+    management: 'NEVER combine. Stop sertraline before starting linezolid. Monitor for 2 weeks after sertraline discontinuation.'
+  },
+  {
+    drug1: 'linezolid', drug2: 'tramadol', severity: 'contraindicated',
+    description: 'Risk of serotonin syndrome',
+    mechanism: 'Linezolid inhibits MAO; tramadol inhibits serotonin reuptake',
+    clinicalEffect: 'Serotonin syndrome: agitation, confusion, hyperthermia, tachycardia',
+    management: 'NEVER combine. Use alternative analgesic (non-serotonergic opioid or non-opioid).'
+  },
+  {
+    drug1: 'venlafaxine', drug2: 'phenelzine', severity: 'contraindicated',
+    description: 'Risk of serotonin syndrome',
+    mechanism: 'SNRI + MAOI produces extreme serotonin excess via dual potentiation',
+    clinicalEffect: 'Life-threatening serotonin syndrome, hypertensive crisis, death',
+    management: 'NEVER combine. Allow 1-week washout after venlafaxine; 2-week washout after MAOI.'
+  },
+  {
+    drug1: 'trazodone', drug2: 'phenelzine', severity: 'contraindicated',
+    description: 'Risk of serotonin syndrome',
+    mechanism: 'Trazodone inhibits serotonin reuptake; MAOI prevents serotonin breakdown',
+    clinicalEffect: 'Serotonin syndrome, hyperthermia, death',
+    management: 'NEVER combine. Allow 2-week washout between agents.'
+  },
+
+  // === CARDIOVASCULAR INTERACTIONS ===
+  {
+    drug1: 'amlodipine', drug2: 'simvastatin', severity: 'major',
+    description: 'Increased simvastatin levels and myopathy risk',
+    mechanism: 'Amlodipine inhibits CYP3A4, modestly increasing simvastatin exposure',
+    clinicalEffect: 'Increased risk of myopathy and rhabdomyolysis',
+    management: 'Do not exceed simvastatin 20mg/day with amlodipine. Consider pravastatin or rosuvastatin as alternatives.'
+  },
+  {
+    drug1: 'digoxin', drug2: 'clarithromycin', severity: 'major',
+    description: 'Significantly increased digoxin levels',
+    mechanism: 'Clarithromycin inhibits P-glycoprotein (reducing renal/biliary digoxin secretion) and eliminates Eubacterium lentum gut flora that inactivates digoxin',
+    clinicalEffect: 'Digoxin toxicity: nausea, visual disturbances, arrhythmias, potentially fatal',
+    management: 'Reduce digoxin dose by 50%. Monitor digoxin levels. Use azithromycin as alternative (less P-gp inhibition).'
+  },
+  {
+    drug1: 'digoxin', drug2: 'cyclosporine', severity: 'major',
+    description: 'Increased digoxin levels',
+    mechanism: 'Cyclosporine inhibits P-glycoprotein and reduces renal clearance of digoxin',
+    clinicalEffect: 'Digoxin toxicity with arrhythmias, nausea, visual changes',
+    management: 'Reduce digoxin dose by 50%. Monitor digoxin trough levels closely. Check renal function.'
+  },
+  {
+    drug1: 'verapamil', drug2: 'simvastatin', severity: 'major',
+    description: 'Increased simvastatin levels and myopathy risk',
+    mechanism: 'Verapamil inhibits CYP3A4 and P-glycoprotein, increasing simvastatin exposure',
+    clinicalEffect: 'Myopathy and rhabdomyolysis',
+    management: 'Do not exceed simvastatin 10mg/day with verapamil. Consider pravastatin or rosuvastatin.'
+  },
+  {
+    drug1: 'dronedarone', drug2: 'digoxin', severity: 'major',
+    description: 'Increased digoxin levels',
+    mechanism: 'Dronedarone inhibits P-glycoprotein, reducing digoxin renal clearance',
+    clinicalEffect: 'Digoxin exposure increased by 150%, risk of toxicity',
+    management: 'Reduce digoxin dose by 50%. Monitor digoxin levels. Avoid digoxin >0.125mg/day with dronedarone.'
+  },
+  {
+    drug1: 'dronedarone', drug2: 'simvastatin', severity: 'major',
+    description: 'Increased simvastatin levels',
+    mechanism: 'Dronedarone inhibits CYP3A4, increasing simvastatin exposure',
+    clinicalEffect: 'Increased risk of myopathy and rhabdomyolysis',
+    management: 'Do not exceed simvastatin 10mg/day with dronedarone. Consider alternative statin.'
+  },
+
+  // === ENDOCRINE INTERACTIONS ===
+  {
+    drug1: 'insulin', drug2: 'ciprofloxacin', severity: 'major',
+    description: 'Severe and unpredictable glucose dysregulation',
+    mechanism: 'Fluoroquinolones directly affect pancreatic beta cell potassium channels, causing both hypo- and hyperglycemia',
+    clinicalEffect: 'Severe hypoglycemia (including coma) or hyperglycemia. FDA Black Box Warning for glucose dysregulation.',
+    management: 'Monitor blood glucose frequently (4x daily minimum). Adjust insulin doses as needed. Warn patient of hypoglycemia symptoms.'
+  },
+  {
+    drug1: 'insulin', drug2: 'levofloxacin', severity: 'major',
+    description: 'Severe and unpredictable glucose dysregulation',
+    mechanism: 'Fluoroquinolones affect pancreatic beta cell function, causing unpredictable glycemic changes',
+    clinicalEffect: 'Severe hypoglycemia or hyperglycemia. FDA Black Box Warning.',
+    management: 'Frequent glucose monitoring. Adjust insulin dose as needed. Be prepared for both hypo- and hyperglycemia.'
+  },
+  {
+    drug1: 'levothyroxine', drug2: 'calcium_carbonate', severity: 'moderate',
+    description: 'Reduced levothyroxine absorption',
+    mechanism: 'Calcium forms insoluble complexes with levothyroxine in the GI tract, reducing absorption',
+    clinicalEffect: 'Increased TSH, inadequate thyroid hormone replacement',
+    management: 'Separate administration by at least 4 hours. Take levothyroxine on empty stomach, calcium with meals.'
+  },
+  {
+    drug1: 'levothyroxine', drug2: 'omeprazole', severity: 'moderate',
+    description: 'Reduced levothyroxine absorption',
+    mechanism: 'PPIs increase gastric pH, reducing dissolution and absorption of levothyroxine tablets',
+    clinicalEffect: 'Increased TSH, subtherapeutic thyroid replacement',
+    management: 'Monitor TSH when starting/stopping PPI. May need levothyroxine dose increase. Liquid formulation less affected.'
+  },
+
+  // === ADDITIONAL IMPORTANT INTERACTIONS ===
+  {
+    drug1: 'warfarin', drug2: 'fluconazole', severity: 'major',
+    description: 'Significantly increased anticoagulant effect',
+    mechanism: 'Fluconazole inhibits CYP2C9 and CYP3A4, the primary warfarin metabolic pathways',
+    clinicalEffect: 'Markedly elevated INR with high bleeding risk, even with single-dose fluconazole',
+    management: 'Monitor INR within 2-3 days of starting fluconazole. Empirically reduce warfarin dose by 25-50%.'
+  },
+  {
+    drug1: 'fentanyl', drug2: 'ritonavir', severity: 'contraindicated',
+    description: 'Dramatically increased fentanyl levels and respiratory depression',
+    mechanism: 'Ritonavir potently inhibits CYP3A4, the primary fentanyl metabolic pathway',
+    clinicalEffect: 'Fatal respiratory depression from fentanyl accumulation',
+    management: 'Avoid combination. If opioid needed, use morphine or hydromorphone (not CYP3A4 dependent).'
+  },
+  {
+    drug1: 'methadone', drug2: 'rifampin', severity: 'major',
+    description: 'Dramatically reduced methadone levels',
+    mechanism: 'Rifampin induces CYP3A4, CYP2B6, and other enzymes that metabolize methadone',
+    clinicalEffect: 'Opioid withdrawal syndrome, loss of pain control, potential relapse in addiction treatment',
+    management: 'Increase methadone dose as needed (may require 2-3x increase). Monitor for withdrawal symptoms daily.'
+  },
+  {
+    drug1: 'codeine', drug2: 'paroxetine', severity: 'major',
+    description: 'Loss of codeine analgesic effect',
+    mechanism: 'Paroxetine strongly inhibits CYP2D6, blocking conversion of codeine to its active metabolite morphine',
+    clinicalEffect: 'Complete loss of analgesic effect from codeine',
+    management: 'Use alternative analgesic not requiring CYP2D6 activation (e.g., non-opioid or morphine directly).'
+  },
+  {
+    drug1: 'itraconazole', drug2: 'simvastatin', severity: 'contraindicated',
+    description: 'Dramatically increased simvastatin levels',
+    mechanism: 'Itraconazole potently inhibits CYP3A4, increasing simvastatin exposure >10-fold',
+    clinicalEffect: 'Very high risk of rhabdomyolysis',
+    management: 'NEVER combine. Suspend simvastatin during itraconazole course. Use pravastatin or rosuvastatin as alternatives.'
+  },
+  {
+    drug1: 'heparin', drug2: 'enoxaparin', severity: 'contraindicated',
+    description: 'Excessive anticoagulation from overlapping anticoagulants',
+    mechanism: 'Both enhance antithrombin III activity; combined use provides excessive anticoagulation',
+    clinicalEffect: 'Major hemorrhage, potentially fatal bleeding',
+    management: 'NEVER use simultaneously. Ensure adequate washout when transitioning between agents.'
+  },
+  {
+    drug1: 'warfarin', drug2: 'carbamazepine', severity: 'major',
+    description: 'Reduced anticoagulant effect of warfarin',
+    mechanism: 'Carbamazepine induces CYP1A2, CYP2C9, and CYP3A4, increasing warfarin metabolism',
+    clinicalEffect: 'Subtherapeutic INR with increased thromboembolic risk',
+    management: 'Monitor INR frequently when starting/stopping carbamazepine. May need significant warfarin dose increase.'
+  },
+  {
+    drug1: 'phenytoin', drug2: 'omeprazole', severity: 'moderate',
+    description: 'Increased phenytoin levels',
+    mechanism: 'Omeprazole inhibits CYP2C19, which contributes to phenytoin metabolism',
+    clinicalEffect: 'Elevated phenytoin levels with risk of toxicity (nystagmus, ataxia, confusion)',
+    management: 'Monitor phenytoin levels when starting/stopping omeprazole. Pantoprazole has less CYP2C19 interaction.'
+  },
+  {
+    drug1: 'mycophenolate', drug2: 'omeprazole', severity: 'moderate',
+    description: 'Reduced mycophenolate absorption',
+    mechanism: 'PPIs increase gastric pH, reducing dissolution of mycophenolate mofetil enteric coating and decreasing absorption of active metabolite MPA',
+    clinicalEffect: 'Reduced mycophenolic acid (MPA) exposure by ~35%, potential for graft rejection',
+    management: 'Monitor MPA trough levels. Consider switching to mycophenolate sodium (Myfortic) which is less pH-dependent.'
+  },
+  {
+    drug1: 'tacrolimus', drug2: 'itraconazole', severity: 'major',
+    description: 'Dramatically increased tacrolimus levels',
+    mechanism: 'Itraconazole potently inhibits CYP3A4 and P-glycoprotein, primary clearance pathways for tacrolimus',
+    clinicalEffect: 'Tacrolimus toxicity: severe nephrotoxicity, neurotoxicity, hyperglycemia',
+    management: 'Reduce tacrolimus dose by 50-75%. Monitor trough levels every 2-3 days. Use alternative antifungal if possible.'
+  },
+  {
+    drug1: 'dofetilide', drug2: 'verapamil', severity: 'contraindicated',
+    description: 'Increased dofetilide levels with QT prolongation',
+    mechanism: 'Verapamil increases dofetilide levels via inhibition of renal cation transport',
+    clinicalEffect: 'Excessive QT prolongation, torsades de pointes',
+    management: 'NEVER combine. Verapamil is specifically contraindicated with dofetilide per FDA labeling.'
+  },
+  {
+    drug1: 'escitalopram', drug2: 'phenelzine', severity: 'contraindicated',
+    description: 'Risk of serotonin syndrome',
+    mechanism: 'Combined serotonergic activity from SSRI and MAOI causes excessive serotonin',
+    clinicalEffect: 'Life-threatening serotonin syndrome: hyperthermia, rigidity, autonomic instability',
+    management: 'NEVER combine. Allow 2-week washout between agents.'
+  },
+  {
+    drug1: 'citalopram', drug2: 'phenelzine', severity: 'contraindicated',
+    description: 'Risk of serotonin syndrome',
+    mechanism: 'Combined serotonergic activity from SSRI and MAOI',
+    clinicalEffect: 'Life-threatening serotonin syndrome',
+    management: 'NEVER combine. Allow 2-week washout between agents.'
   },
 ];
 

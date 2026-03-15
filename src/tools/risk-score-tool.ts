@@ -15,11 +15,16 @@ import {
   calculateTIMI,
   calculateABCD2,
   calculateBMI,
+  calculateFramingham,
+  calculateAPACHEII,
+  calculatePESI,
+  calculateModifiedRankin,
+  calculateMorseFallScale,
   availableScores,
   type RiskScoreResult,
 } from '../data/risk-scores.js';
 
-export type ScoreName = 'CHA2DS2-VASc' | 'HEART' | 'Wells-PE' | 'MELD' | 'CURB-65' | 'GCS' | 'eGFR' | 'qSOFA' | 'SOFA' | 'Child-Pugh' | 'ASCVD' | 'NEWS2' | 'HAS-BLED' | 'TIMI' | 'ABCD2' | 'BMI';
+export type ScoreName = 'CHA2DS2-VASc' | 'HEART' | 'Wells-PE' | 'MELD' | 'CURB-65' | 'GCS' | 'eGFR' | 'qSOFA' | 'SOFA' | 'Child-Pugh' | 'ASCVD' | 'NEWS2' | 'HAS-BLED' | 'TIMI' | 'ABCD2' | 'BMI' | 'Framingham' | 'APACHE-II' | 'PESI' | 'mRS' | 'Morse-Fall-Scale';
 
 export function listAvailableScores() {
   return availableScores.map(s => ({
@@ -184,6 +189,69 @@ export function calculateRiskScore(scoreName: ScoreName, parameters: Record<stri
       return calculateBMI({
         weight_kg: Number(parameters.weight_kg),
         height_cm: Number(parameters.height_cm),
+      });
+
+    case 'Framingham':
+      return calculateFramingham({
+        age: Number(parameters.age),
+        sex: parameters.sex as 'male' | 'female',
+        total_cholesterol: Number(parameters.total_cholesterol),
+        hdl_cholesterol: Number(parameters.hdl_cholesterol),
+        systolic_bp: Number(parameters.systolic_bp),
+        bp_treated: Boolean(parameters.bp_treated),
+        smoker: Boolean(parameters.smoker),
+        diabetes: Boolean(parameters.diabetes),
+      });
+
+    case 'APACHE-II':
+      return calculateAPACHEII({
+        temperature: Number(parameters.temperature),
+        mean_arterial_pressure: Number(parameters.mean_arterial_pressure),
+        heart_rate: Number(parameters.heart_rate),
+        respiratory_rate: Number(parameters.respiratory_rate),
+        oxygenation: Number(parameters.oxygenation),
+        fio2_gte_50: Boolean(parameters.fio2_gte_50),
+        arterial_ph: Number(parameters.arterial_ph),
+        sodium: Number(parameters.sodium),
+        potassium: Number(parameters.potassium),
+        creatinine: Number(parameters.creatinine),
+        acute_renal_failure: Boolean(parameters.acute_renal_failure),
+        hematocrit: Number(parameters.hematocrit),
+        wbc: Number(parameters.wbc),
+        gcs: Number(parameters.gcs),
+        age: Number(parameters.age),
+        chronic_health: (parameters.chronic_health as 'none' | 'nonoperative' | 'emergency_postop' | 'elective_postop') ?? 'none',
+        severe_organ_insufficiency: Boolean(parameters.severe_organ_insufficiency),
+      });
+
+    case 'PESI':
+      return calculatePESI({
+        age: Number(parameters.age),
+        sex: parameters.sex as 'male' | 'female',
+        cancer: Boolean(parameters.cancer),
+        heart_failure: Boolean(parameters.heart_failure),
+        chronic_lung_disease: Boolean(parameters.chronic_lung_disease),
+        heart_rate_gte_110: Boolean(parameters.heart_rate_gte_110),
+        systolic_bp_lt_100: Boolean(parameters.systolic_bp_lt_100),
+        respiratory_rate_gte_30: Boolean(parameters.respiratory_rate_gte_30),
+        temperature_lt_36: Boolean(parameters.temperature_lt_36),
+        altered_mental_status: Boolean(parameters.altered_mental_status),
+        spo2_lt_90: Boolean(parameters.spo2_lt_90),
+      });
+
+    case 'mRS':
+      return calculateModifiedRankin({
+        functional_status: Number(parameters.functional_status) as 0 | 1 | 2 | 3 | 4 | 5 | 6,
+      });
+
+    case 'Morse-Fall-Scale':
+      return calculateMorseFallScale({
+        history_of_falling: Boolean(parameters.history_of_falling),
+        secondary_diagnosis: Boolean(parameters.secondary_diagnosis),
+        ambulatory_aid: (parameters.ambulatory_aid as 'none' | 'crutch_cane_walker' | 'furniture') ?? 'none',
+        iv_heparin_lock: Boolean(parameters.iv_heparin_lock),
+        gait: (parameters.gait as 'normal' | 'weak' | 'impaired') ?? 'normal',
+        mental_status: (parameters.mental_status as 'oriented' | 'overestimates') ?? 'oriented',
       });
 
     default:

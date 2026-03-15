@@ -166,8 +166,8 @@ export function createHealthBridgeServer(): McpServer {
           ]);
 
           const bundle = {
-            resourceType: 'Bundle',
-            type: 'collection',
+            resourceType: 'Bundle' as const,
+            type: 'collection' as const,
             entry: [
               { resource: patientResult.data },
               ...('data' in conditions && conditions.data?.entry ? conditions.data.entry : []),
