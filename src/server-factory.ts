@@ -18,6 +18,7 @@ import { runPKCalculator, listPKCalculators } from './tools/pharmacokinetics-too
 import { checkSingleIVCompatibility, checkMultipleIVCompatibility, listIVDrugs } from './tools/iv-compatibility-tool.js';
 import { checkSinglePregnancySafety, screenPregnancyMedications, listPregnancyDatabaseDrugs } from './tools/pregnancy-safety-tool.js';
 import { calculateMME, calculateTotalMME, convertOpioid, listAvailableOpioids } from './tools/opioid-medd-tool.js';
+import { lookupAntibioticSpectrum, lookupEmpiricTherapy, suggestDeescalation, listAntibiotics, listInfectionTypes } from './tools/antibiotic-stewardship-tool.js';
 import { registerResources } from './resources.js';
 import { registerPrompts } from './prompts.js';
 import { getSHARPContext, hasFHIRAccess, fetchFHIRResource } from './sharp-context.js';
@@ -705,6 +706,98 @@ export function createHealthBridgeServer(): McpServer {
         content: [{
           type: 'text' as const,
           text: JSON.stringify({ opioids, count: opioids.length }, null, 2),
+        }],
+      };
+    }
+  );
+
+  // Tool 30: Antibiotic Spectrum Lookup
+  server.tool(
+    'antibiotic_spectrum',
+    'Look up the spectrum of activity for an antibiotic. Returns gram-positive, gram-negative, anaerobic, and atypical coverage levels, key organisms covered, notable gaps, common clinical uses, resistance concerns, and WHO AWaRe classification. Covers 25+ common antibiotics.',
+    {
+      antibiotic: z.string().describe('Antibiotic name (generic or brand, e.g., "amoxicillin", "Zosyn", "meropenem")'),
+    },
+    async ({ antibiotic }) => {
+      const result = lookupAntibioticSpectrum({ antibiotic });
+      return {
+        content: [{
+          type: 'text' as const,
+          text: JSON.stringify(result, null, 2),
+        }],
+      };
+    }
+  );
+
+  // Tool 31: Empiric Therapy Recommendations
+  server.tool(
+    'empiric_therapy',
+    'Get evidence-based empiric antibiotic recommendations for an infection type following IDSA guidelines. Returns first-line and alternative regimens with doses, durations, and clinical considerations. Covers CAP, HAP, UTI, SSTI, intra-abdominal, sepsis, meningitis, endocarditis, osteomyelitis, diabetic foot, and C. difficile.',
+    {
+      infection_type: z.string().describe('Infection type or site (e.g., "community-acquired pneumonia", "UTI", "sepsis", "cellulitis", "meningitis", "C. diff")'),
+    },
+    async ({ infection_type }) => {
+      const result = lookupEmpiricTherapy({ infectionType: infection_type });
+      return {
+        content: [{
+          type: 'text' as const,
+          text: JSON.stringify(result, null, 2),
+        }],
+      };
+    }
+  );
+
+  // Tool 32: Antibiotic De-escalation
+  server.tool(
+    'antibiotic_deescalation',
+    'Suggest narrow-spectrum alternatives for de-escalation from broad-spectrum antibiotics based on culture and sensitivity results. Returns prioritized de-escalation options with rationale, stewardship benefits, and clinical caveats.',
+    {
+      current_antibiotic: z.string().describe('Current broad-spectrum antibiotic (e.g., "meropenem", "vancomycin", "piperacillin-tazobactam")'),
+      organism: z.string().describe('Identified organism from culture (e.g., "E. coli", "MSSA", "Klebsiella pneumoniae")'),
+      susceptibility: z.string().describe('Susceptibility pattern (e.g., "susceptible to ceftriaxone", "ESBL-producing", "ampicillin-susceptible")'),
+    },
+    async ({ current_antibiotic, organism, susceptibility }) => {
+      const result = suggestDeescalation({
+        currentAntibiotic: current_antibiotic,
+        organism,
+        susceptibility,
+      });
+      return {
+        content: [{
+          type: 'text' as const,
+          text: JSON.stringify(result, null, 2),
+        }],
+      };
+    }
+  );
+
+  // Tool 33: List Antibiotics Database
+  server.tool(
+    'list_antibiotics',
+    'List all antibiotics in the stewardship database with their classes, WHO AWaRe categories, and spectrum classification.',
+    {},
+    async () => {
+      const antibiotics = listAntibiotics();
+      return {
+        content: [{
+          type: 'text' as const,
+          text: JSON.stringify({ antibiotics, count: antibiotics.length }, null, 2),
+        }],
+      };
+    }
+  );
+
+  // Tool 34: List Infection Types
+  server.tool(
+    'list_infection_types',
+    'List all infection types with empiric therapy recommendations available, including guideline sources.',
+    {},
+    async () => {
+      const infectionTypes = listInfectionTypes();
+      return {
+        content: [{
+          type: 'text' as const,
+          text: JSON.stringify({ infectionTypes, count: infectionTypes.length }, null, 2),
         }],
       };
     }
