@@ -7,6 +7,7 @@
   "scripts": {
     "build": "tsc",
     "start": "node dist/index.js",
+    "serve": "tsx src/http-transport.ts",
     "dev": "tsx src/index.ts",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -16,8 +17,11 @@
     "mcp",
     "healthcare",
     "fhir",
+    "sharp",
+    "a2a",
     "clinical-decision-support",
-    "drug-interactions"
+    "drug-interactions",
+    "prompt-opinion"
   ],
   "author": "Fulcria Labs",
   "license": "MIT",
