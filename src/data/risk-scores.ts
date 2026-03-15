@@ -1944,6 +1944,487 @@ export function calculateMorseFallScale(input: {
   };
 }
 
+/**
+ * NIH Stroke Scale (NIHSS) - Stroke Severity Assessment
+ * Quantifies stroke severity to guide treatment decisions including tPA eligibility.
+ * Score range 0-42.
+ */
+export function calculateNIHSS(input: {
+  consciousness: 0 | 1 | 2 | 3;
+  orientation_questions: 0 | 1 | 2;
+  commands: 0 | 1 | 2;
+  gaze: 0 | 1 | 2;
+  visual_fields: 0 | 1 | 2 | 3;
+  facial_palsy: 0 | 1 | 2 | 3;
+  motor_arm_left: 0 | 1 | 2 | 3 | 4;
+  motor_arm_right: 0 | 1 | 2 | 3 | 4;
+  motor_leg_left: 0 | 1 | 2 | 3 | 4;
+  motor_leg_right: 0 | 1 | 2 | 3 | 4;
+  ataxia: 0 | 1 | 2;
+  sensory: 0 | 1 | 2;
+  language: 0 | 1 | 2 | 3;
+  dysarthria: 0 | 1 | 2;
+  neglect: 0 | 1 | 2;
+}): RiskScoreResult {
+  const components: Record<string, { value: number; description: string }> = {};
+  let score = 0;
+
+  // 1a. Level of consciousness
+  const consciousnessDesc: Record<number, string> = {
+    0: 'Alert; keenly responsive',
+    1: 'Not alert; but arousable by minor stimulation',
+    2: 'Not alert; requires repeated stimulation to attend',
+    3: 'Unresponsive or responds only with reflex motor or autonomic effects',
+  };
+  components['1a. Level of Consciousness'] = { value: input.consciousness, description: consciousnessDesc[input.consciousness] };
+  score += input.consciousness;
+
+  // 1b. LOC Questions (month, age)
+  const orientationDesc: Record<number, string> = {
+    0: 'Answers both correctly',
+    1: 'Answers one correctly',
+    2: 'Answers neither correctly',
+  };
+  components['1b. Orientation Questions'] = { value: input.orientation_questions, description: orientationDesc[input.orientation_questions] };
+  score += input.orientation_questions;
+
+  // 1c. LOC Commands (open/close eyes, grip/release hand)
+  const commandsDesc: Record<number, string> = {
+    0: 'Performs both tasks correctly',
+    1: 'Performs one task correctly',
+    2: 'Performs neither task correctly',
+  };
+  components['1c. LOC Commands'] = { value: input.commands, description: commandsDesc[input.commands] };
+  score += input.commands;
+
+  // 2. Best gaze
+  const gazeDesc: Record<number, string> = {
+    0: 'Normal',
+    1: 'Partial gaze palsy',
+    2: 'Forced deviation or total gaze paresis',
+  };
+  components['2. Best Gaze'] = { value: input.gaze, description: gazeDesc[input.gaze] };
+  score += input.gaze;
+
+  // 3. Visual fields
+  const visualDesc: Record<number, string> = {
+    0: 'No visual loss',
+    1: 'Partial hemianopia',
+    2: 'Complete hemianopia',
+    3: 'Bilateral hemianopia (blind including cortical blindness)',
+  };
+  components['3. Visual Fields'] = { value: input.visual_fields, description: visualDesc[input.visual_fields] };
+  score += input.visual_fields;
+
+  // 4. Facial palsy
+  const facialDesc: Record<number, string> = {
+    0: 'Normal symmetric movements',
+    1: 'Minor paralysis (flattened nasolabial fold, asymmetry on smiling)',
+    2: 'Partial paralysis (total or near-total paralysis of lower face)',
+    3: 'Complete paralysis of one or both sides',
+  };
+  components['4. Facial Palsy'] = { value: input.facial_palsy, description: facialDesc[input.facial_palsy] };
+  score += input.facial_palsy;
+
+  // 5a. Motor arm - left
+  const motorArmDesc: Record<number, string> = {
+    0: 'No drift; limb holds 90 (or 45) degrees for full 10 seconds',
+    1: 'Drift; limb holds but drifts down before full 10 seconds',
+    2: 'Some effort against gravity; limb cannot maintain position',
+    3: 'No effort against gravity; limb falls',
+    4: 'No movement',
+  };
+  components['5a. Motor Arm (Left)'] = { value: input.motor_arm_left, description: motorArmDesc[input.motor_arm_left] };
+  score += input.motor_arm_left;
+
+  // 5b. Motor arm - right
+  components['5b. Motor Arm (Right)'] = { value: input.motor_arm_right, description: motorArmDesc[input.motor_arm_right] };
+  score += input.motor_arm_right;
+
+  // 6a. Motor leg - left
+  const motorLegDesc: Record<number, string> = {
+    0: 'No drift; leg holds 30 degrees for full 5 seconds',
+    1: 'Drift; leg falls by end of 5-second period',
+    2: 'Some effort against gravity',
+    3: 'No effort against gravity; leg falls immediately',
+    4: 'No movement',
+  };
+  components['6a. Motor Leg (Left)'] = { value: input.motor_leg_left, description: motorLegDesc[input.motor_leg_left] };
+  score += input.motor_leg_left;
+
+  // 6b. Motor leg - right
+  components['6b. Motor Leg (Right)'] = { value: input.motor_leg_right, description: motorLegDesc[input.motor_leg_right] };
+  score += input.motor_leg_right;
+
+  // 7. Limb ataxia
+  const ataxiaDesc: Record<number, string> = {
+    0: 'Absent',
+    1: 'Present in one limb',
+    2: 'Present in two limbs',
+  };
+  components['7. Limb Ataxia'] = { value: input.ataxia, description: ataxiaDesc[input.ataxia] };
+  score += input.ataxia;
+
+  // 8. Sensory
+  const sensoryDesc: Record<number, string> = {
+    0: 'Normal; no sensory loss',
+    1: 'Mild-to-moderate sensory loss',
+    2: 'Severe or total sensory loss',
+  };
+  components['8. Sensory'] = { value: input.sensory, description: sensoryDesc[input.sensory] };
+  score += input.sensory;
+
+  // 9. Best language
+  const languageDesc: Record<number, string> = {
+    0: 'No aphasia; normal',
+    1: 'Mild-to-moderate aphasia',
+    2: 'Severe aphasia; fragmentary expression',
+    3: 'Mute, global aphasia; no usable speech or auditory comprehension',
+  };
+  components['9. Best Language'] = { value: input.language, description: languageDesc[input.language] };
+  score += input.language;
+
+  // 10. Dysarthria
+  const dysarthriaDesc: Record<number, string> = {
+    0: 'Normal',
+    1: 'Mild-to-moderate dysarthria; slurs some words',
+    2: 'Severe dysarthria; speech unintelligible or mute/anarthric',
+  };
+  components['10. Dysarthria'] = { value: input.dysarthria, description: dysarthriaDesc[input.dysarthria] };
+  score += input.dysarthria;
+
+  // 11. Extinction and inattention (neglect)
+  const neglectDesc: Record<number, string> = {
+    0: 'No abnormality',
+    1: 'Partial neglect (visual, tactile, auditory, spatial, or personal inattention)',
+    2: 'Complete neglect (profound hemi-inattention to more than one modality)',
+  };
+  components['11. Extinction/Neglect'] = { value: input.neglect, description: neglectDesc[input.neglect] };
+  score += input.neglect;
+
+  let riskLevel: string;
+  let recommendation: string;
+  let severityLabel: string;
+
+  if (score === 0) {
+    riskLevel = 'No stroke symptoms';
+    severityLabel = 'No stroke symptoms';
+    recommendation = 'No stroke symptoms on NIHSS. If clinical suspicion remains, consider MRI with diffusion-weighted imaging to rule out small or posterior circulation stroke.';
+  } else if (score <= 4) {
+    riskLevel = 'Minor stroke';
+    severityLabel = 'Minor stroke';
+    recommendation = 'Minor stroke. Consider IV alteplase if within 4.5h of onset and no contraindications (benefit debated for minor non-disabling strokes). Dual antiplatelet therapy (aspirin + clopidogrel for 21 days) if tPA not given. Urgent vascular imaging. Admit to stroke unit.';
+  } else if (score <= 15) {
+    riskLevel = 'Moderate stroke';
+    severityLabel = 'Moderate stroke';
+    recommendation = 'Moderate stroke. IV alteplase strongly recommended if within 4.5h of symptom onset and no contraindications. Consider endovascular thrombectomy if large vessel occlusion (within 24h with appropriate imaging). Admit to stroke unit or ICU. NPO until swallow screen completed.';
+  } else if (score <= 20) {
+    riskLevel = 'Moderate-to-severe stroke';
+    severityLabel = 'Moderate-to-severe stroke';
+    recommendation = 'Moderate-to-severe stroke. IV alteplase if within 4.5h window. Strongly consider endovascular thrombectomy for large vessel occlusion. ICU admission. Monitor for hemorrhagic transformation. Neurosurgery consultation for possible decompressive craniectomy if large MCA infarction.';
+  } else {
+    riskLevel = 'Severe stroke';
+    severityLabel = 'Severe stroke';
+    recommendation = 'Severe stroke. IV alteplase if within time window (generally NIHSS ≤25 for tPA consideration). Evaluate for thrombectomy if LVO. ICU admission. High risk of hemorrhagic transformation, cerebral edema, and herniation. Early goals-of-care discussion with family. Monitor airway; intubation may be needed.';
+  }
+
+  const tpaNote = score >= 6 && score <= 25
+    ? ' tPA generally considered for NIHSS 6-25 within time window.'
+    : score > 25
+    ? ' NIHSS >25 associated with increased hemorrhagic risk with tPA; individualized risk-benefit assessment needed.'
+    : '';
+
+  return {
+    scoreName: 'NIH Stroke Scale',
+    score,
+    maxScore: 42,
+    riskLevel,
+    interpretation: `NIHSS ${score}/42. ${severityLabel}.${tpaNote}`,
+    recommendation,
+    components,
+    reference: 'Brott T, et al. Measurements of acute cerebral infarction: a clinical examination scale. Stroke. 1989;20(7):864-870.',
+  };
+}
+
+/**
+ * PHQ-9 (Patient Health Questionnaire-9) - Depression Screening
+ * Validated tool for screening and monitoring depression severity.
+ * Score range 0-27.
+ */
+export function calculatePHQ9(input: {
+  little_interest: 0 | 1 | 2 | 3;
+  feeling_down: 0 | 1 | 2 | 3;
+  sleep_trouble: 0 | 1 | 2 | 3;
+  feeling_tired: 0 | 1 | 2 | 3;
+  appetite_change: 0 | 1 | 2 | 3;
+  feeling_bad_about_self: 0 | 1 | 2 | 3;
+  concentration_trouble: 0 | 1 | 2 | 3;
+  psychomotor_change: 0 | 1 | 2 | 3;
+  suicidal_thoughts: 0 | 1 | 2 | 3;
+}): RiskScoreResult {
+  const components: Record<string, { value: number; description: string }> = {};
+  let score = 0;
+
+  const frequencyDesc: Record<number, string> = {
+    0: 'Not at all',
+    1: 'Several days',
+    2: 'More than half the days',
+    3: 'Nearly every day',
+  };
+
+  // Item 1: Little interest or pleasure
+  components['1. Little interest or pleasure in doing things'] = { value: input.little_interest, description: frequencyDesc[input.little_interest] };
+  score += input.little_interest;
+
+  // Item 2: Feeling down, depressed, or hopeless
+  components['2. Feeling down, depressed, or hopeless'] = { value: input.feeling_down, description: frequencyDesc[input.feeling_down] };
+  score += input.feeling_down;
+
+  // Item 3: Trouble falling/staying asleep or sleeping too much
+  components['3. Trouble with sleep'] = { value: input.sleep_trouble, description: frequencyDesc[input.sleep_trouble] };
+  score += input.sleep_trouble;
+
+  // Item 4: Feeling tired or having little energy
+  components['4. Feeling tired or having little energy'] = { value: input.feeling_tired, description: frequencyDesc[input.feeling_tired] };
+  score += input.feeling_tired;
+
+  // Item 5: Poor appetite or overeating
+  components['5. Poor appetite or overeating'] = { value: input.appetite_change, description: frequencyDesc[input.appetite_change] };
+  score += input.appetite_change;
+
+  // Item 6: Feeling bad about yourself
+  components['6. Feeling bad about yourself'] = { value: input.feeling_bad_about_self, description: frequencyDesc[input.feeling_bad_about_self] };
+  score += input.feeling_bad_about_self;
+
+  // Item 7: Trouble concentrating
+  components['7. Trouble concentrating'] = { value: input.concentration_trouble, description: frequencyDesc[input.concentration_trouble] };
+  score += input.concentration_trouble;
+
+  // Item 8: Psychomotor changes
+  components['8. Moving/speaking slowly or being fidgety/restless'] = { value: input.psychomotor_change, description: frequencyDesc[input.psychomotor_change] };
+  score += input.psychomotor_change;
+
+  // Item 9: Suicidal thoughts
+  components['9. Thoughts of self-harm or suicide'] = { value: input.suicidal_thoughts, description: frequencyDesc[input.suicidal_thoughts] };
+  score += input.suicidal_thoughts;
+
+  let riskLevel: string;
+  let recommendation: string;
+  let severityLabel: string;
+
+  if (score <= 4) {
+    riskLevel = 'Minimal';
+    severityLabel = 'Minimal or no depression';
+    recommendation = 'Minimal depression symptoms. No specific treatment indicated. Educate patient about depression. Rescreen periodically or if clinical concern arises.';
+  } else if (score <= 9) {
+    riskLevel = 'Mild';
+    severityLabel = 'Mild depression';
+    recommendation = 'Mild depression. Consider watchful waiting with repeat PHQ-9 at follow-up. Recommend lifestyle interventions (exercise, sleep hygiene, stress management). Consider counseling. If symptoms persist ≥2 months, reassess and consider treatment.';
+  } else if (score <= 14) {
+    riskLevel = 'Moderate';
+    severityLabel = 'Moderate depression';
+    recommendation = 'Moderate depression. Treatment plan warranted. Consider antidepressant medication (SSRI first-line) and/or psychotherapy (CBT, IPT). Follow up in 2-4 weeks to assess response. Monitor for treatment emergent suicidality especially in young adults.';
+  } else if (score <= 19) {
+    riskLevel = 'Moderately severe';
+    severityLabel = 'Moderately severe depression';
+    recommendation = 'Moderately severe depression. Initiate antidepressant medication (SSRI first-line) and strongly consider concurrent psychotherapy. Close follow-up in 1-2 weeks. Assess functional impairment. Screen for bipolar disorder before starting antidepressant. Safety planning if any suicidal ideation.';
+  } else {
+    riskLevel = 'Severe';
+    severityLabel = 'Severe depression';
+    recommendation = 'Severe depression. Initiate antidepressant medication with close follow-up (1-2 weeks). Combination therapy (medication + psychotherapy) recommended. Psychiatric referral strongly advised. Assess suicidality and safety. Consider hospitalization if imminent danger. ECT consideration for treatment-resistant or severe cases.';
+  }
+
+  // Critical safety flag for item 9
+  const suicidalityWarning = input.suicidal_thoughts > 0
+    ? ' SAFETY ALERT: Patient endorsed suicidal thoughts (item 9). Immediate safety assessment required regardless of total score. Evaluate intent, plan, access to means, and protective factors. Consider crisis intervention.'
+    : '';
+
+  return {
+    scoreName: 'PHQ-9',
+    score,
+    maxScore: 27,
+    riskLevel,
+    interpretation: `PHQ-9 score ${score}/27. ${severityLabel}.${suicidalityWarning}`,
+    recommendation,
+    components,
+    reference: 'Kroenke K, Spitzer RL, Williams JB. The PHQ-9: validity of a brief depression severity measure. J Gen Intern Med. 2001;16(9):606-613.',
+  };
+}
+
+/**
+ * AUDIT-C (Alcohol Use Disorders Identification Test - Consumption)
+ * Brief alcohol screening tool (first 3 questions of the full AUDIT).
+ * Score range 0-12.
+ */
+export function calculateAUDITC(input: {
+  drinking_frequency: 0 | 1 | 2 | 3 | 4;
+  typical_quantity: 0 | 1 | 2 | 3 | 4;
+  binge_frequency: 0 | 1 | 2 | 3 | 4;
+  sex?: 'male' | 'female';
+}): RiskScoreResult {
+  const components: Record<string, { value: number; description: string }> = {};
+  let score = 0;
+
+  // Question 1: How often do you have a drink containing alcohol?
+  const frequencyDesc: Record<number, string> = {
+    0: 'Never',
+    1: 'Monthly or less',
+    2: '2-4 times a month',
+    3: '2-3 times a week',
+    4: '4 or more times a week',
+  };
+  components['1. Drinking frequency'] = { value: input.drinking_frequency, description: frequencyDesc[input.drinking_frequency] };
+  score += input.drinking_frequency;
+
+  // Question 2: How many drinks on a typical drinking day?
+  const quantityDesc: Record<number, string> = {
+    0: '1-2 drinks',
+    1: '3-4 drinks',
+    2: '5-6 drinks',
+    3: '7-9 drinks',
+    4: '10 or more drinks',
+  };
+  components['2. Typical quantity'] = { value: input.typical_quantity, description: quantityDesc[input.typical_quantity] };
+  score += input.typical_quantity;
+
+  // Question 3: How often do you have 6 or more drinks on one occasion?
+  const bingeDesc: Record<number, string> = {
+    0: 'Never',
+    1: 'Less than monthly',
+    2: 'Monthly',
+    3: 'Weekly',
+    4: 'Daily or almost daily',
+  };
+  components['3. Binge frequency (6+ drinks)'] = { value: input.binge_frequency, description: bingeDesc[input.binge_frequency] };
+  score += input.binge_frequency;
+
+  // Determine cutoff based on sex
+  const cutoff = input.sex === 'female' ? 3 : 4;
+  const isPositive = score >= cutoff;
+
+  let riskLevel: string;
+  let recommendation: string;
+
+  if (score === 0) {
+    riskLevel = 'Abstinent';
+    recommendation = 'Non-drinker. No alcohol-related intervention needed. Document in health record.';
+  } else if (!isPositive) {
+    riskLevel = 'Low risk';
+    recommendation = `Negative screen (below threshold of ${cutoff} for ${input.sex === 'female' ? 'women' : input.sex === 'male' ? 'men' : 'standard cutoff'}). Low-risk drinking. Brief reinforcement of safe drinking limits. Reassess annually.`;
+  } else if (score <= 7) {
+    riskLevel = 'At-risk/Hazardous';
+    recommendation = `Positive screen (≥${cutoff}). At-risk or hazardous drinking. Perform brief intervention (SBIRT): provide feedback, advise moderation or abstinence, assess readiness to change. Consider full AUDIT or AUDIT-10 for further evaluation. Screen for alcohol-related medical complications. Reassess at follow-up.`;
+  } else {
+    riskLevel = 'High risk/Likely AUD';
+    recommendation = `High AUDIT-C score suggesting likely alcohol use disorder. Complete full AUDIT assessment. Screen for alcohol withdrawal risk, liver disease, and nutritional deficiencies. Referral to addiction medicine or behavioral health. Consider pharmacotherapy (naltrexone, acamprosate, or disulfiram). Assess for comorbid psychiatric conditions.`;
+  }
+
+  const sexNote = input.sex
+    ? ` (cutoff ≥${cutoff} for ${input.sex === 'female' ? 'women' : 'men'})`
+    : ' (standard cutoff ≥4; use ≥3 for women)';
+
+  return {
+    scoreName: 'AUDIT-C',
+    score,
+    maxScore: 12,
+    riskLevel,
+    interpretation: `AUDIT-C score ${score}/12. ${isPositive ? 'Positive' : 'Negative'} screen${sexNote}. ${riskLevel}.`,
+    recommendation,
+    components,
+    reference: 'Bush K, et al. The AUDIT alcohol consumption questions (AUDIT-C): an effective brief screening test for problem drinking. Arch Intern Med. 1998;158(16):1789-1795.',
+  };
+}
+
+/**
+ * GAD-7 (Generalized Anxiety Disorder 7-item scale)
+ * Validated screening tool for generalized anxiety disorder.
+ * Score range 0-21.
+ */
+export function calculateGAD7(input: {
+  feeling_nervous: 0 | 1 | 2 | 3;
+  uncontrollable_worry: 0 | 1 | 2 | 3;
+  excessive_worry: 0 | 1 | 2 | 3;
+  trouble_relaxing: 0 | 1 | 2 | 3;
+  restlessness: 0 | 1 | 2 | 3;
+  irritability: 0 | 1 | 2 | 3;
+  feeling_afraid: 0 | 1 | 2 | 3;
+}): RiskScoreResult {
+  const components: Record<string, { value: number; description: string }> = {};
+  let score = 0;
+
+  const frequencyDesc: Record<number, string> = {
+    0: 'Not at all',
+    1: 'Several days',
+    2: 'More than half the days',
+    3: 'Nearly every day',
+  };
+
+  // Item 1: Feeling nervous, anxious, or on edge
+  components['1. Feeling nervous, anxious, or on edge'] = { value: input.feeling_nervous, description: frequencyDesc[input.feeling_nervous] };
+  score += input.feeling_nervous;
+
+  // Item 2: Not being able to stop or control worrying
+  components['2. Not being able to stop or control worrying'] = { value: input.uncontrollable_worry, description: frequencyDesc[input.uncontrollable_worry] };
+  score += input.uncontrollable_worry;
+
+  // Item 3: Worrying too much about different things
+  components['3. Worrying too much about different things'] = { value: input.excessive_worry, description: frequencyDesc[input.excessive_worry] };
+  score += input.excessive_worry;
+
+  // Item 4: Trouble relaxing
+  components['4. Trouble relaxing'] = { value: input.trouble_relaxing, description: frequencyDesc[input.trouble_relaxing] };
+  score += input.trouble_relaxing;
+
+  // Item 5: Being so restless that it is hard to sit still
+  components['5. Being so restless that it is hard to sit still'] = { value: input.restlessness, description: frequencyDesc[input.restlessness] };
+  score += input.restlessness;
+
+  // Item 6: Becoming easily annoyed or irritable
+  components['6. Becoming easily annoyed or irritable'] = { value: input.irritability, description: frequencyDesc[input.irritability] };
+  score += input.irritability;
+
+  // Item 7: Feeling afraid as if something awful might happen
+  components['7. Feeling afraid as if something awful might happen'] = { value: input.feeling_afraid, description: frequencyDesc[input.feeling_afraid] };
+  score += input.feeling_afraid;
+
+  let riskLevel: string;
+  let recommendation: string;
+  let severityLabel: string;
+
+  if (score <= 4) {
+    riskLevel = 'Minimal';
+    severityLabel = 'Minimal anxiety';
+    recommendation = 'Minimal anxiety symptoms. No specific treatment indicated. Educate about stress management techniques. Rescreen if clinical concern arises or at routine health maintenance visits.';
+  } else if (score <= 9) {
+    riskLevel = 'Mild';
+    severityLabel = 'Mild anxiety';
+    recommendation = 'Mild anxiety. Monitor and reassess with repeat GAD-7. Recommend self-management strategies: regular exercise, sleep hygiene, mindfulness/relaxation techniques, caffeine reduction. Consider referral for psychotherapy (CBT) if symptoms persist. Rule out medical causes (thyroid, cardiac).';
+  } else if (score <= 14) {
+    riskLevel = 'Moderate';
+    severityLabel = 'Moderate anxiety';
+    recommendation = 'Moderate anxiety. Active treatment warranted. First-line options: CBT (psychotherapy) and/or SSRI/SNRI pharmacotherapy. If medication started, follow up in 2-4 weeks. Screen for comorbid depression (PHQ-9). Rule out medical causes (thyroid dysfunction, cardiac arrhythmia, medication side effects). Assess functional impairment.';
+  } else {
+    riskLevel = 'Severe';
+    severityLabel = 'Severe anxiety';
+    recommendation = 'Severe anxiety. Initiate treatment with SSRI/SNRI (first-line) and refer for psychotherapy (CBT). Combination therapy (medication + CBT) most effective for severe GAD. Psychiatric referral recommended. Assess for panic disorder, social anxiety, PTSD, and comorbid depression. Short-term benzodiazepine may be considered for acute distress but avoid long-term use. Assess functional impairment and occupational impact.';
+  }
+
+  const furtherEvalNote = score >= 10
+    ? ' Score ≥10 has 89% sensitivity and 82% specificity for GAD. Further diagnostic evaluation recommended.'
+    : '';
+
+  return {
+    scoreName: 'GAD-7',
+    score,
+    maxScore: 21,
+    riskLevel,
+    interpretation: `GAD-7 score ${score}/21. ${severityLabel}.${furtherEvalNote}`,
+    recommendation,
+    components,
+    reference: 'Spitzer RL, Kroenke K, Williams JBW, Löwe B. A brief measure for assessing generalized anxiety disorder: the GAD-7. Arch Intern Med. 2006;166(10):1092-1097.',
+  };
+}
+
 /** Available risk score calculators */
 export const availableScores = [
   { name: 'CHA2DS2-VASc', description: 'Stroke risk in atrial fibrillation', function: 'calculateCHA2DS2VASc' },
@@ -1967,4 +2448,8 @@ export const availableScores = [
   { name: 'PESI', description: 'Pulmonary Embolism Severity Index (30-day mortality)', function: 'calculatePESI' },
   { name: 'mRS', description: 'Modified Rankin Scale for stroke disability assessment', function: 'calculateModifiedRankin' },
   { name: 'Morse Fall Scale', description: 'Fall risk assessment for acute care patients', function: 'calculateMorseFallScale' },
+  { name: 'NIHSS', description: 'NIH Stroke Scale for stroke severity assessment and tPA eligibility', function: 'calculateNIHSS' },
+  { name: 'PHQ-9', description: 'Patient Health Questionnaire-9 for depression screening', function: 'calculatePHQ9' },
+  { name: 'AUDIT-C', description: 'Alcohol Use Disorders Identification Test (Consumption) for alcohol screening', function: 'calculateAUDITC' },
+  { name: 'GAD-7', description: 'Generalized Anxiety Disorder 7-item scale for anxiety screening', function: 'calculateGAD7' },
 ] as const;

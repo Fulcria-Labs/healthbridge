@@ -28,7 +28,7 @@ import { calculateRiskScore, listAvailableScores } from '../src/tools/risk-score
 describe('Available Scores Metadata', () => {
   it('lists all 16 scoring systems', () => {
     const scores = listAvailableScores();
-    expect(scores.length).toBe(21);
+    expect(scores.length).toBe(25);
   });
 
   it('each score has name and description', () => {

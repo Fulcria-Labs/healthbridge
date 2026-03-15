@@ -20,11 +20,15 @@ import {
   calculatePESI,
   calculateModifiedRankin,
   calculateMorseFallScale,
+  calculateNIHSS,
+  calculatePHQ9,
+  calculateAUDITC,
+  calculateGAD7,
   availableScores,
   type RiskScoreResult,
 } from '../data/risk-scores.js';
 
-export type ScoreName = 'CHA2DS2-VASc' | 'HEART' | 'Wells-PE' | 'MELD' | 'CURB-65' | 'GCS' | 'eGFR' | 'qSOFA' | 'SOFA' | 'Child-Pugh' | 'ASCVD' | 'NEWS2' | 'HAS-BLED' | 'TIMI' | 'ABCD2' | 'BMI' | 'Framingham' | 'APACHE-II' | 'PESI' | 'mRS' | 'Morse-Fall-Scale';
+export type ScoreName = 'CHA2DS2-VASc' | 'HEART' | 'Wells-PE' | 'MELD' | 'CURB-65' | 'GCS' | 'eGFR' | 'qSOFA' | 'SOFA' | 'Child-Pugh' | 'ASCVD' | 'NEWS2' | 'HAS-BLED' | 'TIMI' | 'ABCD2' | 'BMI' | 'Framingham' | 'APACHE-II' | 'PESI' | 'mRS' | 'Morse-Fall-Scale' | 'NIHSS' | 'PHQ-9' | 'AUDIT-C' | 'GAD-7';
 
 export function listAvailableScores() {
   return availableScores.map(s => ({
@@ -252,6 +256,57 @@ export function calculateRiskScore(scoreName: ScoreName, parameters: Record<stri
         iv_heparin_lock: Boolean(parameters.iv_heparin_lock),
         gait: (parameters.gait as 'normal' | 'weak' | 'impaired') ?? 'normal',
         mental_status: (parameters.mental_status as 'oriented' | 'overestimates') ?? 'oriented',
+      });
+
+    case 'NIHSS':
+      return calculateNIHSS({
+        consciousness: Number(parameters.consciousness) as 0 | 1 | 2 | 3,
+        orientation_questions: Number(parameters.orientation_questions) as 0 | 1 | 2,
+        commands: Number(parameters.commands) as 0 | 1 | 2,
+        gaze: Number(parameters.gaze) as 0 | 1 | 2,
+        visual_fields: Number(parameters.visual_fields) as 0 | 1 | 2 | 3,
+        facial_palsy: Number(parameters.facial_palsy) as 0 | 1 | 2 | 3,
+        motor_arm_left: Number(parameters.motor_arm_left) as 0 | 1 | 2 | 3 | 4,
+        motor_arm_right: Number(parameters.motor_arm_right) as 0 | 1 | 2 | 3 | 4,
+        motor_leg_left: Number(parameters.motor_leg_left) as 0 | 1 | 2 | 3 | 4,
+        motor_leg_right: Number(parameters.motor_leg_right) as 0 | 1 | 2 | 3 | 4,
+        ataxia: Number(parameters.ataxia) as 0 | 1 | 2,
+        sensory: Number(parameters.sensory) as 0 | 1 | 2,
+        language: Number(parameters.language) as 0 | 1 | 2 | 3,
+        dysarthria: Number(parameters.dysarthria) as 0 | 1 | 2,
+        neglect: Number(parameters.neglect) as 0 | 1 | 2,
+      });
+
+    case 'PHQ-9':
+      return calculatePHQ9({
+        little_interest: Number(parameters.little_interest) as 0 | 1 | 2 | 3,
+        feeling_down: Number(parameters.feeling_down) as 0 | 1 | 2 | 3,
+        sleep_trouble: Number(parameters.sleep_trouble) as 0 | 1 | 2 | 3,
+        feeling_tired: Number(parameters.feeling_tired) as 0 | 1 | 2 | 3,
+        appetite_change: Number(parameters.appetite_change) as 0 | 1 | 2 | 3,
+        feeling_bad_about_self: Number(parameters.feeling_bad_about_self) as 0 | 1 | 2 | 3,
+        concentration_trouble: Number(parameters.concentration_trouble) as 0 | 1 | 2 | 3,
+        psychomotor_change: Number(parameters.psychomotor_change) as 0 | 1 | 2 | 3,
+        suicidal_thoughts: Number(parameters.suicidal_thoughts) as 0 | 1 | 2 | 3,
+      });
+
+    case 'AUDIT-C':
+      return calculateAUDITC({
+        drinking_frequency: Number(parameters.drinking_frequency) as 0 | 1 | 2 | 3 | 4,
+        typical_quantity: Number(parameters.typical_quantity) as 0 | 1 | 2 | 3 | 4,
+        binge_frequency: Number(parameters.binge_frequency) as 0 | 1 | 2 | 3 | 4,
+        sex: parameters.sex !== undefined ? (parameters.sex as 'male' | 'female') : undefined,
+      });
+
+    case 'GAD-7':
+      return calculateGAD7({
+        feeling_nervous: Number(parameters.feeling_nervous) as 0 | 1 | 2 | 3,
+        uncontrollable_worry: Number(parameters.uncontrollable_worry) as 0 | 1 | 2 | 3,
+        excessive_worry: Number(parameters.excessive_worry) as 0 | 1 | 2 | 3,
+        trouble_relaxing: Number(parameters.trouble_relaxing) as 0 | 1 | 2 | 3,
+        restlessness: Number(parameters.restlessness) as 0 | 1 | 2 | 3,
+        irritability: Number(parameters.irritability) as 0 | 1 | 2 | 3,
+        feeling_afraid: Number(parameters.feeling_afraid) as 0 | 1 | 2 | 3,
       });
 
     default:

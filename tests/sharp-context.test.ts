@@ -216,7 +216,7 @@ describe('Agent Card', () => {
     const card = getAgentCard();
     expect(card.name).toBe('healthbridge');
     expect(card.version).toBe('1.0.0');
-    expect(card.capabilities.mcp.tools).toHaveLength(19);
+    expect(card.capabilities.mcp.tools).toHaveLength(29);
     expect(card.capabilities.mcp.resources).toHaveLength(5);
     expect(card.capabilities.mcp.prompts).toHaveLength(4);
     expect(card.capabilities.fhir.resourceTypes).toContain('Patient');

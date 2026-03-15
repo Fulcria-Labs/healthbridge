@@ -617,7 +617,7 @@ describe('ASCVD Risk Calculator', () => {
 describe('Risk Score Tool', () => {
   it('lists available scores', () => {
     const scores = listAvailableScores();
-    expect(scores.length).toBe(21);
+    expect(scores.length).toBe(25);
     expect(scores.map(s => s.name)).toContain('CHA2DS2-VASc');
     expect(scores.map(s => s.name)).toContain('HEART');
     expect(scores.map(s => s.name)).toContain('eGFR');

@@ -242,6 +242,14 @@ export const drugDirectory: Record<string, DrugInfo> = {
   sacubitril_valsartan: { genericName: 'sacubitril_valsartan', brandNames: ['entresto'], drugClass: 'arni' },
   eplerenone: { genericName: 'eplerenone', brandNames: ['inspra'], drugClass: 'potassium-sparing-diuretic' },
   hydralazine: { genericName: 'hydralazine', brandNames: ['apresoline'], drugClass: 'vasodilator' },
+  // Fibrates, muscle relaxants, and other clinically significant drugs
+  gemfibrozil: { genericName: 'gemfibrozil', brandNames: ['lopid'], drugClass: 'fibrate' },
+  fenofibrate: { genericName: 'fenofibrate', brandNames: ['tricor', 'fenoglide'], drugClass: 'fibrate' },
+  tizanidine: { genericName: 'tizanidine', brandNames: ['zanaflex'], drugClass: 'muscle-relaxant' },
+  acetaminophen: { genericName: 'acetaminophen', brandNames: ['tylenol', 'paracetamol'], drugClass: 'analgesic' },
+  theophylline: { genericName: 'theophylline', brandNames: ['theo-dur', 'theochron'], drugClass: 'methylxanthine' },
+  iron_supplement: { genericName: 'iron supplement', brandNames: ['ferrous sulfate', 'feosol'], drugClass: 'mineral-supplement' },
+  naltrexone: { genericName: 'naltrexone', brandNames: ['vivitrol', 'revia'], drugClass: 'opioid-antagonist' },
 };
 
 // Drug interaction database
@@ -2560,6 +2568,110 @@ export const drugInteractions: DrugInteraction[] = [
     mechanism: 'Fluoxetine inhibits CYP2D6, the primary metabolic pathway of atomoxetine',
     clinicalEffect: 'QT prolongation, increased heart rate, liver injury',
     management: 'Reduce atomoxetine dose. Monitor heart rate and QT interval.'
+  },
+
+  // === NEW INTERACTIONS: FDA Black Box & Critical Safety ===
+
+  // FDA Black Box: Benzodiazepine + Opioid combinations
+  {
+    drug1: 'diazepam', drug2: 'fentanyl', severity: 'contraindicated',
+    description: 'FDA Black Box Warning: concurrent benzodiazepine and opioid use',
+    mechanism: 'Synergistic CNS and respiratory depression; fentanyl high potency amplifies risk',
+    clinicalEffect: 'Respiratory arrest, profound sedation, death; risk highest in opioid-naive patients',
+    management: 'Avoid combination. If required in monitored settings (e.g., procedural sedation), use lowest effective doses with continuous respiratory monitoring.'
+  },
+  {
+    drug1: 'midazolam', drug2: 'hydrocodone', severity: 'major',
+    description: 'FDA Black Box Warning: benzodiazepine-opioid respiratory depression',
+    mechanism: 'Combined CNS depressant effects potentiate respiratory depression',
+    clinicalEffect: 'Excessive sedation, respiratory depression, risk of fatal overdose',
+    management: 'Avoid if possible. If necessary, use lowest doses for shortest duration. Ensure naloxone availability. Monitor respiratory status.'
+  },
+
+  // Statin + Fibrate: Rhabdomyolysis risk
+  {
+    drug1: 'simvastatin', drug2: 'gemfibrozil', severity: 'contraindicated',
+    description: 'Greatly increased risk of rhabdomyolysis',
+    mechanism: 'Gemfibrozil inhibits OATP1B1 and CYP2C8, dramatically increasing statin exposure (up to 2-3 fold increase in AUC)',
+    clinicalEffect: 'Rhabdomyolysis with acute renal failure, severe myopathy, muscle necrosis',
+    management: 'Contraindicated per FDA labeling. Use fenofibrate instead if fibrate therapy needed with a statin.'
+  },
+  {
+    drug1: 'atorvastatin', drug2: 'gemfibrozil', severity: 'major',
+    description: 'Significantly increased rhabdomyolysis risk',
+    mechanism: 'Gemfibrozil inhibits hepatic uptake transporters (OATP1B1) and glucuronidation of statins',
+    clinicalEffect: 'Myopathy, rhabdomyolysis with creatine kinase elevation, acute kidney injury',
+    management: 'Avoid combination. Prefer fenofibrate if fibrate required. If used, limit atorvastatin dose. Monitor CK levels and muscle symptoms.'
+  },
+
+  // Ciprofloxacin interactions
+  {
+    drug1: 'ciprofloxacin', drug2: 'tizanidine', severity: 'contraindicated',
+    description: 'Massive increase in tizanidine levels causing severe hypotension',
+    mechanism: 'Ciprofloxacin is a potent CYP1A2 inhibitor; tizanidine is primarily metabolized by CYP1A2',
+    clinicalEffect: 'Tizanidine AUC increased 10-fold. Severe hypotension, excessive sedation, bradycardia, QT prolongation',
+    management: 'Contraindicated per FDA labeling. Use alternative antibiotic or alternative muscle relaxant. No dose adjustment can mitigate risk.'
+  },
+  {
+    drug1: 'ciprofloxacin', drug2: 'theophylline', severity: 'major',
+    description: 'Increased theophylline levels with toxicity risk',
+    mechanism: 'Ciprofloxacin inhibits CYP1A2, the primary metabolic pathway of theophylline',
+    clinicalEffect: 'Theophylline toxicity: nausea, vomiting, seizures, cardiac arrhythmias, death',
+    management: 'Reduce theophylline dose by 30-50% if ciprofloxacin cannot be avoided. Monitor theophylline levels. Use alternative antibiotic if possible.'
+  },
+
+  // Serotonin syndrome: cyclobenzaprine + SSRI
+  {
+    drug1: 'cyclobenzaprine', drug2: 'fluoxetine', severity: 'major',
+    description: 'Serotonin syndrome risk; cyclobenzaprine is structurally similar to TCAs',
+    mechanism: 'Cyclobenzaprine has serotonergic properties (structurally related to amitriptyline); fluoxetine is a potent serotonin reuptake inhibitor and CYP2D6 inhibitor',
+    clinicalEffect: 'Serotonin syndrome, enhanced CNS depression, increased cyclobenzaprine levels',
+    management: 'Avoid combination if possible. If used, limit duration. Monitor for serotonin syndrome symptoms. Consider alternative muscle relaxant (e.g., methocarbamol).'
+  },
+
+  // Warfarin + Acetaminophen
+  {
+    drug1: 'warfarin', drug2: 'acetaminophen', severity: 'moderate',
+    description: 'Regular acetaminophen use increases INR',
+    mechanism: 'Acetaminophen metabolite (NAPQI) inhibits vitamin K-dependent carboxylase enzymes involved in clotting factor synthesis',
+    clinicalEffect: 'INR elevation of 1.0-1.5 units with regular use (>2g/day for >3 days). Increased bleeding risk.',
+    management: 'Acetaminophen remains preferred analgesic for warfarin patients but limit to <2g/day. Monitor INR more frequently when starting regular use.'
+  },
+
+  // FDA Warning: Gabapentinoid + Opioid
+  {
+    drug1: 'pregabalin', drug2: 'morphine', severity: 'major',
+    description: 'FDA warning: gabapentinoid-opioid respiratory depression risk',
+    mechanism: 'Additive CNS depression; pregabalin may reduce opioid tolerance threshold',
+    clinicalEffect: 'Enhanced respiratory depression, excessive sedation, increased opioid-related mortality',
+    management: 'Use lowest effective doses. Monitor for respiratory depression. Consider opioid-sparing multimodal analgesia.'
+  },
+
+  // Levothyroxine + Iron absorption interaction
+  {
+    drug1: 'levothyroxine', drug2: 'iron_supplement', severity: 'moderate',
+    description: 'Iron reduces levothyroxine absorption',
+    mechanism: 'Iron forms insoluble chelate with levothyroxine in the GI tract, reducing bioavailability',
+    clinicalEffect: 'Reduced thyroid hormone absorption causing hypothyroidism. TSH elevation.',
+    management: 'Separate doses by at least 4 hours. Take levothyroxine first, on empty stomach. Monitor TSH when adding or removing iron supplement.'
+  },
+
+  // Insulin + Beta-blocker
+  {
+    drug1: 'insulin', drug2: 'metoprolol', severity: 'moderate',
+    description: 'Beta-blockers mask hypoglycemia symptoms and prolong hypoglycemic episodes',
+    mechanism: 'Beta-blockers blunt sympathetic hypoglycemia response (tachycardia, tremor, anxiety) and impair hepatic gluconeogenesis',
+    clinicalEffect: 'Unrecognized hypoglycemia. Sweating preserved as warning sign. Prolonged recovery from hypoglycemia.',
+    management: 'Educate patient that sweating is the primary remaining hypoglycemia symptom. Consider cardioselective beta-blocker (metoprolol preferred over propranolol). Monitor glucose more frequently.'
+  },
+
+  // Naltrexone + Opioid
+  {
+    drug1: 'naltrexone', drug2: 'morphine', severity: 'contraindicated',
+    description: 'Naltrexone blocks opioid analgesic effect; risk of precipitated withdrawal',
+    mechanism: 'Naltrexone is a competitive mu-opioid receptor antagonist that blocks opioid binding',
+    clinicalEffect: 'Complete loss of opioid analgesia. In opioid-dependent patients: precipitated withdrawal (severe pain, nausea, diarrhea, psychomotor agitation)',
+    management: 'Contraindicated. Patients on naltrexone require non-opioid pain management. If emergency surgery needed, discontinue naltrexone and use regional anesthesia.'
   },
 ];
 
