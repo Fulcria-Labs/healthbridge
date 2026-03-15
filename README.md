@@ -2,23 +2,33 @@
 
 A Clinical Decision Support MCP Server for healthcare AI agents. Built for the [Agents Assemble](https://agents-assemble.devpost.com/) Healthcare AI Hackathon.
 
-HealthBridge provides validated clinical tools, resources, and workflow prompts that AI agents can use to support healthcare professionals with drug interaction checking, clinical risk assessment, lab interpretation, and patient data analysis.
+HealthBridge provides **19 validated clinical tools**, 5 reference resources, and 4 workflow prompts that AI agents can use to support healthcare professionals with drug interaction checking, clinical risk assessment, lab interpretation, pharmacokinetic calculations, pediatric dosing, renal dose adjustment, allergy cross-reactivity screening, and FHIR patient data analysis.
 
 ## MCP Capabilities
 
-### Tools (9)
+### Tools (19)
 
-| Tool | Description |
-|------|-------------|
-| `check_drug_interactions` | Check drug-drug interactions among medications (93+ drug pairs, generic/brand name support) |
-| `calculate_risk_score` | Calculate validated clinical risk scores (16 scores including CHA₂DS₂-VASc, HEART, SOFA, ASCVD, NEWS2, HAS-BLED, TIMI, ABCD2, BMI) |
-| `interpret_lab_result` | Interpret single lab values with reference ranges and clinical significance |
-| `interpret_lab_panel` | Interpret multiple lab results with critical value flagging |
-| `get_patient_summary` | Generate clinical summaries from FHIR R4 patient data |
-| `medication_review` | Comprehensive medication review with condition/allergy cross-referencing |
-| `clinical_alerts` | Aggregated prioritized clinical alerts across all patient data — drug interactions, critical labs, risk scores, and medication safety |
-| `list_risk_scores` | List available risk scoring systems with parameter guides |
-| `list_lab_tests` | List supported lab tests with reference ranges |
+| # | Tool | Description |
+|---|------|-------------|
+| 1 | `check_drug_interactions` | Check drug-drug interactions among medications (325+ drug interaction pairs, generic/brand name support, 197 medications) |
+| 2 | `calculate_risk_score` | Calculate validated clinical risk scores (25 scores including CHA₂DS₂-VASc, HEART, SOFA, ASCVD, NEWS2, HAS-BLED, TIMI, ABCD2, BMI) |
+| 3 | `list_risk_scores` | List available risk scoring systems with parameter guides |
+| 4 | `interpret_lab_result` | Interpret single lab values with reference ranges and clinical significance (49 lab tests) |
+| 5 | `interpret_lab_panel` | Interpret multiple lab results with critical value flagging and pattern detection (6 lab patterns) |
+| 6 | `list_lab_tests` | List supported lab tests with reference ranges |
+| 7 | `get_patient_summary` | Generate clinical summaries from FHIR R4 patient data (SHARP-aware for live FHIR server access) |
+| 8 | `medication_review` | Comprehensive medication review with condition/allergy cross-referencing, duplicate therapy detection, and Beers Criteria (8 PIMs) |
+| 9 | `clinical_alerts` | Aggregated prioritized clinical alerts across all patient data — drug interactions, critical labs, risk scores, and medication safety |
+| 10 | `check_renal_dosing` | Check medication dosing adjustments for CKD based on eGFR (18 renal-dosed drugs per KDIGO guidelines) |
+| 11 | `renal_dose_lookup` | Look up renal dosing for a single drug including eGFR-based adjustments, dialyzability, and monitoring |
+| 12 | `list_renal_dosing_drugs` | List all medications in the renal dosing database |
+| 13 | `pediatric_dosing` | Calculate weight-based and age-based medication doses for pediatric patients (16 drugs per Harriet Lane/AAP guidelines) |
+| 14 | `list_pediatric_drugs` | List pediatric dosing database with drug classes and minimum ages |
+| 15 | `check_allergy_cross_reactivity` | Check drug allergy cross-reactivity between a known allergy and a proposed medication (9 allergy classes) |
+| 16 | `screen_allergies` | Bulk screen all patient allergies against all proposed medications for cross-reactivity |
+| 17 | `list_allergy_classes` | List all drug allergy classes with member drugs |
+| 18 | `pk_calculator` | Run pharmacokinetic calculations: CrCl, IBW, ABW, BSA, corrected calcium, corrected phenytoin, anion gap (7 calculators) |
+| 19 | `list_pk_calculators` | List available pharmacokinetic calculators with parameters |
 
 ### Resources (5)
 
@@ -27,7 +37,7 @@ HealthBridge provides validated clinical tools, resources, and workflow prompts 
 | Drug Formulary | `healthbridge://formulary/overview` | Medication categories, interaction coverage, brand name support |
 | Anticoagulation Guidelines | `healthbridge://guidelines/anticoagulation` | Evidence-based anticoagulation management workflow with DOAC dosing |
 | Sepsis Guidelines | `healthbridge://guidelines/sepsis` | Surviving Sepsis Campaign hour-1 bundle and screening workflow |
-| Lab Reference Ranges | `healthbridge://labs/reference-ranges` | Complete reference ranges and critical values for 28 lab tests |
+| Lab Reference Ranges | `healthbridge://labs/reference-ranges` | Complete reference ranges and critical values for 49 lab tests |
 | Risk Score Decision Matrix | `healthbridge://scores/decision-matrix` | Maps risk scores to evidence-based clinical decisions |
 
 ### Prompts (4)
@@ -42,12 +52,13 @@ HealthBridge provides validated clinical tools, resources, and workflow prompts 
 ## Clinical Capabilities
 
 ### Drug Interaction Database
-- 93+ clinically significant drug-drug interactions
+- **325+ clinically significant drug-drug interactions** across 197 medications
 - 4 severity levels: contraindicated, major, moderate, minor
-- Generic and brand name resolution (45+ medications)
+- Generic and brand name resolution (45+ brand names mapped)
 - Mechanism, clinical effect, and management recommendations
+- Duplicate therapy detection
 
-### Risk Score Calculators (16 Validated Scores)
+### Risk Score Calculators (25 Validated Scores)
 - **CHA₂DS₂-VASc**: Stroke risk in atrial fibrillation
 - **HAS-BLED**: Bleeding risk on anticoagulation (pairs with CHA₂DS₂-VASc)
 - **HEART Score**: Major cardiac events in chest pain
@@ -65,15 +76,51 @@ HealthBridge provides validated clinical tools, resources, and workflow prompts 
 - **ABCD2**: Short-term stroke risk after TIA
 - **BMI**: Body mass index with WHO classification
 
+### Renal Dosing Adjustments
+- **18 medications** with eGFR-based dose adjustments per KDIGO guidelines
+- Drug classes: antibiotics, anticoagulants, diabetic agents, analgesics, cardiovascular
+- Dialyzability information and supplemental dosing guidance
+- CKD stage mapping (G1-G5) with specific recommendations
+
+### Pediatric Dosing
+- **16 medications** with weight-based and age-based dosing
+- Based on Harriet Lane Handbook and AAP guidelines
+- Age-appropriateness validation with safety warnings
+- Indication-specific dosing (e.g., otitis media vs pharyngitis)
+- Maximum daily dose limits
+
+### Allergy Cross-Reactivity
+- **9 allergy classes**: penicillin/cephalosporin, sulfonamide, NSAID, opioid, local anesthetic, ACE inhibitor, statin, fluoroquinolone, carbapenem
+- Evidence-based cross-reactivity risk levels (high, moderate, low, negligible)
+- Safe alternative recommendations per allergy class
+- Bulk screening: check all allergies against all medications in one call
+
+### Pharmacokinetic Calculators (7)
+- **CrCl**: Cockcroft-Gault creatinine clearance
+- **IBW**: Ideal body weight (Devine formula)
+- **ABW**: Adjusted body weight for obese patients
+- **BSA**: Body surface area (Mosteller formula)
+- **Corrected Calcium**: Albumin-adjusted calcium
+- **Corrected Phenytoin**: Sheiner-Tozer equation for low albumin/renal impairment
+- **Anion Gap**: With delta-delta ratio calculation
+
 ### Lab Result Interpretation
-- 28 laboratory tests (CBC, BMP, liver, cardiac, coagulation, thyroid, inflammatory, lipid panel, minerals)
+- **49 laboratory tests** (CBC, BMP, liver, cardiac, coagulation, thyroid, inflammatory, lipid panel, minerals, urinalysis)
+- **6 lab patterns** detected across panels (e.g., DIC, hepatorenal syndrome)
 - Critical value identification with urgency levels
 - Evidence-based action recommendations
 
 ### FHIR Integration
 - FHIR R4 Bundle parsing (Patient, Condition, MedicationStatement, Observation, AllergyIntolerance)
+- SHARP-aware: fetches live patient data when FHIR server context is available
 - Synthetic patient data for demonstration
 - Clinical note generation based on patient context
+
+### Medication Safety
+- **8 Beers Criteria PIMs** (Potentially Inappropriate Medications in elderly)
+- Duplicate therapy detection across drug classes
+- Condition-contraindication cross-referencing (renal, hepatic, bleeding risk)
+- Allergy alert integration with cross-reactivity data
 
 ## Quick Start
 
@@ -87,7 +134,7 @@ npm start       # Starts MCP server on stdio
 
 ```bash
 npm run dev           # Run with tsx (hot reload)
-npm test              # Run tests (1628 tests across 27 suites)
+npm test              # Run tests (2307 tests across 39 suites)
 npm run test:watch    # Watch mode
 npm run test:coverage # Coverage report
 ```
@@ -96,19 +143,31 @@ npm run test:coverage # Coverage report
 
 ```
 src/
-├── index.ts              # MCP server entry point (9 tools)
+├── index.ts              # MCP server entry point (stdio)
+├── server-factory.ts     # Server factory (19 tools registered)
+├── http-transport.ts     # HTTP/SSE transport for marketplace
+├── agent-card.ts         # Agent card metadata
+├── sharp-context.ts      # SHARP healthcare context propagation
 ├── resources.ts          # MCP resources (5 clinical reference resources)
 ├── prompts.ts            # MCP prompts (4 clinical workflow templates)
 ├── data/
-│   ├── drug-interactions.ts  # Drug interaction database (93+ pairs)
-│   ├── lab-references.ts     # Lab reference ranges (28 tests)
-│   └── risk-scores.ts        # Clinical risk calculators (16 scores)
+│   ├── drug-interactions.ts      # Drug interaction database (325+ pairs)
+│   ├── lab-references.ts         # Lab reference ranges (49 tests)
+│   ├── risk-scores.ts            # Clinical risk calculators (25 scores)
+│   ├── renal-dosing.ts           # Renal dose adjustments (18 drugs)
+│   ├── pediatric-dosing.ts       # Pediatric dosing (16 drugs)
+│   ├── pharmacokinetics.ts       # PK calculators (7 calculators)
+│   └── allergy-crossreactivity.ts # Allergy classes (9 classes)
 ├── tools/
-│   ├── clinical-alerts-tool.ts  # Aggregated prioritized clinical alerts
-│   ├── drug-interaction-tool.ts
-│   ├── lab-interpreter-tool.ts
-│   ├── patient-summary-tool.ts
-│   └── risk-score-tool.ts
+│   ├── clinical-alerts-tool.ts        # Aggregated prioritized clinical alerts
+│   ├── drug-interaction-tool.ts       # Drug interaction checker
+│   ├── lab-interpreter-tool.ts        # Lab result interpreter
+│   ├── patient-summary-tool.ts        # FHIR patient summary
+│   ├── risk-score-tool.ts             # Risk score calculators
+│   ├── renal-dosing-tool.ts           # Renal dose adjustments
+│   ├── pediatric-dosing-tool.ts       # Pediatric dosing calculator
+│   ├── allergy-crossreactivity-tool.ts # Allergy cross-reactivity
+│   └── pharmacokinetics-tool.ts       # PK calculators
 └── utils/
     └── fhir.ts               # FHIR R4 utilities
 ```
@@ -123,9 +182,24 @@ HealthBridge is designed with healthcare data security as a first-class concern:
 - **Input validation**: All tool inputs are validated via Zod schemas. Injection attempts (XSS, SQL) are handled safely through string matching against known drug/lab databases.
 - **Deterministic output**: Identical inputs always produce identical outputs, enabling audit trails and reproducibility.
 - **FHIR R4 compliant**: Patient data handling follows HL7 FHIR R4 resource specifications.
-- **Security test suite**: Dedicated `security-hipaa.test.ts` validates PHI isolation between calls, injection resistance, input boundary handling, and cross-tool data consistency (46 tests).
+- **Security test suite**: Dedicated `security-hipaa.test.ts` validates PHI isolation between calls, injection resistance, input boundary handling, and cross-tool data consistency.
 - **Minimum necessary principle**: Tools return only clinically relevant information. Patient identifiers from FHIR bundles are limited to name, age, and gender for clinical context.
 - **SHARP on MCP**: Designed for healthcare context propagation through the MCP protocol, enabling secure agent-to-agent clinical data sharing.
+
+## Test Coverage
+
+**2307 tests across 39 test suites**, covering:
+- Drug interaction detection and brand name resolution
+- All 25 risk score calculators with boundary conditions
+- Lab interpretation with critical values and panel patterns
+- FHIR R4 bundle parsing and edge cases
+- Renal dosing across all CKD stages
+- Pediatric dosing with age/weight validation
+- Allergy cross-reactivity across all 9 classes
+- All 7 PK calculators
+- Clinical alerts aggregation
+- Security/HIPAA compliance
+- Medication review with Beers criteria
 
 ## License
 
