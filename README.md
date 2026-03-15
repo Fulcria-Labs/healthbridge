@@ -2,15 +2,15 @@
 
 A Clinical Decision Support MCP Server for healthcare AI agents. Built for the [Agents Assemble](https://agents-assemble.devpost.com/) Healthcare AI Hackathon.
 
-HealthBridge provides **19 validated clinical tools**, 5 reference resources, and 4 workflow prompts that AI agents can use to support healthcare professionals with drug interaction checking, clinical risk assessment, lab interpretation, pharmacokinetic calculations, pediatric dosing, renal dose adjustment, allergy cross-reactivity screening, and FHIR patient data analysis.
+HealthBridge provides **29 validated clinical tools**, 5 reference resources, and 4 workflow prompts that AI agents can use to support healthcare professionals with drug interaction checking, clinical risk assessment, lab interpretation, pharmacokinetic calculations, pediatric dosing, renal dose adjustment, allergy cross-reactivity screening, IV compatibility checking, pregnancy/lactation safety, opioid MEDD calculation, and FHIR patient data analysis.
 
 ## MCP Capabilities
 
-### Tools (19)
+### Tools (29)
 
 | # | Tool | Description |
 |---|------|-------------|
-| 1 | `check_drug_interactions` | Check drug-drug interactions among medications (325+ drug interaction pairs, generic/brand name support, 197 medications) |
+| 1 | `check_drug_interactions` | Check drug-drug interactions among medications (327 drug interaction pairs, generic/brand name support, 197 medications) |
 | 2 | `calculate_risk_score` | Calculate validated clinical risk scores (25 scores including CHA₂DS₂-VASc, HEART, SOFA, ASCVD, NEWS2, HAS-BLED, TIMI, ABCD2, BMI) |
 | 3 | `list_risk_scores` | List available risk scoring systems with parameter guides |
 | 4 | `interpret_lab_result` | Interpret single lab values with reference ranges and clinical significance (49 lab tests) |
@@ -19,7 +19,7 @@ HealthBridge provides **19 validated clinical tools**, 5 reference resources, an
 | 7 | `get_patient_summary` | Generate clinical summaries from FHIR R4 patient data (SHARP-aware for live FHIR server access) |
 | 8 | `medication_review` | Comprehensive medication review with condition/allergy cross-referencing, duplicate therapy detection, and Beers Criteria (8 PIMs) |
 | 9 | `clinical_alerts` | Aggregated prioritized clinical alerts across all patient data — drug interactions, critical labs, risk scores, and medication safety |
-| 10 | `check_renal_dosing` | Check medication dosing adjustments for CKD based on eGFR (18 renal-dosed drugs per KDIGO guidelines) |
+| 10 | `check_renal_dosing` | Check medication dosing adjustments for CKD based on eGFR (27 renal-dosed drugs per KDIGO guidelines) |
 | 11 | `renal_dose_lookup` | Look up renal dosing for a single drug including eGFR-based adjustments, dialyzability, and monitoring |
 | 12 | `list_renal_dosing_drugs` | List all medications in the renal dosing database |
 | 13 | `pediatric_dosing` | Calculate weight-based and age-based medication doses for pediatric patients (16 drugs per Harriet Lane/AAP guidelines) |
@@ -29,6 +29,16 @@ HealthBridge provides **19 validated clinical tools**, 5 reference resources, an
 | 17 | `list_allergy_classes` | List all drug allergy classes with member drugs |
 | 18 | `pk_calculator` | Run pharmacokinetic calculations: CrCl, IBW, ABW, BSA, corrected calcium, corrected phenytoin, anion gap (7 calculators) |
 | 19 | `list_pk_calculators` | List available pharmacokinetic calculators with parameters |
+| 20 | `check_iv_compatibility` | Check Y-site and admixture compatibility between two IV medications (60+ compatibility pairs) |
+| 21 | `screen_iv_compatibility` | Screen all pairwise IV compatibility among multiple drugs — essential for ICU multi-drug infusion planning |
+| 22 | `list_iv_drugs` | List all IV medications in the compatibility database |
+| 23 | `check_pregnancy_safety` | Check medication safety during pregnancy and lactation with FDA categories, trimester-specific risks, and teratogenic data (22 drugs) |
+| 24 | `screen_pregnancy_medications` | Screen all patient medications for pregnancy safety — identifies contraindicated and high-risk drugs with alternatives |
+| 25 | `list_pregnancy_drugs` | List all medications in the pregnancy safety database with categories and lactation ratings |
+| 26 | `calculate_opioid_mme` | Calculate Morphine Milligram Equivalent (MME) for an opioid dose per CDC 2022 guidelines (15 opioids) |
+| 27 | `calculate_total_medd` | Calculate total MEDD across all opioids with CDC threshold warnings and naloxone recommendations |
+| 28 | `convert_opioid_dose` | Convert between opioid doses with equianalgesic ratios and cross-tolerance dose reduction |
+| 29 | `list_opioids` | List all opioids in the MEDD database with MME conversion factors |
 
 ### Resources (5)
 
@@ -104,6 +114,33 @@ HealthBridge provides **19 validated clinical tools**, 5 reference resources, an
 - **Corrected Phenytoin**: Sheiner-Tozer equation for low albumin/renal impairment
 - **Anion Gap**: With delta-delta ratio calculation
 
+### IV Compatibility Checker
+- **60+ compatibility pairs** covering common ICU and inpatient IV medications
+- Y-site and admixture compatibility status (compatible, incompatible, variable, unknown)
+- Brand name resolution (Zosyn, Levophed, Lasix, Precedex, etc.)
+- High-risk pair flagging (ceftriaxone + calcium, vancomycin + piperacillin-tazobactam)
+- Bulk screening for multi-drug infusion planning
+- Based on Trissel's Handbook of Injectable Drugs
+
+### Pregnancy & Lactation Safety
+- **22 medications** with FDA pregnancy categories (A, B, C, D, X)
+- Trimester-specific risk assessment (1st, 2nd, 3rd trimester)
+- Lactation safety ratings (safe, probably safe, use caution, contraindicated)
+- Teratogenic risk details with evidence
+- Safer alternative recommendations per drug
+- Patient counseling points for each medication
+- Bulk medication screening for prenatal reconciliation
+
+### Opioid MEDD Calculator
+- **15 opioids** across oral, parenteral, transdermal, and sublingual routes
+- Morphine Milligram Equivalent (MME) conversion per CDC/CMS factors
+- CDC 50 MME and 90 MME/day threshold warnings
+- Methadone tiered conversion (non-linear, dose-dependent factors)
+- Buprenorphine partial agonist handling
+- Equianalgesic opioid rotation with cross-tolerance dose reduction
+- Naloxone co-prescribing recommendations
+- Brand name resolution (OxyContin, Vicodin, Dilaudid, Duragesic, Suboxone)
+
 ### Lab Result Interpretation
 - **49 laboratory tests** (CBC, BMP, liver, cardiac, coagulation, thyroid, inflammatory, lipid panel, minerals, urinalysis)
 - **6 lab patterns** detected across panels (e.g., DIC, hepatorenal syndrome)
@@ -134,7 +171,7 @@ npm start       # Starts MCP server on stdio
 
 ```bash
 npm run dev           # Run with tsx (hot reload)
-npm test              # Run tests (2307 tests across 39 suites)
+npm test              # Run tests (2444 tests across 42 suites)
 npm run test:watch    # Watch mode
 npm run test:coverage # Coverage report
 ```
@@ -144,20 +181,23 @@ npm run test:coverage # Coverage report
 ```
 src/
 ├── index.ts              # MCP server entry point (stdio)
-├── server-factory.ts     # Server factory (19 tools registered)
+├── server-factory.ts     # Server factory (29 tools registered)
 ├── http-transport.ts     # HTTP/SSE transport for marketplace
 ├── agent-card.ts         # Agent card metadata
 ├── sharp-context.ts      # SHARP healthcare context propagation
 ├── resources.ts          # MCP resources (5 clinical reference resources)
 ├── prompts.ts            # MCP prompts (4 clinical workflow templates)
 ├── data/
-│   ├── drug-interactions.ts      # Drug interaction database (325+ pairs)
+│   ├── drug-interactions.ts      # Drug interaction database (327 pairs)
 │   ├── lab-references.ts         # Lab reference ranges (49 tests)
 │   ├── risk-scores.ts            # Clinical risk calculators (25 scores)
-│   ├── renal-dosing.ts           # Renal dose adjustments (18 drugs)
+│   ├── renal-dosing.ts           # Renal dose adjustments (27 drugs)
 │   ├── pediatric-dosing.ts       # Pediatric dosing (16 drugs)
 │   ├── pharmacokinetics.ts       # PK calculators (7 calculators)
-│   └── allergy-crossreactivity.ts # Allergy classes (9 classes)
+│   ├── allergy-crossreactivity.ts # Allergy classes (9 classes)
+│   ├── iv-compatibility.ts       # IV compatibility data (60+ pairs)
+│   ├── pregnancy-safety.ts       # Pregnancy/lactation safety (22 drugs)
+│   └── opioid-medd.ts            # Opioid MEDD calculator (15 opioids)
 ├── tools/
 │   ├── clinical-alerts-tool.ts        # Aggregated prioritized clinical alerts
 │   ├── drug-interaction-tool.ts       # Drug interaction checker
@@ -167,7 +207,10 @@ src/
 │   ├── renal-dosing-tool.ts           # Renal dose adjustments
 │   ├── pediatric-dosing-tool.ts       # Pediatric dosing calculator
 │   ├── allergy-crossreactivity-tool.ts # Allergy cross-reactivity
-│   └── pharmacokinetics-tool.ts       # PK calculators
+│   ├── pharmacokinetics-tool.ts       # PK calculators
+│   ├── iv-compatibility-tool.ts       # IV compatibility checker
+│   ├── pregnancy-safety-tool.ts       # Pregnancy safety checker
+│   └── opioid-medd-tool.ts            # Opioid MEDD calculator
 └── utils/
     └── fhir.ts               # FHIR R4 utilities
 ```
@@ -188,7 +231,7 @@ HealthBridge is designed with healthcare data security as a first-class concern:
 
 ## Test Coverage
 
-**2307 tests across 39 test suites**, covering:
+**2444 tests across 42 test suites**, covering:
 - Drug interaction detection and brand name resolution
 - All 25 risk score calculators with boundary conditions
 - Lab interpretation with critical values and panel patterns
@@ -197,6 +240,9 @@ HealthBridge is designed with healthcare data security as a first-class concern:
 - Pediatric dosing with age/weight validation
 - Allergy cross-reactivity across all 9 classes
 - All 7 PK calculators
+- IV compatibility (Y-site, admixture, brand names, bulk screening)
+- Pregnancy safety (all FDA categories, trimester-specific, brand names)
+- Opioid MEDD (MME calculation, methadone tiering, dose conversion, CDC thresholds)
 - Clinical alerts aggregation
 - Security/HIPAA compliance
 - Medication review with Beers criteria

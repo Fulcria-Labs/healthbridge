@@ -15,6 +15,9 @@ import { checkMedicationRenalDosing, checkSingleDrugDosing, listAvailableRenalDo
 import { getPediatricDose, listPediatricDrugs } from './tools/pediatric-dosing-tool.js';
 import { checkSingleCrossReactivity, checkBulkCrossReactivity, listAvailableAllergyClasses } from './tools/allergy-crossreactivity-tool.js';
 import { runPKCalculator, listPKCalculators } from './tools/pharmacokinetics-tool.js';
+import { checkSingleIVCompatibility, checkMultipleIVCompatibility, listIVDrugs } from './tools/iv-compatibility-tool.js';
+import { checkSinglePregnancySafety, screenPregnancyMedications, listPregnancyDatabaseDrugs } from './tools/pregnancy-safety-tool.js';
+import { calculateMME, calculateTotalMME, convertOpioid, listAvailableOpioids } from './tools/opioid-medd-tool.js';
 import { registerResources } from './resources.js';
 import { registerPrompts } from './prompts.js';
 import { getSHARPContext, hasFHIRAccess, fetchFHIRResource } from './sharp-context.js';
@@ -518,6 +521,190 @@ export function createHealthBridgeServer(): McpServer {
         content: [{
           type: 'text' as const,
           text: JSON.stringify({ calculators, count: calculators.length }, null, 2),
+        }],
+      };
+    }
+  );
+
+  // Tool 20: IV Compatibility Check
+  server.tool(
+    'check_iv_compatibility',
+    'Check Y-site and admixture compatibility between two IV medications. Returns compatibility status, clinical notes, and warnings. Supports common brand name aliases (e.g., Zosyn, Levophed, Lasix).',
+    {
+      drug1: z.string().describe('First IV medication name'),
+      drug2: z.string().describe('Second IV medication name'),
+    },
+    async ({ drug1, drug2 }) => {
+      const result = checkSingleIVCompatibility({ drug1, drug2 });
+      return {
+        content: [{
+          type: 'text' as const,
+          text: JSON.stringify(result, null, 2),
+        }],
+      };
+    }
+  );
+
+  // Tool 21: Bulk IV Compatibility Screen
+  server.tool(
+    'screen_iv_compatibility',
+    'Screen all pairwise IV compatibility among a list of medications. Identifies incompatible, variable, and unknown pairs. Essential for ICU multi-drug infusion planning.',
+    {
+      drugs: z.array(z.string()).min(2).describe('List of IV medications to check all pairwise compatibilities'),
+    },
+    async ({ drugs }) => {
+      const result = checkMultipleIVCompatibility({ drugs });
+      return {
+        content: [{
+          type: 'text' as const,
+          text: JSON.stringify(result, null, 2),
+        }],
+      };
+    }
+  );
+
+  // Tool 22: List IV Drugs in Database
+  server.tool(
+    'list_iv_drugs',
+    'List all IV medications in the compatibility database.',
+    {},
+    async () => {
+      const drugs = listIVDrugs();
+      return {
+        content: [{
+          type: 'text' as const,
+          text: JSON.stringify({ drugs, count: drugs.length }, null, 2),
+        }],
+      };
+    }
+  );
+
+  // Tool 23: Pregnancy Safety Check
+  server.tool(
+    'check_pregnancy_safety',
+    'Check a medication\'s safety during pregnancy and lactation. Returns FDA pregnancy category, trimester-specific risks, teratogenic risk details, safer alternatives, and counseling points.',
+    {
+      drug: z.string().describe('Medication name to check'),
+      trimester: z.number().min(1).max(3).optional().describe('Current trimester (1, 2, or 3) for trimester-specific risk assessment'),
+    },
+    async ({ drug, trimester }) => {
+      const result = checkSinglePregnancySafety({ drug, trimester: trimester as 1 | 2 | 3 | undefined });
+      return {
+        content: [{
+          type: 'text' as const,
+          text: JSON.stringify(result, null, 2),
+        }],
+      };
+    }
+  );
+
+  // Tool 24: Pregnancy Medication Screening
+  server.tool(
+    'screen_pregnancy_medications',
+    'Screen all patient medications for pregnancy safety. Identifies contraindicated and high-risk drugs, provides safer alternatives. Essential for prenatal medication reconciliation.',
+    {
+      medications: z.array(z.string()).min(1).describe('List of medications to screen'),
+      trimester: z.number().min(1).max(3).optional().describe('Current trimester (1, 2, or 3)'),
+    },
+    async ({ medications, trimester }) => {
+      const result = screenPregnancyMedications({ medications, trimester: trimester as 1 | 2 | 3 | undefined });
+      return {
+        content: [{
+          type: 'text' as const,
+          text: JSON.stringify(result, null, 2),
+        }],
+      };
+    }
+  );
+
+  // Tool 25: List Pregnancy Safety Database
+  server.tool(
+    'list_pregnancy_drugs',
+    'List all medications in the pregnancy safety database with their categories and lactation safety ratings.',
+    {},
+    async () => {
+      const drugs = listPregnancyDatabaseDrugs();
+      return {
+        content: [{
+          type: 'text' as const,
+          text: JSON.stringify({ drugs, count: drugs.length }, null, 2),
+        }],
+      };
+    }
+  );
+
+  // Tool 26: Opioid MME Calculator
+  server.tool(
+    'calculate_opioid_mme',
+    'Calculate the Morphine Milligram Equivalent (MME) for an opioid dose. Based on CDC 2022 guidelines. Flags doses exceeding 50 and 90 MME/day thresholds.',
+    {
+      drug: z.string().describe('Opioid name (e.g., "oxycodone", "hydrocodone", "fentanyl patch")'),
+      daily_dose: z.number().min(0).describe('Total daily dose of the opioid'),
+    },
+    async ({ drug, daily_dose }) => {
+      const result = calculateMME({ drug, dailyDose: daily_dose });
+      return {
+        content: [{
+          type: 'text' as const,
+          text: JSON.stringify(result, null, 2),
+        }],
+      };
+    }
+  );
+
+  // Tool 27: Total MEDD Calculator
+  server.tool(
+    'calculate_total_medd',
+    'Calculate total Morphine Equivalent Daily Dose across all opioids a patient is taking. Provides CDC threshold warnings, naloxone recommendation, and prescribing considerations.',
+    {
+      opioids: z.array(z.object({
+        drug: z.string().describe('Opioid name'),
+        dailyDose: z.number().min(0).describe('Total daily dose'),
+      })).min(1).describe('Array of opioids with daily doses'),
+    },
+    async ({ opioids }) => {
+      const result = calculateTotalMME({ opioids });
+      return {
+        content: [{
+          type: 'text' as const,
+          text: JSON.stringify(result, null, 2),
+        }],
+      };
+    }
+  );
+
+  // Tool 28: Opioid Dose Conversion
+  server.tool(
+    'convert_opioid_dose',
+    'Convert between opioid doses using equianalgesic ratios. Automatically applies cross-tolerance dose reduction (default 25%). Based on CDC/CMS conversion factors.',
+    {
+      from_drug: z.string().describe('Current opioid name'),
+      from_daily_dose: z.number().min(0).describe('Current total daily dose'),
+      to_drug: z.string().describe('Target opioid name'),
+      reduction_percent: z.number().min(0).max(75).optional().default(25).describe('Cross-tolerance dose reduction percentage (default 25%, recommended 25-50%)'),
+    },
+    async ({ from_drug, from_daily_dose, to_drug, reduction_percent }) => {
+      const result = convertOpioid({ fromDrug: from_drug, fromDailyDose: from_daily_dose, toDrug: to_drug, reductionPercent: reduction_percent });
+      return {
+        content: [{
+          type: 'text' as const,
+          text: JSON.stringify(result, null, 2),
+        }],
+      };
+    }
+  );
+
+  // Tool 29: List Opioids Database
+  server.tool(
+    'list_opioids',
+    'List all opioids in the MEDD database with their MME conversion factors and routes.',
+    {},
+    async () => {
+      const opioids = listAvailableOpioids();
+      return {
+        content: [{
+          type: 'text' as const,
+          text: JSON.stringify({ opioids, count: opioids.length }, null, 2),
         }],
       };
     }
