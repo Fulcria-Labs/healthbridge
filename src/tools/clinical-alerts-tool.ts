@@ -10,6 +10,7 @@
 import { checkDrugInteractions, type DrugInteractionOutput } from './drug-interaction-tool.js';
 import { interpretPanel } from './lab-interpreter-tool.js';
 import { calculateRiskScore, type ScoreName } from './risk-score-tool.js';
+import { checkRenalDosing } from '../data/renal-dosing.js';
 import type { LabResult } from '../data/lab-references.js';
 
 export type AlertPriority = 'critical' | 'high' | 'moderate' | 'low' | 'informational';
@@ -166,6 +167,12 @@ function generateLabAlerts(labResults: Array<{ test: string; value: number }>): 
     labMap.set(r.testCode, r);
   }
 
+  // Raw value map for patterns involving tests not in reference database
+  const rawLabMap = new Map<string, number>();
+  for (const l of labResults) {
+    rawLabMap.set(l.test.toUpperCase(), l.value);
+  }
+
   // BUN/Creatinine ratio pattern
   const bun = labMap.get('BUN');
   const creat = labMap.get('CREAT');
@@ -211,6 +218,125 @@ function generateLabAlerts(labResults: Array<{ test: string; value: number }>): 
         title: 'Combined anemia and thrombocytopenia',
         detail: `Hemoglobin ${hgb.value} g/dL and Platelets ${plt.value} K/uL. Bicytopenia may indicate bone marrow disorder, DIC, or splenic sequestration.`,
         action: 'Peripheral blood smear. Reticulocyte count. Consider hematology consultation. Evaluate for DIC (check fibrinogen, D-dimer).',
+        source: 'lab_pattern',
+      });
+    }
+  }
+
+  // Anion gap metabolic acidosis pattern (HCO3 may not be in lab reference DB)
+  const naVal = labMap.get('NA')?.value ?? rawLabMap.get('NA');
+  const clVal = labMap.get('CL')?.value ?? rawLabMap.get('CL');
+  const hco3Val = rawLabMap.get('HCO3') ?? labMap.get('HCO3')?.value;
+  if (naVal !== undefined && clVal !== undefined && hco3Val !== undefined) {
+    const anionGap = naVal - (clVal + hco3Val);
+    if (anionGap > 12) {
+      alerts.push({
+        priority: anionGap > 20 ? 'critical' : 'high',
+        category: 'Laboratory Pattern',
+        title: 'Elevated anion gap',
+        detail: `Anion gap = ${anionGap.toFixed(1)} mEq/L (Na ${naVal} - Cl ${clVal} - HCO3 ${hco3Val}). Elevated AG (>12) suggests metabolic acidosis. MUDPILES: Methanol, Uremia, DKA, Propylene glycol, Isoniazid/Iron, Lactic acidosis, Ethylene glycol, Salicylates.`,
+        action: 'Check lactate, ketones, BUN, osmolal gap, toxicology screen. ABG to confirm metabolic acidosis. Calculate delta-delta if AG elevated.',
+        source: 'lab_pattern',
+      });
+    }
+  }
+
+  // Corrected calcium for hypoalbuminemia
+  const ca = labMap.get('CA');
+  const alb = labMap.get('ALB');
+  if (ca && alb && alb.value < 4.0) {
+    const correctedCa = ca.value + 0.8 * (4.0 - alb.value);
+    if (correctedCa > 10.5 && ca.urgency === 'normal') {
+      alerts.push({
+        priority: 'moderate',
+        category: 'Laboratory Pattern',
+        title: 'Corrected hypercalcemia (masked by low albumin)',
+        detail: `Total Ca ${ca.value} mg/dL appears normal, but corrected Ca = ${correctedCa.toFixed(1)} mg/dL (albumin ${alb.value} g/dL). True hypercalcemia.`,
+        action: 'Check PTH, vitamin D, PTHrP. Evaluate for hyperparathyroidism or malignancy. ECG for QT changes.',
+        source: 'lab_pattern',
+      });
+    } else if (correctedCa < 8.5 && ca.urgency === 'normal') {
+      alerts.push({
+        priority: 'moderate',
+        category: 'Laboratory Pattern',
+        title: 'True hypocalcemia (corrected for albumin)',
+        detail: `Total Ca ${ca.value} mg/dL appears normal, but corrected Ca = ${correctedCa.toFixed(1)} mg/dL (albumin ${alb.value} g/dL). True hypocalcemia.`,
+        action: 'Check ionized calcium, PTH, magnesium, vitamin D. Monitor for tetany, Chvostek/Trousseau signs.',
+        source: 'lab_pattern',
+      });
+    }
+  }
+
+  // TSH / Free T4 pattern recognition (uses both interpreted and raw values)
+  const tshValue = labMap.get('TSH')?.value ?? rawLabMap.get('TSH');
+  const ft4Value = rawLabMap.get('FT4') ?? labMap.get('FT4')?.value;
+  if (tshValue !== undefined && ft4Value !== undefined) {
+    if (tshValue > 4.5 && ft4Value < 0.8) {
+      alerts.push({
+        priority: 'high',
+        category: 'Laboratory Pattern',
+        title: 'Primary hypothyroidism',
+        detail: `TSH ${tshValue} mIU/L (elevated) with Free T4 ${ft4Value} ng/dL (low). Classic primary hypothyroidism pattern.`,
+        action: 'Check TPO antibodies (Hashimoto\'s). Initiate levothyroxine if symptomatic. Start low dose (25-50 mcg) in elderly/cardiac patients.',
+        source: 'lab_pattern',
+      });
+    } else if (tshValue < 0.4 && ft4Value > 1.8) {
+      alerts.push({
+        priority: 'high',
+        category: 'Laboratory Pattern',
+        title: 'Hyperthyroidism',
+        detail: `TSH ${tshValue} mIU/L (suppressed) with Free T4 ${ft4Value} ng/dL (elevated). Hyperthyroid state.`,
+        action: 'Check T3, TSI/TRAb antibodies. Thyroid uptake scan. Beta-blocker for symptom control. Endocrinology referral.',
+        source: 'lab_pattern',
+      });
+    } else if (tshValue < 0.4 && ft4Value >= 0.8 && ft4Value <= 1.8) {
+      alerts.push({
+        priority: 'moderate',
+        category: 'Laboratory Pattern',
+        title: 'Subclinical hyperthyroidism',
+        detail: `TSH ${tshValue} mIU/L (suppressed) with normal Free T4 ${ft4Value} ng/dL. Risk of atrial fibrillation and osteoporosis.`,
+        action: 'Check T3 (may have T3 thyrotoxicosis). Repeat in 6-8 weeks. Evaluate for atrial fibrillation risk.',
+        source: 'lab_pattern',
+      });
+    }
+  }
+
+  // CRP + Procalcitonin pattern (bacterial vs viral differentiation)
+  const crp = labMap.get('CRP');
+  const pct = labMap.get('PCT');
+  if (crp && pct) {
+    if (pct.value >= 0.5 && crp.value > 10) {
+      alerts.push({
+        priority: 'high',
+        category: 'Laboratory Pattern',
+        title: 'Bacterial infection likely (elevated CRP + PCT)',
+        detail: `CRP ${crp.value} mg/L and Procalcitonin ${pct.value} ng/mL. Concurrent elevation suggests bacterial infection rather than viral.`,
+        action: 'Blood cultures before antibiotics. Initiate empiric antibiotic therapy based on suspected source. Reassess with serial PCT at 48-72h for de-escalation.',
+        source: 'lab_pattern',
+      });
+    } else if (crp.value > 10 && pct.value < 0.25) {
+      alerts.push({
+        priority: 'moderate',
+        category: 'Laboratory Pattern',
+        title: 'Inflammatory state with low procalcitonin',
+        detail: `CRP ${crp.value} mg/L (elevated) but PCT ${pct.value} ng/mL (low). Pattern suggests viral infection, autoimmune flare, or non-infectious inflammation rather than bacterial infection.`,
+        action: 'Consider viral panel. Evaluate for autoimmune conditions. Antibiotics may not be indicated — reassess clinical picture.',
+        source: 'lab_pattern',
+      });
+    }
+  }
+
+  // Iron deficiency pattern
+  const iron = labMap.get('IRON');
+  const ferr = labMap.get('FERR');
+  if (hgb && ferr) {
+    if (hgb.urgency !== 'normal' && hgb.value < 12.0 && ferr.value < 30) {
+      alerts.push({
+        priority: 'moderate',
+        category: 'Laboratory Pattern',
+        title: 'Iron deficiency anemia pattern',
+        detail: `Hemoglobin ${hgb.value} g/dL with Ferritin ${ferr.value} ng/mL (<30). Consistent with iron deficiency anemia.`,
+        action: 'Evaluate for GI blood loss (occult blood, colonoscopy if appropriate). Start oral iron supplementation. Recheck CBC and ferritin in 4-6 weeks.',
         source: 'lab_pattern',
       });
     }
@@ -640,9 +766,142 @@ function generateAgeAlerts(context: PatientContext): ClinicalAlert[] {
         source: 'geriatric_safety',
       });
     }
+
+    // AGS Beers Criteria 2023 — additional PIMs (Potentially Inappropriate Medications)
+    const beersPIMs: Array<{ drugs: string[]; category: string; reason: string; alternative: string }> = [
+      {
+        drugs: ['metoclopramide', 'reglan'],
+        category: 'GI',
+        reason: 'Extrapyramidal effects including tardive dyskinesia; risk increases with age and duration',
+        alternative: 'Ondansetron, domperidone (where available), or non-pharmacologic measures',
+      },
+      {
+        drugs: ['nitrofurantoin', 'macrobid', 'macrodantin'],
+        category: 'Anti-infective',
+        reason: 'Pulmonary toxicity, hepatotoxicity, peripheral neuropathy with long-term use; ineffective if CrCl < 30',
+        alternative: 'Trimethoprim-sulfamethoxazole or fosfomycin (short course UTI only)',
+      },
+      {
+        drugs: ['glyburide', 'glibenclamide'],
+        category: 'Hypoglycemic',
+        reason: 'Active metabolites accumulate in CKD; prolonged hypoglycemia risk highest among sulfonylureas',
+        alternative: 'Glipizide or glimepiride (shorter acting, safer renal profile)',
+      },
+      {
+        drugs: ['meperidine', 'demerol'],
+        category: 'Opioid',
+        reason: 'Neurotoxic metabolite normeperidine causes seizures; not effective orally; accumulates in renal impairment',
+        alternative: 'Morphine (with renal adjustment), hydromorphone, or fentanyl',
+      },
+      {
+        drugs: ['indomethacin', 'ketorolac'],
+        category: 'NSAID',
+        reason: 'Highest GI bleeding risk among NSAIDs; indomethacin also has most CNS adverse effects',
+        alternative: 'Acetaminophen, topical NSAIDs (diclofenac gel), or short-course celecoxib if needed',
+      },
+      {
+        drugs: ['chlorpropamide'],
+        category: 'Hypoglycemic',
+        reason: 'Prolonged half-life (36h); SIADH and severe hypoglycemia in elderly',
+        alternative: 'Glipizide, metformin (if eGFR allows), or insulin',
+      },
+      {
+        drugs: ['doxazosin', 'prazosin', 'terazosin'],
+        category: 'Alpha-blocker',
+        reason: 'High risk of orthostatic hypotension, syncope, and falls in elderly',
+        alternative: 'Tamsulosin (for BPH), other antihypertensives for blood pressure',
+      },
+      {
+        drugs: ['sliding scale insulin'],
+        category: 'Hypoglycemic',
+        reason: 'Higher risk of hypoglycemia without improvement in glycemic control in elderly',
+        alternative: 'Basal insulin with fixed-dose prandial corrections; relaxed HbA1c targets (< 8%)',
+      },
+    ];
+
+    for (const pim of beersPIMs) {
+      const flagged = context.medications!.filter(m =>
+        pim.drugs.some(d => m.toLowerCase().includes(d))
+      );
+      if (flagged.length > 0) {
+        alerts.push({
+          priority: 'moderate',
+          category: 'Beers Criteria',
+          title: `Potentially inappropriate: ${flagged.join(', ')} (${pim.category})`,
+          detail: `AGS Beers Criteria 2023: ${flagged.join(', ')} — ${pim.reason}`,
+          action: `Consider alternative: ${pim.alternative}. Deprescribing recommended if clinically appropriate.`,
+          source: 'beers_criteria',
+        });
+      }
+    }
+
+    // Duplicate therapy detection in elderly
+    const medClasses = new Map<string, string[]>();
+    const classMap: Record<string, string[]> = {
+      'NSAID': ['ibuprofen', 'naproxen', 'celecoxib', 'diclofenac', 'meloxicam', 'indomethacin', 'ketorolac'],
+      'PPI': ['omeprazole', 'pantoprazole', 'lansoprazole', 'esomeprazole', 'rabeprazole'],
+      'SSRI': ['fluoxetine', 'sertraline', 'paroxetine', 'citalopram', 'escitalopram', 'fluvoxamine'],
+      'Benzodiazepine': ['alprazolam', 'diazepam', 'lorazepam', 'clonazepam', 'temazepam'],
+      'Statin': ['simvastatin', 'atorvastatin', 'rosuvastatin', 'pravastatin', 'lovastatin'],
+      'ACE-I/ARB': ['lisinopril', 'enalapril', 'ramipril', 'losartan', 'valsartan', 'irbesartan', 'candesartan'],
+      'Opioid': ['morphine', 'oxycodone', 'hydrocodone', 'tramadol', 'fentanyl', 'codeine', 'hydromorphone'],
+    };
+
+    for (const [className, drugs] of Object.entries(classMap)) {
+      const found = context.medications!.filter(m =>
+        drugs.some(d => m.toLowerCase().includes(d))
+      );
+      if (found.length >= 2) {
+        alerts.push({
+          priority: 'moderate',
+          category: 'Duplicate Therapy',
+          title: `Multiple ${className} medications`,
+          detail: `Patient is on ${found.length} ${className} agents: ${found.join(', ')}. Duplicate therapy increases adverse effect risk without proportional benefit.`,
+          action: `Review for consolidation to single agent. Assess if both are clinically necessary.`,
+          source: 'duplicate_therapy',
+        });
+      }
+    }
+  }
+
+  // Renal dosing alerts — check medications against eGFR if lab data available
+  if (context.medications && context.medications.length > 0 && context.labResults) {
+    const labMap = new Map(context.labResults.map(l => [l.test.toUpperCase(), l.value]));
+    const creat = labMap.get('CREAT');
+    if (creat && context.age && context.sex) {
+      // Calculate eGFR using CKD-EPI approximation for alert purposes
+      const eGFR = calculateSimpleEGFR(creat, context.age, context.sex);
+      if (eGFR < 60) {
+        const renalCheck = checkRenalDosing(context.medications, eGFR);
+        for (const adj of renalCheck.adjustments) {
+          const priority: AlertPriority = (adj.action === 'avoid' || adj.action === 'contraindicated') ? 'critical' : 'high';
+          alerts.push({
+            priority,
+            category: 'Renal Dosing',
+            title: `${adj.action === 'avoid' || adj.action === 'contraindicated' ? 'AVOID' : 'Dose adjustment needed'}: ${adj.drug}`,
+            detail: `eGFR ${eGFR.toFixed(0)} mL/min: ${adj.drug} (${adj.drugClass}) requires adjustment. Normal dose: ${adj.normalDose}. Recommended: ${adj.recommendedDose}. ${adj.rationale}`,
+            action: `${adj.recommendedDose}. ${adj.monitoring}`,
+            source: 'renal_dosing',
+          });
+        }
+      }
+    }
   }
 
   return alerts;
+}
+
+/** Simplified CKD-EPI 2021 eGFR for alert generation (creatinine in mg/dL) */
+function calculateSimpleEGFR(creatResult: number, age: number, sex: 'male' | 'female'): number {
+  // CKD-EPI 2021 (race-free)
+  const isFemale = sex === 'female';
+  const kappa = isFemale ? 0.7 : 0.9;
+  const alpha = isFemale ? -0.241 : -0.302;
+  const scr_k = creatResult / kappa;
+  const min_val = Math.min(scr_k, 1);
+  const max_val = Math.max(scr_k, 1);
+  const multiplier = isFemale ? 1.012 : 1.0;
+  return 142 * Math.pow(min_val, alpha) * Math.pow(max_val, -1.200) * Math.pow(0.9938, age) * multiplier;
 }
 
 function generateSummary(

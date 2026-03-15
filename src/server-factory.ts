@@ -11,6 +11,7 @@ import { calculateRiskScore, listAvailableScores, type ScoreName } from './tools
 import { interpretSingleLab, interpretPanel, listAvailableTests } from './tools/lab-interpreter-tool.js';
 import { getPatientSummary } from './tools/patient-summary-tool.js';
 import { generateClinicalAlerts } from './tools/clinical-alerts-tool.js';
+import { checkMedicationRenalDosing, checkSingleDrugDosing, listAvailableRenalDosingDrugs } from './tools/renal-dosing-tool.js';
 import { registerResources } from './resources.js';
 import { registerPrompts } from './prompts.js';
 import { getSHARPContext, hasFHIRAccess, fetchFHIRResource } from './sharp-context.js';
@@ -334,6 +335,60 @@ export function createHealthBridgeServer(): McpServer {
         content: [{
           type: 'text' as const,
           text: JSON.stringify(result, null, 2),
+        }],
+      };
+    }
+  );
+
+  // Tool 10: Renal Dosing Adjustment Checker
+  server.tool(
+    'check_renal_dosing',
+    'Check medication dosing adjustments needed for chronic kidney disease (CKD) based on eGFR. Covers antibiotics, anticoagulants, diabetic medications, analgesics, cardiovascular drugs, and more. Returns evidence-based dose recommendations per KDIGO guidelines.',
+    {
+      medications: z.array(z.string()).min(1).describe('List of medications to check for renal dosing adjustments'),
+      eGFR: z.number().min(0).max(200).describe('Estimated glomerular filtration rate (mL/min/1.73m²)'),
+    },
+    async ({ medications, eGFR }) => {
+      const result = checkMedicationRenalDosing({ medications, eGFR });
+      return {
+        content: [{
+          type: 'text' as const,
+          text: JSON.stringify(result, null, 2),
+        }],
+      };
+    }
+  );
+
+  // Tool 11: Single Drug Renal Dosing Lookup
+  server.tool(
+    'renal_dose_lookup',
+    'Look up renal dosing information for a single medication, including all eGFR-based adjustments, dialyzability, and monitoring requirements.',
+    {
+      drug: z.string().describe('Medication name to look up'),
+      eGFR: z.number().min(0).max(200).describe('Patient eGFR (mL/min/1.73m²)'),
+    },
+    async ({ drug, eGFR }) => {
+      const result = checkSingleDrugDosing({ drug, eGFR });
+      return {
+        content: [{
+          type: 'text' as const,
+          text: JSON.stringify(result, null, 2),
+        }],
+      };
+    }
+  );
+
+  // Tool 12: List Renal Dosing Database
+  server.tool(
+    'list_renal_dosing_drugs',
+    'List all medications in the renal dosing database with drug classes.',
+    {},
+    async () => {
+      const drugs = listAvailableRenalDosingDrugs();
+      return {
+        content: [{
+          type: 'text' as const,
+          text: JSON.stringify({ drugs, count: drugs.length }, null, 2),
         }],
       };
     }
