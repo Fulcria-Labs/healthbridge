@@ -325,6 +325,151 @@ export const labReferences: LabReference[] = [
       severe: { range: '>2.0', meaning: 'Severe bacterial infection/sepsis', action: 'Aggressive antibiotic therapy. Evaluate for source. Sepsis protocol.' }
     }
   },
+  // ESR
+  {
+    testCode: 'ESR', testName: 'Erythrocyte Sedimentation Rate', aliases: ['esr', 'sed rate', 'sedimentation rate'],
+    unit: 'mm/hr', normalRange: { low: 0, high: 20 },
+    category: 'Inflammatory',
+    interpretation: {
+      normal: { range: '0-20', meaning: 'Normal ESR', action: 'No significant inflammation detected.' },
+      mild: { range: '21-50', meaning: 'Mildly elevated ESR', action: 'Non-specific inflammation. Correlate with clinical picture. Consider infection, autoimmune disease, malignancy.' },
+      moderate: { range: '51-100', meaning: 'Moderately elevated ESR', action: 'Significant inflammation. Evaluate for rheumatic disease, infection, malignancy. Check CRP for confirmation.' },
+      high: { range: '>100', meaning: 'Markedly elevated ESR', action: 'Consider giant cell arteritis, multiple myeloma, severe infection, malignancy. Urgent workup indicated.' }
+    }
+  },
+  // Ferritin
+  {
+    testCode: 'FERR', testName: 'Ferritin', aliases: ['ferritin', 'serum ferritin'],
+    unit: 'ng/mL', normalRange: { low: 20, high: 250 }, criticalRange: { high: 1000 },
+    category: 'Hematology',
+    interpretation: {
+      low: { range: '<20', meaning: 'Iron deficiency', action: 'Iron deficiency confirmed. Start oral iron supplementation. Evaluate for GI blood loss, dietary deficiency, menstrual losses.' },
+      normal: { range: '20-250', meaning: 'Normal iron stores', action: 'No action required. Note: ferritin is an acute phase reactant and may be falsely normal in inflammation.' },
+      high: { range: '251-999', meaning: 'Elevated ferritin', action: 'Evaluate for iron overload, inflammation, liver disease, malignancy, hemochromatosis. Check transferrin saturation, HFE gene testing.' },
+      critical_high: { range: '≥1000', meaning: 'Markedly elevated ferritin', action: 'Urgent evaluation. Consider hemochromatosis, hemophagocytic syndrome, adult-onset Still disease, hepatic necrosis.' }
+    }
+  },
+  // Albumin
+  {
+    testCode: 'ALB', testName: 'Albumin', aliases: ['albumin', 'serum albumin'],
+    unit: 'g/dL', normalRange: { low: 3.5, high: 5.0 }, criticalRange: { low: 1.5 },
+    category: 'Hepatic',
+    interpretation: {
+      critical_low: { range: '<1.5', meaning: 'Severely low albumin', action: 'CRITICAL. High risk for edema, poor wound healing. Evaluate for liver failure, nephrotic syndrome, severe malnutrition. Consider albumin infusion.' },
+      low: { range: '1.5-3.4', meaning: 'Hypoalbuminemia', action: 'Evaluate for liver disease, nephrotic syndrome, malnutrition, chronic inflammation, protein-losing enteropathy.' },
+      normal: { range: '3.5-5.0', meaning: 'Normal albumin', action: 'No action required. Good nutritional and synthetic liver function marker.' },
+      high: { range: '>5.0', meaning: 'Elevated albumin', action: 'Usually indicates dehydration. Evaluate fluid status.' }
+    }
+  },
+  // Total Bilirubin
+  {
+    testCode: 'TBILI', testName: 'Total Bilirubin', aliases: ['bilirubin', 'total bilirubin', 'tbili'],
+    unit: 'mg/dL', normalRange: { low: 0.1, high: 1.2 }, criticalRange: { high: 15.0 },
+    category: 'Hepatic',
+    interpretation: {
+      normal: { range: '0.1-1.2', meaning: 'Normal bilirubin', action: 'No action required.' },
+      mild: { range: '1.3-3.0', meaning: 'Mildly elevated bilirubin', action: 'May indicate Gilbert syndrome (benign), hemolysis, or early liver disease. Check direct bilirubin, reticulocyte count, LDH, haptoglobin.' },
+      moderate: { range: '3.1-10.0', meaning: 'Jaundice likely', action: 'Clinical jaundice present. Fractionate (direct vs indirect). Evaluate for hepatitis, obstruction, hemolysis. Liver imaging.' },
+      high: { range: '10.1-14.9', meaning: 'Significant hyperbilirubinemia', action: 'Severe liver dysfunction or complete biliary obstruction. Urgent evaluation with imaging and hepatology consultation.' },
+      critical_high: { range: '≥15.0', meaning: 'Severe hyperbilirubinemia', action: 'EMERGENCY. Risk of bilirubin encephalopathy. Urgent intervention. ERCP if obstructive. Consider liver transplant evaluation.' }
+    }
+  },
+  // GGT
+  {
+    testCode: 'GGT', testName: 'Gamma-Glutamyl Transferase', aliases: ['ggt', 'gamma gt', 'gamma-glutamyl transpeptidase'],
+    unit: 'U/L', normalRange: { low: 0, high: 61 },
+    category: 'Hepatic',
+    interpretation: {
+      normal: { range: '0-61', meaning: 'Normal GGT', action: 'No action required.' },
+      mild: { range: '62-200', meaning: 'Mildly elevated GGT', action: 'Often elevated with alcohol use, medications (phenytoin, carbamazepine), or cholestatic disease. If ALP also elevated, suggests hepatobiliary source.' },
+      moderate: { range: '201-500', meaning: 'Moderately elevated GGT', action: 'Evaluate for alcohol abuse, cholestatic liver disease, medication effect. Liver imaging recommended.' },
+      high: { range: '>500', meaning: 'Markedly elevated GGT', action: 'Significant hepatobiliary disease. Consider biliary obstruction, alcoholic liver disease, or drug toxicity. Urgent imaging.' }
+    }
+  },
+  // Vitamin D
+  {
+    testCode: 'VITD', testName: '25-Hydroxy Vitamin D', aliases: ['vitamin d', '25-oh vitamin d', '25-hydroxyvitamin d', 'calcidiol'],
+    unit: 'ng/mL', normalRange: { low: 30, high: 100 },
+    category: 'Endocrine',
+    interpretation: {
+      deficient: { range: '<20', meaning: 'Vitamin D deficiency', action: 'High-dose supplementation: 50,000 IU weekly for 8-12 weeks, then maintenance. Check calcium, PTH. Evaluate for osteoporosis.' },
+      insufficient: { range: '20-29', meaning: 'Vitamin D insufficiency', action: 'Supplement with 1,000-2,000 IU daily. Recheck in 3 months. Dietary counseling.' },
+      normal: { range: '30-100', meaning: 'Adequate vitamin D', action: 'No action required. Maintenance dose 600-1,000 IU daily recommended.' },
+      high: { range: '>100', meaning: 'Vitamin D excess', action: 'Risk of hypercalcemia. Stop supplementation. Check calcium level. Rarely toxic unless >150 ng/mL.' }
+    }
+  },
+  // Vitamin B12
+  {
+    testCode: 'B12', testName: 'Vitamin B12', aliases: ['vitamin b12', 'cobalamin', 'cyanocobalamin'],
+    unit: 'pg/mL', normalRange: { low: 200, high: 900 },
+    category: 'Hematology',
+    interpretation: {
+      deficient: { range: '<200', meaning: 'B12 deficiency', action: 'Start B12 supplementation (IM or high-dose oral). Evaluate for pernicious anemia (anti-intrinsic factor antibodies), malabsorption, dietary deficiency. Check methylmalonic acid for confirmation.' },
+      borderline: { range: '200-300', meaning: 'Borderline B12', action: 'Check methylmalonic acid and homocysteine for functional deficiency. Consider supplementation if elevated.' },
+      normal: { range: '301-900', meaning: 'Normal B12', action: 'No action required.' },
+      high: { range: '>900', meaning: 'Elevated B12', action: 'Usually not harmful from supplementation. If unexplained, evaluate for liver disease, myeloproliferative disorders, or renal failure.' }
+    }
+  },
+  // Folate
+  {
+    testCode: 'FOLATE', testName: 'Folate (Serum)', aliases: ['folate', 'folic acid', 'serum folate'],
+    unit: 'ng/mL', normalRange: { low: 2.7, high: 17.0 },
+    category: 'Hematology',
+    interpretation: {
+      deficient: { range: '<2.7', meaning: 'Folate deficiency', action: 'Supplement with folic acid 1-5 mg daily. Check B12 simultaneously (must treat B12 first if both deficient). Evaluate dietary intake, malabsorption, medications (methotrexate, phenytoin).' },
+      normal: { range: '2.7-17.0', meaning: 'Normal folate', action: 'No action required.' },
+      high: { range: '>17.0', meaning: 'Elevated folate', action: 'Usually from supplementation. Not typically harmful. May mask B12 deficiency.' }
+    }
+  },
+  // Phosphorus
+  {
+    testCode: 'PHOS', testName: 'Phosphorus', aliases: ['phosphorus', 'phosphate', 'serum phosphorus', 'inorganic phosphate'],
+    unit: 'mg/dL', normalRange: { low: 2.5, high: 4.5 }, criticalRange: { low: 1.0, high: 8.0 },
+    category: 'Electrolytes',
+    interpretation: {
+      critical_low: { range: '<1.0', meaning: 'Severe hypophosphatemia', action: 'EMERGENCY. IV phosphate replacement. Risk of respiratory failure, rhabdomyolysis, cardiac dysfunction. Common in refeeding syndrome.' },
+      low: { range: '1.0-2.4', meaning: 'Hypophosphatemia', action: 'Oral phosphate supplementation. Evaluate for refeeding syndrome, alcoholism, vitamin D deficiency, hyperparathyroidism, diabetic ketoacidosis recovery.' },
+      normal: { range: '2.5-4.5', meaning: 'Normal phosphorus', action: 'No action required.' },
+      high: { range: '4.6-7.9', meaning: 'Hyperphosphatemia', action: 'Most common cause is renal failure. Phosphate binders. Restrict dietary phosphate. Check calcium (risk of calciphylaxis).' },
+      critical_high: { range: '≥8.0', meaning: 'Severe hyperphosphatemia', action: 'EMERGENCY. Risk of metastatic calcification, cardiac arrest. Urgent dialysis consideration. IV calcium if symptomatic.' }
+    }
+  },
+  // Uric Acid
+  {
+    testCode: 'URIC', testName: 'Uric Acid', aliases: ['uric acid', 'serum uric acid', 'urate'],
+    unit: 'mg/dL', normalRange: { low: 3.0, high: 7.0 }, criticalRange: { high: 13.0 },
+    category: 'Metabolic',
+    interpretation: {
+      low: { range: '<3.0', meaning: 'Low uric acid', action: 'May indicate SIADH, Fanconi syndrome, or xanthine oxidase deficiency. Usually not clinically significant.' },
+      normal: { range: '3.0-7.0', meaning: 'Normal uric acid', action: 'No action required.' },
+      high: { range: '7.1-12.9', meaning: 'Hyperuricemia', action: 'Risk factor for gout and nephrolithiasis. Lifestyle modification (reduce purine-rich foods, alcohol). Consider urate-lowering therapy if recurrent gout. Check renal function.' },
+      critical_high: { range: '≥13.0', meaning: 'Severe hyperuricemia', action: 'Risk of tumor lysis syndrome if oncology patient. Consider rasburicase. Check renal function, electrolytes, LDH. Aggressive hydration.' }
+    }
+  },
+  // Lactate
+  {
+    testCode: 'LAC', testName: 'Lactate', aliases: ['lactate', 'lactic acid', 'serum lactate'],
+    unit: 'mmol/L', normalRange: { low: 0.5, high: 2.0 }, criticalRange: { high: 4.0 },
+    category: 'Metabolic',
+    interpretation: {
+      normal: { range: '0.5-2.0', meaning: 'Normal lactate', action: 'No tissue hypoperfusion detected.' },
+      elevated: { range: '2.1-3.9', meaning: 'Elevated lactate', action: 'Possible tissue hypoperfusion or metabolic stress. Evaluate volume status, cardiac output, sepsis. Serial monitoring recommended.' },
+      critical_high: { range: '≥4.0', meaning: 'Severe lactic acidosis', action: 'EMERGENCY. Indicates significant tissue hypoperfusion or metabolic crisis. Aggressive fluid resuscitation. Evaluate for sepsis, shock, mesenteric ischemia. ICU admission.' }
+    }
+  },
+  // Chloride
+  {
+    testCode: 'CL', testName: 'Chloride', aliases: ['chloride', 'cl', 'serum chloride'],
+    unit: 'mEq/L', normalRange: { low: 96, high: 106 }, criticalRange: { low: 80, high: 120 },
+    category: 'Electrolytes',
+    interpretation: {
+      critical_low: { range: '<80', meaning: 'Severe hypochloremia', action: 'EMERGENCY. Evaluate for severe vomiting, nasogastric suction, metabolic alkalosis. IV normal saline.' },
+      low: { range: '80-95', meaning: 'Hypochloremia', action: 'Often accompanies metabolic alkalosis. Evaluate for vomiting, diuretic use, SIADH. Check sodium, bicarbonate.' },
+      normal: { range: '96-106', meaning: 'Normal chloride', action: 'No action required.' },
+      high: { range: '107-119', meaning: 'Hyperchloremia', action: 'Often indicates non-anion gap metabolic acidosis. Evaluate for diarrhea, renal tubular acidosis, excessive normal saline administration.' },
+      critical_high: { range: '≥120', meaning: 'Severe hyperchloremia', action: 'EMERGENCY. Evaluate for severe dehydration, diabetes insipidus, or excessive saline administration. Check acid-base status.' }
+    }
+  },
 ];
 
 /**
